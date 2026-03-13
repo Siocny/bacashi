@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 - CAFELE 卡斐乐</title>
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="login-page" class="login-container">
+        <div class="login-box">
+            <h2>CAFELE</h2>
+            <p class="login-subtitle">卡斐乐 - 后台管理系统</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="username" required placeholder="请输入用户名" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="password" required placeholder="请输入密码" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary">登 录</button>
+                <p class="login-tip">默认账号：admin / admin123</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- 管理后台主界面 -->
+    <div id="admin-panel" class="admin-container" style="display: none;">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>CAFELE</h3>
+                <div class="logo-cn">卡斐乐 · 后台管理</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-tab="dashboard"><span>📊</span> 控制台</a>
+                <a href="#" class="nav-item" data-tab="brand"><span>📖</span> 品牌管理</a>
+                <a href="#" class="nav-item" data-tab="products"><span>📦</span> 产品管理</a>
+                <a href="#" class="nav-item" data-tab="contact"><span>📞</span> 联系信息</a>
+                <a href="#" class="nav-item" data-tab="timeline"><span>📅</span> 发展历程</a>
+                <a href="#" class="nav-item" id="logout-btn"><span>🚪</span> 退出登录</a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h2 id="page-title">控制台</h2>
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <span class="user-name">管理员</span>
+                </div>
+            </header>
+
+            <!-- 控制台 -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="dashboard-cards">
+                    <div class="card">
+                        <h3>产品数量</h3>
+                        <p class="card-number" id="dash-product-count">0</p>
+                    </div>
+                    <div class="card">
+                        <h3>产品分类</h3>
+                        <p class="card-number" id="dash-category-count">0</p>
+                    </div>
+                    <div class="card">
+                        <h3>发展历程事件</h3>
+                        <p class="card-number" id="dash-timeline-count">0</p>
+                    </div>
+                </div>
+                <div class="quick-actions">
+                    <h3>快捷操作</h3>
+                    <button class="btn btn-primary" onclick="switchTab('products')">+ 添加产品</button>
+                    <button class="btn btn-secondary" onclick="switchTab('brand')">编辑品牌信息</button>
+                    <button class="btn btn-primary" onclick="switchTab('timeline')">+ 添加事件</button>
+                </div>
+            </div>
+
+            <!-- 品牌管理 -->
+            <div id="tab-brand" class="tab-content">
+                <div style="background:white;padding:35px;border-radius:5px;box-shadow:0 2px 15px rgba(0,0,0,0.05);">
+                    <form id="brand-form">
+                        <div class="form-group">
+                            <label>品牌描述</label>
+                            <textarea id="brand-description" rows="8" placeholder="输入品牌介绍内容"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>行业经验（年）</label>
+                                <input type="number" id="stat-years" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>产品数量</label>
+                                <input type="number" id="stat-products" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>服务客户数</label>
+                                <input type="number" id="stat-customers" placeholder="0">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存品牌信息</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 产品管理 -->
+            <div id="tab-products" class="tab-content">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="add-product-btn">+ 添加产品</button>
+                </div>
+                <div id="products-table" class="data-table">
+                    <!-- 产品列表由 JS 生成 -->
+                </div>
+            </div>
+
+            <!-- 联系信息管理 -->
+            <div id="tab-contact" class="tab-content">
+                <div style="background:white;padding:35px;border-radius:5px;box-shadow:0 2px 15px rgba(0,0,0,0.05);">
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label>公司地址</label>
+                            <input type="text" id="contact-address" placeholder="输入公司地址">
+                        </div>
+                        <div class="form-group">
+                            <label>联系电话</label>
+                            <input type="text" id="contact-phone" placeholder="输入联系电话">
+                        </div>
+                        <div class="form-group">
+                            <label>电子邮箱</label>
+                            <input type="email" id="contact-email" placeholder="输入电子邮箱">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存联系信息</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 发展历程管理 -->
+            <div id="tab-timeline" class="tab-content">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="add-timeline-btn">+ 添加事件</button>
+                </div>
+                <div id="timeline-table" class="data-table">
+                    <!-- 时间轴列表由 JS 生成 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 产品编辑模态框 -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content modal-lg">
+            <button class="modal-close">&times;</button>
+            <h3 id="modal-title">添加/编辑产品</h3>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>产品名称 *</label>
+                        <input type="text" id="product-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>产品类别 *</label>
+                        <input type="text" id="product-category" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>产品图片 URL</label>
+                    <input type="text" id="product-image" placeholder="https://...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>价格</label>
+                        <input type="text" id="product-price" placeholder="¥0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>排序</label>
+                        <input type="number" id="product-sort" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>产品描述</label>
+                    <textarea id="product-description" rows="4" placeholder="简短描述产品特点"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>详细信息</label>
+                    <textarea id="product-details" rows="6" placeholder="详细产品规格和参数"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">保存产品</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 时间轴事件编辑模态框 -->
+    <div class="modal" id="timeline-modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h3 id="timeline-modal-title">添加/编辑事件</h3>
+            <form id="timeline-form">
+                <input type="hidden" id="timeline-id">
+                <div class="form-group">
+                    <label>年份 *</label>
+                    <input type="text" id="timeline-year" required placeholder="2024">
+                </div>
+                <div class="form-group">
+                    <label>事件标题 *</label>
+                    <input type="text" id="timeline-title" required>
+                </div>
+                <div class="form-group">
+                    <label>事件描述</label>
+                    <textarea id="timeline-description" rows="3" placeholder="事件详细说明"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">保存事件</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin.js"></script>
+</body>
+</html>
