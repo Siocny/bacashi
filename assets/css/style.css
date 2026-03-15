@@ -162,34 +162,6 @@ body {
     transform: rotate(180deg);
 }
 
-/* 二级导航 */
-.sub-nav {
-    background: #fafafa;
-    border-bottom: 1px solid #f0f0f0;
-    padding: 12px 0;
-}
-
-.sub-nav .container {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    padding: 0 20px;
-}
-
-.sub-nav a {
-    color: #666;
-    text-decoration: none;
-    font-size: 13px;
-    letter-spacing: 1px;
-    transition: color 0.3s ease;
-    padding: 5px 0;
-}
-
-.sub-nav a:hover,
-.sub-nav a.active {
-    color: var(--primary-color);
-}
-
 .logo {
     display: flex;
     flex-direction: column;

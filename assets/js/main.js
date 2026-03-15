@@ -277,24 +277,8 @@ function searchProducts() {
     });
 }
 
-// 二级导航分类过滤
+// 下拉菜单分类点击事件
 document.addEventListener('DOMContentLoaded', function() {
-    // 二级导航点击事件
-    document.querySelectorAll('.sub-nav a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const category = this.dataset.category;
-
-            // 更新 active 状态
-            document.querySelectorAll('.sub-nav a').forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-
-            // 过滤产品
-            filterProductsByCategory(category);
-        });
-    });
-
-    // 下拉菜单分类点击事件
     document.querySelectorAll('.dropdown-menu a[data-category]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
