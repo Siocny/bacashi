@@ -7,59 +7,20 @@
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <!-- 顶部导航栏 -->
+    <!-- 导航栏 -->
     <nav class="navbar">
         <div class="container">
             <div class="logo">
                 <span class="logo-text">CAFELE</span>
                 <span class="logo-cn">卡斐乐</span>
             </div>
-
-            <!-- 主导航 -->
             <ul class="nav-links">
-                <li><a href="#home">首页</a></li>
-                <li class="has-dropdown">
-                    <a href="#products" class="dropdown-toggle">品牌产品 <span class="arrow">▼</span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#products" data-category="旗舰系列">旗舰系列</a></li>
-                        <li><a href="#products" data-category="时尚系列">时尚系列</a></li>
-                        <li><a href="#products" data-category="专业系列">专业系列</a></li>
-                        <li><a href="#products" data-category="入门系列">入门系列</a></li>
-                    </ul>
-                </li>
-                <li class="has-dropdown">
-                    <a href="#contact" class="dropdown-toggle">服务与支持 <span class="arrow">▼</span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#contact">联系我们</a></li>
-                        <li><a href="#brand">品牌介绍</a></li>
-                        <li><a href="#contact">售后服务</a></li>
-                    </ul>
-                </li>
-                <li><a href="#brand">关于我们</a></li>
+                <li><a href="#home" class="active">首页</a></li>
+                <li><a href="#brand">品牌中心</a></li>
+                <li><a href="#products">产品中心</a></li>
+                <li><a href="#contact">联系我们</a></li>
             </ul>
-
-            <!-- 右侧按钮 -->
-            <div class="nav-right">
-                <a href="#contact" class="btn-buy">购买</a>
-                <div class="search-box">
-                    <input type="text" placeholder="请输入关键字" id="search-input">
-                    <button class="search-btn" onclick="searchProducts()">🔍</button>
-                </div>
-            </div>
-
             <button class="mobile-menu-btn"><span></span><span></span><span></span></button>
-        </div>
-
-        <!-- 二级产品分类导航 -->
-        <div class="sub-nav">
-            <div class="container">
-                <a href="#products" data-category="all">全部产品</a>
-                <a href="#products" data-category="旗舰系列">旗舰系列</a>
-                <a href="#products" data-category="时尚系列">时尚系列</a>
-                <a href="#products" data-category="专业系列">专业系列</a>
-                <a href="#products" data-category="入门系列">入门系列</a>
-                <a href="#products" data-category="运动系列">运动系列</a>
-            </div>
         </div>
     </nav>
 

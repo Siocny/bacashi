@@ -5,24 +5,23 @@ const API = {
     // 默认数据
     defaultData: {
         brand: {
-            description: '我们是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。经过多年的发展，我们已经成为行业内的知名品牌，产品远销海内外，赢得了广大客户的信赖和好评。',
+            description: '卡斐乐是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。经过多年的发展，我们已经成为行业内的知名品牌，产品远销海内外，赢得了广大客户的信赖和好评。',
             stats: {
-                years: 15,
+                years: 3,
                 products: 120,
                 customers: 5000
             }
         },
         contact: {
-            address: '北京市朝阳区创新科技园 A 栋 1001 室',
+            address: '浙江省义乌市北苑街道秋实路 121 号 2 号楼 8 楼',
             phone: '400-888-8888',
-            email: 'contact@brand.com'
+            email: 'contact@cafele.com'
         },
         timeline: [
-            { id: 1, year: '2010', title: '公司成立', description: '在北京中关村创立公司，开始创业之旅' },
-            { id: 2, year: '2015', title: '品牌升级', description: '完成品牌战略升级，确立市场定位' },
-            { id: 3, year: '2018', title: '全国布局', description: '在全国主要城市建立销售和服务网络' },
-            { id: 4, year: '2020', title: '海外拓展', description: '产品出口至欧美市场，开启国际化进程' },
-            { id: 5, year: '2024', title: '智能制造', description: '建成智能化生产基地，产能大幅提升' }
+            { id: 1, year: '2023', title: '公司成立', description: '在浙江省义乌市大三里塘的某座 100 平地下室，开始创业之旅' },
+            { id: 2, year: '2024', title: '公司发展', description: '完成品牌战略升级，确立拼多多车品头部市场定位' },
+            { id: 3, year: '2025', title: '公司拓展', description: '在浙江春华路 566 号入驻 680 平仓库，进军数码类目，在风扇类目取得头筹' },
+            { id: 4, year: '2025', title: '持续扩大', description: '搬迁至义乌市北苑街道秋实路 121 号 2 号楼 8 楼，签约卡斐乐品牌在拼多多独家车品类目，公司人员扩展到 50+' }
         ],
         products: [
             { id: 1, name: '卡斐乐主打产品', category: '旗舰系列', image: 'assets/images/微信图片_20260313141449_149_2.jpg', price: '¥1,999', sort: 1, description: '我们的旗舰产品，集成了最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
