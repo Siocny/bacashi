@@ -25,12 +25,9 @@ const API = {
             { id: 5, year: '2024', title: '智能制造', description: '建成智能化生产基地，产能大幅提升' }
         ],
         products: [
-            { id: 1, name: '经典款产品 A', category: '旗舰系列', image: 'https://via.placeholder.com/400x300/4A90D9/ffffff?text=Product+A', price: '¥1,999', sort: 1, description: '我们的旗舰产品，集成了最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
+            { id: 1, name: '卡斐乐主打产品', category: '旗舰系列', image: 'assets/images/微信图片_20260313141449_149_2.jpg', price: '¥1,999', sort: 1, description: '我们的旗舰产品，集成了最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
             { id: 2, name: '时尚款产品 B', category: '时尚系列', image: 'https://via.placeholder.com/400x300/D94A4A/ffffff?text=Product+B', price: '¥1,599', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
-            { id: 3, name: '专业款产品 C', category: '专业系列', image: 'https://via.placeholder.com/400x300/4AD94A/ffffff?text=Product+C', price: '¥2,999', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' },
-            { id: 4, name: '入门款产品 D', category: '入门系列', image: 'https://via.placeholder.com/400x300/D9D94A/ffffff?text=Product+D', price: '¥699', sort: 4, description: '性价比之选，适合初次体验', details: '产品特点：\n1. 价格亲民\n2. 功能实用\n3. 操作简单\n4. 质量可靠' },
-            { id: 5, name: '限量版产品 E', category: '旗舰系列', image: 'https://via.placeholder.com/400x300/9B4AD9/ffffff?text=Product+E', price: '¥3,999', sort: 5, description: '限量发售，独具收藏价值', details: '产品特点：\n1. 限量编号\n2. 特殊材质\n3. 定制包装\n4. 专属服务' },
-            { id: 6, name: '运动款产品 F', category: '运动系列', image: 'https://via.placeholder.com/400x300/4AD9D9/ffffff?text=Product+F', price: '¥1,299', sort: 6, description: '为运动爱好者量身打造', details: '产品特点：\n1. 防水设计\n2. 抗冲击\n3. 轻便舒适\n4. 运动监测' }
+            { id: 3, name: '专业款产品 C', category: '专业系列', image: 'https://via.placeholder.com/400x300/4AD94A/ffffff?text=Product+C', price: '¥2,999', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
         ]
     },
 
