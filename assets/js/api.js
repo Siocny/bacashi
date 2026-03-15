@@ -152,7 +152,7 @@ const API = {
     // 用户认证
     auth: {
         login(username, password) {
-            if (username === 'admin' && password === 'admin123') {
+            if (username === 'Siocny' && password === 'qq765914261') {
                 localStorage.setItem('isAdminLoggedIn', 'true');
                 return true;
             }
