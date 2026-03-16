@@ -482,7 +482,7 @@ function openProductModal(product = null) {
 // 图片预览
 function updateImagePreview(url) {
     const preview = document.getElementById('image-preview');
-    if (url && url.startsWith('http')) {
+    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
         preview.innerHTML = `<img src="${url}" alt="预览">`;
         preview.classList.add('has-image');
     } else {
