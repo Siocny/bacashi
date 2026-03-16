@@ -1073,4 +1073,6 @@ window.exportData = exportData;
 window.resetData = resetData;
 window.changePassword = changePassword;
 window.addManual = addManual;
+window.formatManualText = formatManualText;
+window.insertManualImage = insertManualImage;
 
