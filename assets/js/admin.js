@@ -455,6 +455,7 @@ function openProductModal(product = null) {
     const categorySelect = document.getElementById('product-category');
 
     if (product) {
+        currentEditId = product.id;
         document.getElementById('modal-title').textContent = '编辑产品';
         document.getElementById('product-id').value = product.id;
         document.getElementById('product-name').value = product.name;
@@ -466,6 +467,7 @@ function openProductModal(product = null) {
         document.getElementById('product-details').value = product.details;
         updateImagePreview(product.image);
     } else {
+        currentEditId = null;
         document.getElementById('modal-title').textContent = '添加产品';
         form.reset();
         document.getElementById('product-id').value = '';
