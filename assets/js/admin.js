@@ -1072,4 +1072,5 @@ window.toggleProductSelection = toggleProductSelection;
 window.exportData = exportData;
 window.resetData = resetData;
 window.changePassword = changePassword;
+window.addManual = addManual;
 
