@@ -468,7 +468,20 @@ section {
     grid-template-columns: 1fr 1fr;
     gap: 80px;
     align-items: center;
-    margin-bottom: 80px;
+    margin-bottom: 60px;
+}
+
+/* 反向布局 - 图片在左，文字在右 */
+.brand-intro-reverse {
+    direction: rtl;
+}
+
+.brand-intro-reverse .brand-text {
+    direction: ltr;
+}
+
+.brand-intro-reverse .brand-image {
+    direction: ltr;
 }
 
 .brand-text h3 {
@@ -1060,6 +1073,10 @@ section {
     .brand-intro {
         grid-template-columns: 1fr;
         gap: 40px;
+    }
+
+    .brand-intro-reverse {
+        direction: ltr;
     }
 
     .brand-stats {
