@@ -484,6 +484,10 @@ section {
     direction: ltr;
 }
 
+.brand-text {
+    padding: 20px 0;
+}
+
 .brand-text h3 {
     font-size: 32px;
     color: var(--primary-color);
