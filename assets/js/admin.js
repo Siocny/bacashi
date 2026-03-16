@@ -455,6 +455,7 @@ function debounce(func, wait) {
 function openProductModal(product = null) {
     const modal = document.getElementById('product-modal');
     const form = document.getElementById('product-form');
+    const categorySelect = document.getElementById('product-category');
 
     if (product) {
         document.getElementById('modal-title').textContent = '编辑产品';
