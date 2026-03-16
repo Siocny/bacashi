@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除缓存</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a3a5c;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #1a3a5c;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+        }
+        .btn:hover {
+            background: #2c5282;
+        }
+        .btn-danger {
+            background: #e53e3e;
+        }
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>清除网站缓存</h1>
+        <p>点击以下按钮清除本地存储的数据：</p>
+        <div>
+            <button class="btn btn-danger" onclick="clearCache()">清除所有缓存</button>
+            <button class="btn" onclick="window.location.href='index.html'">返回首页</button>
+        </div>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        function clearCache() {
+            // 清除 localStorage
+            localStorage.removeItem('brandData');
+            localStorage.removeItem('bacashiData');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('rememberMe');
+
+            // 清除 sessionStorage
+            sessionStorage.clear();
+
+            // 显示成功消息
+            document.getElementById('status').textContent = '缓存已清除！页面将自动跳转...';
+            document.getElementById('status').className = 'status success';
+
+            // 2 秒后跳转到首页
+            setTimeout(function() {
+                window.location.href = 'index.html';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

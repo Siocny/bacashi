@@ -116,129 +116,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 绑定查看详情事件
         document.querySelectorAll('#products .product-card').forEach(card => {
             card.addEventListener('click', function() {
-                showProductModal(this.dataset.id, 'cafele');
+                window.location.href = `product-detail.html?id=${this.dataset.id}&brand=${this.dataset.brand}`;
             });
         });
-    }
-
-    // 加载产品说明书
-    function loadManuals() {
-        const manuals = API.manuals.getAll();
-        const products = API.products.getAll();
-        const container = document.getElementById('manuals-container');
-
-        if (!container) return;
-
-        if (manuals.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:#999;">暂无产品说明书</p>';
-            return;
-        }
-
-        // 获取产品 ID 到名称的映射
-        const productMap = {};
-        products.forEach(p => { productMap[p.id] = p.name; });
-
-        container.innerHTML = manuals.map(manual => `
-            <div class="manual-card" onclick="showManualDetail(${manual.id}, 'cafele')">
-                ${manual.cover ? `<img src="${manual.cover}" alt="${manual.title}">` : '<div class="manual-cover-placeholder"><i class="fas fa-file-alt"></i></div>'}
-                <div class="manual-info">
-                    <h4>${manual.title}</h4>
-                    <p class="manual-product">${productMap[manual.productId] || '未关联产品'}</p>
-                    ${manual.video ? '<span class="manual-video-badge"><i class="fas fa-play-circle"></i> 视频教程</span>' : ''}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // 显示产品详情
-    function showProductModal(productId, brand = 'cafele') {
-        let product;
-        if (brand === 'bacashi') {
-            const products = API.bacashi.products.getAll();
-            product = products.find(p => p.id == productId);
-        } else {
-            const products = API.products.getAll();
-            product = products.find(p => p.id == productId);
-        }
-        if (!product) return;
-
-        const modal = document.getElementById('product-modal');
-        const modalBody = document.getElementById('modal-body');
-
-        // 获取该产品的说明书
-        let manualsHtml = '';
-        if (brand === 'bacashi') {
-            const manuals = API.bacashi.manuals.get().filter(m => m.productId == productId);
-            if (manuals.length > 0) {
-                manualsHtml = `<div class="modal-manuals"><h4>产品说明书</h4>${manuals.map(m => `
-                    <div class="manual-item" onclick="showManualDetail(${m.id}, '${brand}')">
-                        <img src="${m.coverImage || 'https://via.placeholder.com/100x100?text=Manual'}" alt="${m.title}">
-                        <span>${m.title}</span>
-                    </div>
-                `).join('')}</div>`;
-            }
-        } else {
-            const manuals = API.manuals.get().filter(m => m.productId == productId);
-            if (manuals.length > 0) {
-                manualsHtml = `<div class="modal-manuals"><h4>产品说明书</h4>${manuals.map(m => `
-                    <div class="manual-item" onclick="showManualDetail(${m.id}, '${brand}')">
-                        <img src="${m.coverImage || 'https://via.placeholder.com/100x100?text=Manual'}" alt="${m.title}">
-                        <span>${m.title}</span>
-                    </div>
-                `).join('')}</div>`;
-            }
-        }
-
-        modalBody.innerHTML = `
-            <div class="modal-product">
-                <img class="modal-product-img" src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/600x500?text=${brand === 'bacashi' ? 'BACASHI' : 'CAFELE'}'">
-                <div class="modal-product-info">
-                    <span class="product-category">${product.category}</span>
-                    <h2 class="product-name">${product.name}</h2>
-                    <p class="product-price">${product.price}</p>
-                    <p class="product-description">${product.description}</p>
-                    ${manualsHtml}
-                    <div class="modal-details">
-                        <h4>产品详情</h4>
-                        <pre>${product.details}</pre>
-                    </div>
-                </div>
-            </div>
-        `;
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-
-    // 显示说明书详情
-    window.showManualDetail = function(manualId, brand = 'cafele') {
-        let manual;
-        if (brand === 'bacashi') {
-            const manuals = API.bacashi.manuals.get();
-            manual = manuals.find(m => m.id == manualId);
-        } else {
-            const manuals = API.manuals.get();
-            manual = manuals.find(m => m.id == manualId);
-        }
-        if (!manual) return;
-
-        const modal = document.getElementById('product-modal');
-        const modalBody = document.getElementById('modal-body');
-
-        let videoHtml = '';
-        if (manual.video) {
-            videoHtml = `<div class="manual-video">${getVideoEmbed(manual.video)}</div>`;
-        }
-
-        modalBody.innerHTML = `
-            <div class="modal-manual-detail">
-                <h2 class="manual-title">${manual.title}</h2>
-                ${manual.cover ? `<img src="${manual.cover}" class="manual-cover-img" alt="${manual.title}">` : ''}
-                ${videoHtml}
-                <div class="manual-content">${manual.content}</div>
-            </div>
-        `;
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
     }
 
     // 获取视频嵌入代码
@@ -266,26 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return `<p>视频链接：${url}</p>`;
     }
-
-    // 关闭模态框
-    function closeModal() {
-        const modal = document.getElementById('product-modal');
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-    }
-
-    // 模态框关闭按钮
-    document.querySelector('.modal-close').addEventListener('click', closeModal);
-
-    // 点击遮罩关闭
-    document.querySelector('.modal-overlay').addEventListener('click', closeModal);
-
-    // ESC 关闭
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
 
     // 联系表单提交
     document.getElementById('contact-form').addEventListener('submit', function(e) {
@@ -353,8 +213,20 @@ document.addEventListener('DOMContentLoaded', function() {
     loadBrandInfo();
     loadTimeline();
     loadProducts();
-    loadManuals();
+    loadContact();
 });
+
+// 加载联系信息
+function loadContact() {
+    const contact = API.contact.get();
+    const addressEl = document.getElementById('contact-address');
+    const phoneEl = document.getElementById('contact-phone');
+    const emailEl = document.getElementById('contact-email');
+
+    if (addressEl) addressEl.textContent = contact.address || '暂无地址';
+    if (phoneEl) phoneEl.textContent = contact.phone || '暂无电话';
+    if (emailEl) emailEl.textContent = contact.email || '暂无邮箱';
+}
 
 // 搜索产品函数（全局可访问）
 function searchProducts() {
@@ -408,6 +280,9 @@ function searchProducts() {
 
 // 下拉菜单分类点击事件
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化 API 数据（确保 timeline 等数据存在）
+    API.init();
+
     document.querySelectorAll('.dropdown-menu a[data-category]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();

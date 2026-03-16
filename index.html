@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>CAFELE & BACASHI - 品牌官网</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260316">
 </head>
 <body>
     <!-- 顶部导航栏 -->
@@ -38,7 +41,6 @@
                 <li class="has-dropdown">
                     <a href="javascript:void(0)" class="dropdown-toggle">服务与支持 <span class="arrow">▼</span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="#manuals">产品说明书</a></li>
                         <li><a href="#contact">联系我们</a></li>
                         <li><a href="#brand">品牌介绍</a></li>
                         <li><a href="#contact">售后服务</a></li>
@@ -171,20 +173,6 @@
         </div>
     </section>
 
-    <!-- 产品说明书 -->
-    <section id="manuals" class="manuals-section">
-        <div class="container">
-            <div class="section-header">
-                <p class="section-subtitle">MANUALS</p>
-                <h2 class="section-title">产品说明书</h2>
-                <div class="section-line"></div>
-            </div>
-            <div id="manuals-container" class="manuals-wrap">
-                <!-- 说明书由 JS 动态生成 -->
-            </div>
-        </div>
-    </section>
-
     <!-- 联系我们 -->
     <section id="contact" class="contact-section">
         <div class="container">
@@ -250,6 +238,7 @@
                 </div>
                 <div class="footer-admin">
                     <a href="admin/index.html">后台管理</a>
+                    <a href="clear-cache.html" style="color: #999;">清除缓存</a>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -257,15 +246,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- 产品详情模态框 -->
-    <div class="modal" id="product-modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-dialog">
-            <button class="modal-close">&times;</button>
-            <div id="modal-body"></div>
-        </div>
-    </div>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/main.js"></script>

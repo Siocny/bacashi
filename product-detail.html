@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>产品详情 - CAFELE & BACASHI</title>
+    <link rel="stylesheet" href="assets/css/style.css?v=20260316">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-brand">
+                    <span class="logo-text">CAFELE</span>
+                    <span class="logo-cn">卡斐乐</span>
+                </div>
+                <span class="logo-divider">|</span>
+                <div class="logo-brand">
+                    <span class="logo-text">BACASHI</span>
+                    <span class="logo-cn">倍卡西</span>
+                </div>
+            </div>
+
+            <!-- 主导航 -->
+            <ul class="nav-links">
+                <li><a href="index.html#home">首页</a></li>
+                <li class="has-dropdown">
+                    <a href="javascript:void(0)" class="dropdown-toggle">品牌产品 <span class="arrow">▼</span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="index.html#products" data-category="车用电子">车用电子</a></li>
+                        <li><a href="index.html#products" data-category="车用内饰">车用内饰</a></li>
+                        <li><a href="index.html#products" data-category="车用清洗">车用清洗</a></li>
+                        <li><a href="index.html#products" data-category="手持风扇">手持风扇</a></li>
+                        <li><a href="index.html#products" data-category="桌面风扇">桌面风扇</a></li>
+                    </ul>
+                </li>
+                <li class="has-dropdown">
+                    <a href="javascript:void(0)" class="dropdown-toggle">服务与支持 <span class="arrow">▼</span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="index.html#contact">联系我们</a></li>
+                        <li><a href="index.html#brand">品牌介绍</a></li>
+                        <li><a href="index.html#contact">售后服务</a></li>
+                    </ul>
+                </li>
+                <li><a href="index.html#brand">关于我们</a></li>
+            </ul>
+
+            <!-- 右侧按钮 -->
+            <div class="nav-actions">
+                <a href="admin/index.html" class="btn btn-primary">
+                    <i class="fas fa-cog"></i> 管理后台
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 产品详情 -->
+    <main class="product-detail-page">
+        <div class="container">
+            <div class="product-detail-header">
+                <a href="javascript:history.back()" class="back-link">
+                    <i class="fas fa-arrow-left"></i> 返回产品列表
+                </a>
+            </div>
+
+            <div id="product-detail-content">
+                <!-- 内容由 JS 动态加载 -->
+            </div>
+
+            <!-- 产品说明书区域 -->
+            <div id="product-manuals-section" class="product-manuals-section" style="display: none;">
+                <div class="section-header">
+                    <p class="section-subtitle">MANUALS</p>
+                    <h2 class="section-title">产品说明书</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div id="product-manuals-container" class="manuals-wrap"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>关于 CAFELE</h4>
+                    <p>专注于高品质车用电子产品的研发与销售</p>
+                </div>
+                <div class="footer-section">
+                    <h4>关于 BACASHI</h4>
+                    <p>提供优质的车用清洗与护理产品</p>
+                </div>
+                <div class="footer-section">
+                    <h4>联系方式</h4>
+                    <p>邮箱：info@cafele.com</p>
+                    <p>电话：+86-123-4567-8900</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 CAFELE & BACASHI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script>
+        // 从 URL 获取产品 ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        const brand = urlParams.get('brand') || 'cafele';
+
+        if (!productId) {
+            document.getElementById('product-detail-content').innerHTML = '<p class="error-message">未找到产品 ID</p>';
+        } else {
+            loadProductDetail(productId, brand);
+        }
+
+        function loadProductDetail(productId, brand) {
+            let product;
+            if (brand === 'bacashi') {
+                const products = API.bacashi.products.get();
+                product = products.find(p => p.id == productId);
+            } else {
+                const products = API.products.getAll();
+                product = products.find(p => p.id == productId);
+            }
+
+            if (!product) {
+                document.getElementById('product-detail-content').innerHTML = '<p class="error-message">未找到该产品</p>';
+                document.title = '未找到 - 产品详情';
+                return;
+            }
+
+            // 更新页面标题
+            document.title = product.name + ' - 产品详情';
+
+            // 构建产品详情 HTML
+            const detailHtml = `
+                <div class="product-detail-main">
+                    <div class="product-detail-image">
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/600x500?text=${brand === 'bacashi' ? 'BACASHI' : 'CAFELE'}'">
+                    </div>
+                    <div class="product-detail-info">
+                        <span class="product-category-tag">${product.category}</span>
+                        <h1 class="product-detail-title">${product.name}</h1>
+                        <p class="product-detail-price">${product.price}</p>
+                        <p class="product-detail-description">${product.description}</p>
+                    </div>
+                </div>
+                <div class="product-detail-full">
+                    <div class="detail-section">
+                        <h3>产品详情</h3>
+                        <div class="detail-content">${product.details}</div>
+                    </div>
+                    ${product.video ? `
+                    <div class="detail-section">
+                        <h3>产品视频</h3>
+                        <div class="product-video">${getVideoEmbed(product.video)}</div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('product-detail-content').innerHTML = detailHtml;
+
+            // 加载该产品的说明书
+            loadProductManuals(productId, brand);
+        }
+
+        function loadProductManuals(productId, brand) {
+            let manuals = [];
+            if (brand === 'bacashi') {
+                const bacashiManuals = API.bacashi.manuals.get();
+                manuals = bacashiManuals.filter(m => m.productId == productId);
+            } else {
+                const allManuals = API.manuals.getAll();
+                manuals = allManuals.filter(m => m.productId == productId);
+            }
+
+            if (manuals.length === 0) {
+                document.getElementById('product-manuals-section').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('product-manuals-section').style.display = 'block';
+            document.getElementById('product-manuals-container').innerHTML = manuals.map(manual => `
+                <div class="manual-card" onclick="showManualDetail(${manual.id}, '${brand}')">
+                    ${manual.cover ? `<img src="${manual.cover}" alt="${manual.title}">` : ''}
+                    <div class="manual-card-body">
+                        <h4>${manual.title}</h4>
+                        <p>点击查看详细说明</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 显示说明书详情 - 跳转到详情页
+        function showManualDetail(manualId, brand) {
+            window.location.href = `manual-detail.html?id=${manualId}&brand=${brand}`;
+        }
+
+        // 获取视频嵌入代码
+        function getVideoEmbed(url) {
+            if (!url) return '';
+
+            // YouTube
+            const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+            if (youtubeMatch) {
+                return `<iframe src="https://www.youtube.com/embed/${youtubeMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
+            }
+
+            // Bilibili
+            const bilibiliMatch = url.match(/bilibili\.com\/video\/(?:av(\d+)|BV(\w+))/);
+            if (bilibiliMatch) {
+                const bvid = bilibiliMatch[2] ? `BV${bilibiliMatch[2]}` : `av${bilibiliMatch[1]}`;
+                return `<iframe src="//player.bilibili.com/player.html?bvid=${bvid}&page=1" scrolling="no" border="0" frameborder="no" allowfullscreen></iframe>`;
+            }
+
+            // Tencent Video
+            const tencentMatch = url.match(/v\.qq\.com\/x\/(?:page|cover)\/([a-z0-9]+)\.html/);
+            if (tencentMatch) {
+                return `<iframe src="https://v.qq.com/txp/iframe/player.html?vid=${tencentMatch[1]}" allowFullScreen="true"></iframe>`;
+            }
+
+            return `<p>视频链接：${url}</p>`;
+        }
+    </script>
+</body>
+</html>

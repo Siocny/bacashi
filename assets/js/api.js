@@ -60,8 +60,20 @@ const API = {
 
     // 初始化数据
     init() {
-        if (!localStorage.getItem('brandData')) {
+        const brandData = localStorage.getItem('brandData');
+        if (!brandData) {
             this.saveData('brandData', this.defaultData);
+        } else {
+            // 确保 timeline 和 contact 数据存在
+            const data = JSON.parse(brandData);
+            if (!data.timeline || data.timeline.length === 0) {
+                data.timeline = this.defaultData.timeline;
+                this.saveData('brandData', data);
+            }
+            if (!data.contact || !data.contact.address) {
+                data.contact = this.defaultData.contact;
+                this.saveData('brandData', data);
+            }
         }
         if (!localStorage.getItem('bacashiData')) {
             this.saveData('bacashiData', this.defaultDataBacashi);

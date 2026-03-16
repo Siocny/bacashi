@@ -925,6 +925,9 @@ document.getElementById('export-timeline-btn')?.addEventListener('click', functi
 // ==================== 页面加载初始化 ====================
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化 API 数据（确保 timeline 等数据存在）
+    API.init();
+
     checkAuth();
     initRememberMe();
 
@@ -1060,7 +1063,7 @@ function openManualModal(manual = null) {
 // 更新封面预览
 function updateManualCoverPreview(url) {
     const preview = document.getElementById('manual-cover-preview');
-    if (url && url.startsWith('http')) {
+    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
         preview.innerHTML = `<img src="${url}" alt="预览">`;
         preview.classList.add('has-image');
     } else {
