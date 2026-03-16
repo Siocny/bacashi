@@ -4,19 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 加载品牌信息
     function loadBrandInfo() {
         const cafeleBrand = API.brand.get();
-        const bacashiBrand = API.bacashi.brand.get();
 
         document.getElementById('cafele-description').textContent = cafeleBrand.description;
-        document.getElementById('bacashi-description').textContent = bacashiBrand.description;
 
-        // 合并两个品牌的统计数据
-        const totalYears = Math.max(cafeleBrand.stats.years, bacashiBrand.stats.years);
-        const totalProducts = cafeleBrand.stats.products + bacashiBrand.stats.products;
-        const totalCustomers = cafeleBrand.stats.customers + bacashiBrand.stats.customers;
-
-        document.getElementById('stat-years').textContent = totalYears;
-        document.getElementById('stat-products').textContent = totalProducts;
-        document.getElementById('stat-customers').textContent = totalCustomers;
+        // 使用卡斐乐的统计数据
+        document.getElementById('stat-years').textContent = cafeleBrand.stats.years;
+        document.getElementById('stat-products').textContent = cafeleBrand.stats.products;
+        document.getElementById('stat-customers').textContent = cafeleBrand.stats.customers;
 
         // 数字动画
         animateNumbers();

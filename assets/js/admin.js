@@ -557,6 +557,98 @@ document.getElementById('product-form').addEventListener('submit', function(e) {
     loadProductsTable();
 });
 
+// ==================== 产品说明书管理（在产品编辑模态框中） ====================
+
+// 添加说明书（在产品编辑模态框中）
+function addManual() {
+    const modal = document.getElementById('manual-item-modal');
+    const form = document.getElementById('manual-item-form');
+
+    // 重置表单
+    form.reset();
+    document.getElementById('manual-item-id').value = '';
+    document.getElementById('manual-item-title').value = '';
+    document.getElementById('manual-item-cover').value = '';
+    document.getElementById('manual-item-video').value = '';
+    document.getElementById('manual-item-content').innerHTML = '';
+
+    // 更新预览
+    updateManualItemCoverPreview(null);
+    updateVideoPreview(null);
+
+    // 打开模态框
+    modal.classList.add('show');
+}
+
+// 说明书封面预览
+function updateManualItemCoverPreview(url) {
+    const preview = document.getElementById('manual-item-cover-preview');
+    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
+        preview.innerHTML = `<img src="${url}" alt="封面">`;
+    } else {
+        preview.innerHTML = '<i class="fas fa-image"></i><span>暂无图片</span>';
+    }
+}
+
+// 产品编辑模态框中的说明书封面上传
+document.getElementById('manual-item-cover-upload')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const base64 = event.target.result;
+            document.getElementById('manual-item-cover').value = base64;
+            updateManualItemCoverPreview(base64);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('manual-item-cover')?.addEventListener('input', function() {
+    updateManualItemCoverPreview(this.value);
+});
+
+// 产品编辑模态框中的视频上传
+document.getElementById('manual-item-video-upload')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const base64 = event.target.result;
+            document.getElementById('manual-item-video').value = base64;
+            updateVideoPreview(base64);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('manual-item-video')?.addEventListener('input', function() {
+    updateVideoPreview(this.value);
+});
+
+// 说明书表单提交（产品编辑模态框中）
+document.getElementById('manual-item-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // 这里需要将说明书保存到当前编辑的产品中
+    // 由于是模拟数据，我们暂时只提示成功
+    showToast('说明书已添加！', 'success');
+    document.getElementById('manual-item-modal').classList.remove('show');
+});
+
+// 格式化说明书文本（产品编辑模态框中）
+function formatManualText(command, value = null) {
+    document.execCommand(command, false, value);
+}
+
+// 插入图片到说明书（产品编辑模态框中）
+function insertManualImage() {
+    const url = prompt('请输入图片 URL：');
+    if (url) {
+        document.execCommand('insertImage', false, url);
+    }
+}
+
 // ==================== 时间轴管理 ====================
 
 function loadTimelineTable() {
