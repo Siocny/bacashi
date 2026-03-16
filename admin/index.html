@@ -578,8 +578,20 @@
                     </div>
                     <div class="form-group">
                         <label>视频教程 URL</label>
-                        <input type="text" id="manual-video" placeholder="https://www.youtube.com/watch?v=... 或 https://v.qq.com/...">
-                        <span class="form-hint"><i class="fas fa-info-circle"></i> 支持 YouTube、腾讯视频、哔哩哔哩等平台链接</span>
+                        <div class="image-upload">
+                            <div class="image-preview" id="manual-video-preview">
+                                <i class="fas fa-video"></i>
+                                <span>暂无视频</span>
+                            </div>
+                            <div class="image-actions">
+                                <input type="text" id="manual-video" placeholder="视频 URL 或点击上传">
+                                <label class="btn btn-secondary">
+                                    <i class="fas fa-upload"></i> 上传视频
+                                    <input type="file" id="manual-video-upload" accept="video/*" style="display: none;">
+                                </label>
+                            </div>
+                        </div>
+                        <span class="form-hint"><i class="fas fa-info-circle"></i> 支持 YouTube、腾讯视频、哔哩哔哩等平台链接，或上传本地视频文件</span>
                     </div>
                     <div class="form-group">
                         <label>说明书内容（支持图文混排）</label>

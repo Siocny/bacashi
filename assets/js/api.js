@@ -30,10 +30,41 @@ const API = {
         ]
     },
 
+    // 默认数据 - 倍卡西 BACASHI
+    defaultDataBacashi: {
+        brand: {
+            name: '倍卡西',
+            description: '倍卡西（BACASHI）是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。',
+            stats: {
+                years: 2,
+                products: 80,
+                customers: 3000
+            }
+        },
+        contact: {
+            address: '浙江省义乌市北苑街道秋实路 121 号 2 号楼 8 楼',
+            phone: '400-666-6666',
+            email: 'contact@bacashi.com'
+        },
+        timeline: [
+            { id: 1, year: '2024', title: '品牌创立', description: '倍卡西品牌正式成立，开启创业之旅' },
+            { id: 2, year: '2025', title: '品牌发展', description: '完成产品线布局，在多个类目取得优异成绩' },
+            { id: 3, year: '2025', title: '市场拓展', description: '产品销往全国，赢得广大客户信赖' }
+        ],
+        products: [
+            { id: 1, name: '倍卡西主打产品', category: '车用电子', image: 'https://via.placeholder.com/400x300/4A4AD9/ffffff?text=BACASHI+A', price: '¥1,599', sort: 1, description: '倍卡西旗舰产品，集成最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
+            { id: 2, name: '倍卡西时尚款', category: '车用内饰', image: 'https://via.placeholder.com/400x300/D94AD9/ffffff?text=BACASHI+B', price: '¥1,299', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
+            { id: 3, name: '倍卡西专业款', category: '桌面风扇', image: 'https://via.placeholder.com/400x300/4AD9D9/ffffff?text=BACASHI+C', price: '¥2,599', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
+        ]
+    },
+
     // 初始化数据
     init() {
         if (!localStorage.getItem('brandData')) {
             this.saveData('brandData', this.defaultData);
+        }
+        if (!localStorage.getItem('bacashiData')) {
+            this.saveData('bacashiData', this.defaultDataBacashi);
         }
     },
 
@@ -200,6 +231,131 @@ const API = {
             const list = this.get();
             const filtered = list.filter(m => m.id != id);
             this.save(filtered);
+        }
+    },
+
+    // 倍卡西 BACASHI 品牌数据管理
+    bacashi: {
+        brand: {
+            get() {
+                const data = API.getData('bacashiData');
+                return data ? data.brand : API.defaultDataBacashi.brand;
+            },
+            save(brandData) {
+                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+                data.brand = brandData;
+                API.saveData('bacashiData', data);
+            }
+        },
+        contact: {
+            get() {
+                const data = API.getData('bacashiData');
+                return data ? data.contact : API.defaultDataBacashi.contact;
+            },
+            save(contactData) {
+                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+                data.contact = contactData;
+                API.saveData('bacashiData', data);
+            }
+        },
+        timeline: {
+            get() {
+                const data = API.getData('bacashiData');
+                return data ? data.timeline : API.defaultDataBacashi.timeline;
+            },
+            save(list) {
+                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+                data.timeline = list;
+                API.saveData('bacashiData', data);
+            },
+            add(item) {
+                const list = this.get();
+                item.id = Date.now();
+                list.push(item);
+                this.save(list);
+            },
+            update(id, item) {
+                const list = this.get();
+                const index = list.findIndex(i => i.id == id);
+                if (index !== -1) {
+                    list[index] = { ...item, id: parseInt(id) };
+                    this.save(list);
+                }
+            },
+            delete(id) {
+                const list = this.get();
+                const filtered = list.filter(i => i.id != id);
+                this.save(filtered);
+            }
+        },
+        products: {
+            get() {
+                const data = API.getData('bacashiData');
+                return data ? data.products : API.defaultDataBacashi.products;
+            },
+            getAll() {
+                return this.get();
+            },
+            getCategories() {
+                const products = this.get();
+                const categories = [...new Set(products.map(p => p.category))];
+                return categories;
+            },
+            save(list) {
+                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+                data.products = list;
+                API.saveData('bacashiData', data);
+            },
+            add(item) {
+                const list = this.get();
+                item.id = Date.now();
+                list.push(item);
+                this.save(list);
+            },
+            update(id, item) {
+                const list = this.get();
+                const index = list.findIndex(i => i.id == id);
+                if (index !== -1) {
+                    list[index] = { ...item, id: parseInt(id) };
+                    this.save(list);
+                }
+            },
+            delete(id) {
+                const list = this.get();
+                const filtered = list.filter(i => i.id != id);
+                this.save(filtered);
+            }
+        },
+        manuals: {
+            get() {
+                const data = API.getData('bacashiData');
+                return data ? (data.manuals || []) : [];
+            },
+            save(list) {
+                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+                data.manuals = list;
+                API.saveData('bacashiData', data);
+            },
+            add(item) {
+                const list = this.get();
+                item.id = Date.now();
+                item.createdAt = new Date().toISOString();
+                list.push(item);
+                this.save(list);
+            },
+            update(id, item) {
+                const list = this.get();
+                const index = list.findIndex(m => m.id == id);
+                if (index !== -1) {
+                    list[index] = { ...item, id: parseInt(id), updatedAt: new Date().toISOString() };
+                    this.save(list);
+                }
+            },
+            delete(id) {
+                const list = this.get();
+                const filtered = list.filter(m => m.id != id);
+                this.save(filtered);
+            }
         }
     }
 };

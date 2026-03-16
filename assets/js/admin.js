@@ -1043,12 +1043,14 @@ function openManualModal(manual = null) {
         document.getElementById('manual-video').value = manual.video || '';
         document.getElementById('manual-content').innerHTML = manual.content || '';
         updateManualCoverPreview(manual.cover);
+        updateVideoPreview(manual.video);
     } else {
         document.getElementById('manual-modal-title').textContent = '添加说明书';
         form.reset();
         document.getElementById('manual-id').value = '';
         document.getElementById('manual-content').innerHTML = '';
         updateManualCoverPreview(null);
+        updateVideoPreview(null);
     }
 
     modal.classList.add('show');
@@ -1084,6 +1086,45 @@ document.getElementById('manual-cover')?.addEventListener('input', function() {
     updateManualCoverPreview(this.value);
 });
 
+// 视频上传
+document.getElementById('manual-video-upload')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const base64 = event.target.result;
+            document.getElementById('manual-video').value = base64;
+            updateVideoPreview(base64);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('manual-video')?.addEventListener('input', function() {
+    updateVideoPreview(this.value);
+});
+
+// 更新视频预览
+function updateVideoPreview(url) {
+    const preview = document.getElementById('manual-video-preview');
+    if (url && url.startsWith('http')) {
+        // 在线视频链接
+        preview.innerHTML = `<i class="fas fa-video"></i><span>在线视频</span>`;
+        preview.classList.add('has-image');
+    } else if (url && url.startsWith('data:video')) {
+        // 本地上传视频
+        preview.innerHTML = `<i class="fas fa-video"></i><span>已上传视频</span>`;
+        preview.classList.add('has-image');
+    } else if (url) {
+        // 视频平台链接
+        preview.innerHTML = `<i class="fas fa-video"></i><span>视频链接</span>`;
+        preview.classList.add('has-image');
+    } else {
+        preview.innerHTML = '<i class="fas fa-video"></i><span>暂无视频</span>';
+        preview.classList.remove('has-image');
+    }
+}
+
 // 格式化文本（富文本编辑器）
 function formatText(command, value = '') {
     document.execCommand(command, false, value);
@@ -1092,10 +1133,25 @@ function formatText(command, value = '') {
 
 // 插入图片
 function insertImage() {
-    const url = prompt('请输入图片 URL：');
-    if (url) {
-        formatText('insertImage', url);
-    }
+    // 创建隐藏的文件输入框
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64 = event.target.result;
+                formatText('insertImage', base64);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
 }
 
 // 编辑说明书
