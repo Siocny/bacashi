@@ -64,7 +64,7 @@ const API = {
         if (!brandData) {
             this.saveData('brandData', this.defaultData);
         } else {
-            // 确保 timeline 和 contact 数据存在
+            // 确保 timeline、contact 和 brand 数据存在
             const data = JSON.parse(brandData);
             if (!data.timeline || data.timeline.length === 0) {
                 data.timeline = this.defaultData.timeline;
@@ -74,9 +74,21 @@ const API = {
                 data.contact = this.defaultData.contact;
                 this.saveData('brandData', data);
             }
+            if (!data.brand || !data.brand.description) {
+                data.brand = this.defaultData.brand;
+                this.saveData('brandData', data);
+            }
         }
-        if (!localStorage.getItem('bacashiData')) {
+        const bacashiData = localStorage.getItem('bacashiData');
+        if (!bacashiData) {
             this.saveData('bacashiData', this.defaultDataBacashi);
+        } else {
+            // 确保倍卡西品牌数据存在
+            const data = JSON.parse(bacashiData);
+            if (!data.brand || !data.brand.description) {
+                data.brand = this.defaultDataBacashi.brand;
+                this.saveData('bacashiData', data);
+            }
         }
     },
 
