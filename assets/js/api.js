@@ -24,9 +24,9 @@ const API = {
             { id: 4, year: '2025', title: '持续扩大', description: '搬迁至义乌市北苑街道秋实路 121 号 2 号楼 8 楼，签约卡斐乐品牌在拼多多独家车品类目，公司人员扩展到 50+' }
         ],
         products: [
-            { id: 1, name: '卡斐乐主打产品', category: '旗舰系列', image: 'assets/images/微信图片_20260313141449_149_2.jpg', price: '¥1,999', sort: 1, description: '我们的旗舰产品，集成了最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
-            { id: 2, name: '时尚款产品 B', category: '时尚系列', image: 'https://via.placeholder.com/400x300/D94A4A/ffffff?text=Product+B', price: '¥1,599', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
-            { id: 3, name: '专业款产品 C', category: '专业系列', image: 'https://via.placeholder.com/400x300/4AD94A/ffffff?text=Product+C', price: '¥2,999', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
+            { id: 1, name: '卡斐乐主打产品', category: '车用电子', image: 'assets/images/微信图片_20260313141449_149_2.jpg', price: '¥1,999', sort: 1, description: '我们的旗舰产品，集成了最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
+            { id: 2, name: '时尚款产品 B', category: '车用内饰', image: 'https://via.placeholder.com/400x300/D94A4A/ffffff?text=Product+B', price: '¥1,599', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
+            { id: 3, name: '专业款产品 C', category: '桌面风扇', image: 'https://via.placeholder.com/400x300/4AD94A/ffffff?text=Product+C', price: '¥2,999', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
         ]
     },
 
@@ -163,6 +163,43 @@ const API = {
         },
         isLoggedIn() {
             return localStorage.getItem('isAdminLoggedIn') === 'true';
+        }
+    },
+
+    // 产品说明书
+    manuals: {
+        get() {
+            const data = API.getData('brandData');
+            return data ? (data.manuals || []) : [];
+        },
+        getByProductId(productId) {
+            const manuals = this.get();
+            return manuals.filter(m => m.productId == productId);
+        },
+        save(list) {
+            const data = API.getData('brandData') || { ...API.defaultData };
+            data.manuals = list;
+            API.saveData('brandData', data);
+        },
+        add(item) {
+            const list = this.get();
+            item.id = Date.now();
+            item.createdAt = new Date().toISOString();
+            list.push(item);
+            this.save(list);
+        },
+        update(id, item) {
+            const list = this.get();
+            const index = list.findIndex(m => m.id == id);
+            if (index !== -1) {
+                list[index] = { ...item, id: parseInt(id), updatedAt: new Date().toISOString() };
+                this.save(list);
+            }
+        },
+        delete(id) {
+            const list = this.get();
+            const filtered = list.filter(m => m.id != id);
+            this.save(filtered);
         }
     }
 };

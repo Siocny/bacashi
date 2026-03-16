@@ -77,6 +77,10 @@
                     <i class="fas fa-history"></i>
                     <span>发展历程</span>
                 </a>
+                <a href="#" class="nav-item" data-tab="manuals">
+                    <i class="fas fa-file-alt"></i>
+                    <span>使用说明书</span>
+                </a>
                 <div class="nav-divider"></div>
                 <a href="#" class="nav-item" data-tab="settings">
                     <i class="fas fa-cog"></i>
@@ -341,6 +345,28 @@
                 </div>
             </div>
 
+            <!-- 产品说明书管理 -->
+            <div id="tab-manuals" class="tab-content">
+                <div class="content-card">
+                    <div class="toolbar">
+                        <div class="toolbar-left">
+                            <button class="btn btn-primary" id="add-manual-btn">
+                                <i class="fas fa-plus"></i> 添加说明书
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <div class="search-box">
+                                <input type="text" id="manual-search" placeholder="搜索说明书...">
+                                <button class="search-btn"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="manuals-table" class="data-table">
+                        <!-- 说明书列表由 JS 生成 -->
+                    </div>
+                </div>
+            </div>
+
             <!-- 系统设置 -->
             <div id="tab-settings" class="tab-content">
                 <div class="content-card">
@@ -501,6 +527,80 @@
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> 保存事件
+                        </button>
+                        <button type="button" class="btn btn-secondary modal-cancel">
+                            <i class="fas fa-times"></i> 取消
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 产品说明书编辑模态框 -->
+    <div class="modal" id="manual-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-dialog modal-xl">
+            <div class="modal-header">
+                <h3 id="manual-modal-title"><i class="fas fa-file-alt"></i> 添加/编辑说明书</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="manual-form">
+                    <input type="hidden" id="manual-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>关联产品 *</label>
+                            <select id="manual-product-id" required>
+                                <option value="">请选择产品</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>说明书标题 *</label>
+                            <input type="text" id="manual-title" required placeholder="例如：产品使用指南">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>封面图片</label>
+                        <div class="image-upload">
+                            <div class="image-preview" id="manual-cover-preview">
+                                <i class="fas fa-image"></i>
+                                <span>暂无图片</span>
+                            </div>
+                            <div class="image-actions">
+                                <input type="text" id="manual-cover" placeholder="图片 URL 或点击上传">
+                                <label class="btn btn-secondary">
+                                    <i class="fas fa-upload"></i> 上传图片
+                                    <input type="file" id="manual-cover-upload" accept="image/*" style="display: none;">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>视频教程 URL</label>
+                        <input type="text" id="manual-video" placeholder="https://www.youtube.com/watch?v=... 或 https://v.qq.com/...">
+                        <span class="form-hint"><i class="fas fa-info-circle"></i> 支持 YouTube、腾讯视频、哔哩哔哩等平台链接</span>
+                    </div>
+                    <div class="form-group">
+                        <label>说明书内容（支持图文混排）</label>
+                        <div class="manual-content-editor" id="manual-content-editor">
+                            <div class="editor-toolbar">
+                                <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="加粗"><i class="fas fa-bold"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="斜体"><i class="fas fa-italic"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="下划线"><i class="fas fa-underline"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="formatText('justifyLeft')" title="左对齐"><i class="fas fa-align-left"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="formatText('justifyCenter')" title="居中"><i class="fas fa-align-center"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="无序列表"><i class="fas fa-list-ul"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="formatText('insertOrderedList')" title="有序列表"><i class="fas fa-list-ol"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="insertImage()" title="插入图片"><i class="fas fa-image"></i></button>
+                                <button type="button" class="toolbar-btn" onclick="formatText('formatBlock', 'h3')" title="标题"><i class="fas fa-heading"></i></button>
+                            </div>
+                            <div class="editor-content" id="manual-content" contenteditable="true" placeholder="在此输入说明书内容，支持图文混排..."></div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存说明书
                         </button>
                         <button type="button" class="btn btn-secondary modal-cancel">
                             <i class="fas fa-times"></i> 取消
