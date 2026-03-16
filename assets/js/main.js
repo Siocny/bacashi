@@ -66,12 +66,12 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join('');
     }
 
-    // 加载卡斐乐产品
-    function loadCafeleProducts(category = 'all') {
+    // 加载产品
+    function loadProducts(category = 'all') {
         const products = API.products.getAll();
         const categories = API.products.getCategories();
-        const container = document.getElementById('cafele-products-container');
-        const filtersContainer = document.querySelector('#cafele-products .product-filters');
+        const container = document.getElementById('products-container');
+        const filtersContainer = document.querySelector('#products .product-filters');
 
         // 生成分类过滤器
         const filterButtons = categories.map(cat =>
@@ -80,11 +80,11 @@ document.addEventListener('DOMContentLoaded', function() {
         filtersContainer.innerHTML = `<button class="filter-btn active" data-category="all">全部系列</button>` + filterButtons;
 
         // 绑定过滤器事件
-        document.querySelectorAll('#cafele-products .filter-btn').forEach(btn => {
+        document.querySelectorAll('#products .filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                document.querySelectorAll('#cafele-products .filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#products .filter-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                loadCafeleProducts(this.dataset.category);
+                loadProducts(this.dataset.category);
             });
         });
 
@@ -114,64 +114,9 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join('');
 
         // 绑定查看详情事件
-        document.querySelectorAll('#cafele-products .product-card').forEach(card => {
+        document.querySelectorAll('#products .product-card').forEach(card => {
             card.addEventListener('click', function() {
                 showProductModal(this.dataset.id, 'cafele');
-            });
-        });
-    }
-
-    // 加载倍卡西产品
-    function loadBacashiProducts(category = 'all') {
-        const products = API.bacashi.products.getAll();
-        const categories = API.bacashi.products.getCategories();
-        const container = document.getElementById('bacashi-products-container');
-        const filtersContainer = document.querySelector('#bacashi-products .product-filters');
-
-        // 生成分类过滤器
-        const filterButtons = categories.map(cat =>
-            `<button class="filter-btn" data-category-bacashi="${cat}">${cat}</button>`
-        ).join('');
-        filtersContainer.innerHTML = `<button class="filter-btn active" data-category-bacashi="all">全部系列</button>` + filterButtons;
-
-        // 绑定过滤器事件
-        document.querySelectorAll('#bacashi-products .filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('#bacashi-products .filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                loadBacashiProducts(this.dataset.categoryBacashi);
-            });
-        });
-
-        // 过滤产品
-        const filtered = category === 'all' ? products : products.filter(p => p.category === category);
-
-        if (filtered.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">暂无产品</p>';
-            return;
-        }
-
-        container.innerHTML = filtered.sort((a, b) => a.sort - b.sort).map(product => `
-            <div class="product-card" data-id="${product.id}" data-brand="bacashi">
-                <div class="product-image-wrap">
-                    <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/600x400/4A4AD9/ffffff?text=BACASHI'">
-                    <div class="product-overlay">
-                        <button class="product-overlay-btn">查看详情</button>
-                    </div>
-                </div>
-                <div class="product-info">
-                    <span class="product-category">${product.category}</span>
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-description">${product.description}</p>
-                    <div class="product-price">${product.price}</div>
-                </div>
-            </div>
-        `).join('');
-
-        // 绑定查看详情事件
-        document.querySelectorAll('#bacashi-products .product-card').forEach(card => {
-            card.addEventListener('click', function() {
-                showProductModal(this.dataset.id, 'bacashi');
             });
         });
     }
@@ -377,8 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化
     loadBrandInfo();
     loadTimeline();
-    loadCafeleProducts();
-    loadBacashiProducts();
+    loadProducts();
 });
 
 // 搜索产品函数（全局可访问）
