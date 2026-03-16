@@ -121,6 +121,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // 加载产品说明书
+    function loadManuals() {
+        const manuals = API.manuals.getAll();
+        const products = API.products.getAll();
+        const container = document.getElementById('manuals-container');
+
+        if (!container) return;
+
+        if (manuals.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:#999;">暂无产品说明书</p>';
+            return;
+        }
+
+        // 获取产品 ID 到名称的映射
+        const productMap = {};
+        products.forEach(p => { productMap[p.id] = p.name; });
+
+        container.innerHTML = manuals.map(manual => `
+            <div class="manual-card" onclick="showManualDetail(${manual.id}, 'cafele')">
+                ${manual.cover ? `<img src="${manual.cover}" alt="${manual.title}">` : '<div class="manual-cover-placeholder"><i class="fas fa-file-alt"></i></div>'}
+                <div class="manual-info">
+                    <h4>${manual.title}</h4>
+                    <p class="manual-product">${productMap[manual.productId] || '未关联产品'}</p>
+                    ${manual.video ? '<span class="manual-video-badge"><i class="fas fa-play-circle"></i> 视频教程</span>' : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
     // 显示产品详情
     function showProductModal(productId, brand = 'cafele') {
         let product;
@@ -181,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 显示说明书详情
-    function showManualDetail(manualId, brand = 'cafele') {
+    window.showManualDetail = function(manualId, brand = 'cafele') {
         let manual;
         if (brand === 'bacashi') {
             const manuals = API.bacashi.manuals.get();
@@ -196,13 +225,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const modalBody = document.getElementById('modal-body');
 
         let videoHtml = '';
-        if (manual.videoUrl) {
-            videoHtml = `<div class="manual-video">${getVideoEmbed(manual.videoUrl)}</div>`;
+        if (manual.video) {
+            videoHtml = `<div class="manual-video">${getVideoEmbed(manual.video)}</div>`;
         }
 
         modalBody.innerHTML = `
             <div class="modal-manual-detail">
                 <h2 class="manual-title">${manual.title}</h2>
+                ${manual.cover ? `<img src="${manual.cover}" class="manual-cover-img" alt="${manual.title}">` : ''}
                 ${videoHtml}
                 <div class="manual-content">${manual.content}</div>
             </div>
@@ -323,6 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadBrandInfo();
     loadTimeline();
     loadProducts();
+    loadManuals();
 });
 
 // 搜索产品函数（全局可访问）

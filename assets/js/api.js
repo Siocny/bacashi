@@ -203,6 +203,9 @@ const API = {
             const data = API.getData('brandData');
             return data ? (data.manuals || []) : [];
         },
+        getAll() {
+            return this.get();
+        },
         getByProductId(productId) {
             const manuals = this.get();
             return manuals.filter(m => m.productId == productId);

@@ -1164,3 +1164,119 @@ section {
         gap: 20px;
     }
 }
+
+/* 产品说明书区域 */
+.manuals-section {
+    padding: 100px 0;
+    background: var(--section-bg);
+}
+
+.manuals-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.manual-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.manual-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.manual-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+
+.manual-cover-placeholder {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    color: #ccc;
+    font-size: 60px;
+}
+
+.manual-info {
+    padding: 20px;
+}
+
+.manual-info h4 {
+    font-size: 18px;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.manual-product {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.manual-video-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--primary-color);
+    background: rgba(74, 74, 217, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* 说明书详情模态框样式 */
+.modal-manual-detail {
+    padding: 30px;
+}
+
+.modal-manual-detail .manual-title {
+    font-size: 28px;
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.modal-manual-detail .manual-cover-img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.modal-manual-detail .manual-video {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.modal-manual-detail .manual-video iframe {
+    width: 100%;
+    height: 400px;
+    border-radius: 8px;
+}
+
+.modal-manual-detail .manual-content {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text-color);
+}
+
+.modal-manual-detail .manual-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 20px 0;
+}
