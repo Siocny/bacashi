@@ -144,9 +144,6 @@ function switchTab(tabName) {
         case 'timeline':
             loadTimelineTable();
             break;
-        case 'manuals':
-            loadManualsTable();
-            break;
         case 'settings':
             loadSettings();
             break;
@@ -567,6 +564,7 @@ function addManual() {
     // 重置表单
     form.reset();
     document.getElementById('manual-item-id').value = '';
+    document.getElementById('manual-item-product-id').value = currentEditId || '';
     document.getElementById('manual-item-title').value = '';
     document.getElementById('manual-item-cover').value = '';
     document.getElementById('manual-item-video').value = '';
@@ -630,10 +628,28 @@ document.getElementById('manual-item-video')?.addEventListener('input', function
 document.getElementById('manual-item-form')?.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // 这里需要将说明书保存到当前编辑的产品中
-    // 由于是模拟数据，我们暂时只提示成功
+    const productId = document.getElementById('manual-item-product-id').value;
+    if (!productId) {
+        showToast('请先选择产品', 'error');
+        return;
+    }
+
+    const product = API.products.getAll().find(p => p.id == productId);
+    const manualData = {
+        productId: productId,
+        productName: product ? product.name : '',
+        title: document.getElementById('manual-item-title').value,
+        cover: document.getElementById('manual-item-cover').value || '',
+        video: document.getElementById('manual-item-video').value || '',
+        content: document.getElementById('manual-item-content').innerHTML
+    };
+
+    API.manuals.add(manualData);
     showToast('说明书已添加！', 'success');
     document.getElementById('manual-item-modal').classList.remove('show');
+
+    // 刷新产品列表以显示说明书状态
+    loadProductsTable();
 });
 
 // 格式化说明书文本（产品编辑模态框中）
@@ -1054,343 +1070,4 @@ window.toggleProductSelection = toggleProductSelection;
 window.exportData = exportData;
 window.resetData = resetData;
 window.changePassword = changePassword;
-window.formatText = formatText;
-window.insertImage = insertImage;
 
-// ==================== 产品说明书管理 ====================
-
-function loadManualsTable() {
-    let manuals = API.manuals.get();
-    const products = API.products.getAll();
-    const productMap = {};
-    products.forEach(p => { productMap[p.id] = p.name; });
-
-    // 应用搜索
-    const searchTerm = document.getElementById('manual-search')?.value.toLowerCase() || '';
-    if (searchTerm) {
-        manuals = manuals.filter(m =>
-            m.title.toLowerCase().includes(searchTerm) ||
-            (m.productName && m.productName.toLowerCase().includes(searchTerm))
-        );
-    }
-
-    const container = document.getElementById('manuals-table');
-
-    if (manuals.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-file-alt"></i><p>暂无说明书数据</p></div>';
-        return;
-    }
-
-    container.innerHTML = manuals.map(manual => `
-        <div class="manual-card">
-            ${manual.cover ? `<img src="${manual.cover}" class="manual-cover" alt="${manual.title}">` : '<div class="manual-cover" style="background:#eee;display:flex;align-items:center;justify-content:center;color:#999;"><i class="fas fa-image" style="font-size:40px;"></i></div>'}
-            <div class="manual-info">
-                <h4 class="manual-title">${manual.title}</h4>
-                <div class="manual-product">
-                    <i class="fas fa-box"></i>
-                    <span>关联产品：${manual.productName || '未关联'}</span>
-                </div>
-                ${manual.video ? `<div class="manual-video-badge"><i class="fas fa-play-circle"></i> 包含视频教程</div>` : ''}
-                <div class="manual-meta">
-                    <span><i class="fas fa-clock"></i> ${manual.createdAt ? new Date(manual.createdAt).toLocaleDateString('zh-CN') : '-'}</span>
-                    ${manual.updatedAt ? `<span><i class="fas fa-edit"></i> ${new Date(manual.updatedAt).toLocaleDateString('zh-CN')}</span>` : ''}
-                </div>
-            </div>
-            <div class="manual-actions">
-                <button class="btn btn-primary btn-sm" onclick="editManual(${manual.id})">
-                    <i class="fas fa-edit"></i> 编辑
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteManual(${manual.id})">
-                    <i class="fas fa-trash"></i> 删除
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="previewManual(${manual.id})">
-                    <i class="fas fa-eye"></i> 预览
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-// 添加说明书按钮
-document.getElementById('add-manual-btn')?.addEventListener('click', function() {
-    openManualModal();
-});
-
-// 搜索说明书
-document.getElementById('manual-search')?.addEventListener('input', debounce(loadManualsTable, 300));
-
-// 打开说明书模态框
-function openManualModal(manual = null) {
-    const modal = document.getElementById('manual-modal');
-    const form = document.getElementById('manual-form');
-    const productSelect = document.getElementById('manual-product-id');
-
-    // 加载产品列表
-    const products = API.products.getAll();
-    productSelect.innerHTML = '<option value="">请选择产品</option>' +
-        products.map(p => `<option value="${p.id}">${p.name} (${p.category})</option>`).join('');
-
-    if (manual) {
-        document.getElementById('manual-modal-title').textContent = '编辑说明书';
-        document.getElementById('manual-id').value = manual.id;
-        document.getElementById('manual-product-id').value = manual.productId;
-        document.getElementById('manual-title').value = manual.title;
-        document.getElementById('manual-cover').value = manual.cover || '';
-        document.getElementById('manual-video').value = manual.video || '';
-        document.getElementById('manual-content').innerHTML = manual.content || '';
-        updateManualCoverPreview(manual.cover);
-        updateVideoPreview(manual.video);
-    } else {
-        document.getElementById('manual-modal-title').textContent = '添加说明书';
-        form.reset();
-        document.getElementById('manual-id').value = '';
-        document.getElementById('manual-content').innerHTML = '';
-        updateManualCoverPreview(null);
-        updateVideoPreview(null);
-    }
-
-    modal.classList.add('show');
-}
-
-// 更新封面预览
-function updateManualCoverPreview(url) {
-    const preview = document.getElementById('manual-cover-preview');
-    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
-        preview.innerHTML = `<img src="${url}" alt="预览">`;
-        preview.classList.add('has-image');
-    } else {
-        preview.innerHTML = '<i class="fas fa-image"></i><span>暂无图片</span>';
-        preview.classList.remove('has-image');
-    }
-}
-
-// 封面图片上传
-document.getElementById('manual-cover-upload')?.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const base64 = event.target.result;
-            document.getElementById('manual-cover').value = base64;
-            updateManualCoverPreview(base64);
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById('manual-cover')?.addEventListener('input', function() {
-    updateManualCoverPreview(this.value);
-});
-
-// 视频上传
-document.getElementById('manual-video-upload')?.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const base64 = event.target.result;
-            document.getElementById('manual-video').value = base64;
-            updateVideoPreview(base64);
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById('manual-video')?.addEventListener('input', function() {
-    updateVideoPreview(this.value);
-});
-
-// 更新视频预览
-function updateVideoPreview(url) {
-    const preview = document.getElementById('manual-video-preview');
-    if (url && url.startsWith('http')) {
-        // 在线视频链接
-        preview.innerHTML = `<i class="fas fa-video"></i><span>在线视频</span>`;
-        preview.classList.add('has-image');
-    } else if (url && url.startsWith('data:video')) {
-        // 本地上传视频
-        preview.innerHTML = `<i class="fas fa-video"></i><span>已上传视频</span>`;
-        preview.classList.add('has-image');
-    } else if (url) {
-        // 视频平台链接
-        preview.innerHTML = `<i class="fas fa-video"></i><span>视频链接</span>`;
-        preview.classList.add('has-image');
-    } else {
-        preview.innerHTML = '<i class="fas fa-video"></i><span>暂无视频</span>';
-        preview.classList.remove('has-image');
-    }
-}
-
-// 格式化文本（富文本编辑器）
-function formatText(command, value = '') {
-    document.execCommand(command, false, value);
-    document.getElementById('manual-content').focus();
-}
-
-// 插入图片
-function insertImage() {
-    // 创建隐藏的文件输入框
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.style.display = 'none';
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64 = event.target.result;
-                formatText('insertImage', base64);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-    document.body.appendChild(input);
-    input.click();
-    document.body.removeChild(input);
-}
-
-// 编辑说明书
-function editManual(id) {
-    const manuals = API.manuals.get();
-    const manual = manuals.find(m => m.id === id);
-    if (manual) {
-        openManualModal(manual);
-    }
-}
-
-// 删除说明书
-function deleteManual(id) {
-    if (confirm('确定要删除这个说明书吗？')) {
-        API.manuals.delete(id);
-        loadManualsTable();
-        showToast('说明书已删除', 'success');
-        addActivity('删除说明书 ID:' + id, 'warning');
-    }
-}
-
-// 预览说明书
-function previewManual(id) {
-    const manuals = API.manuals.get();
-    const manual = manuals.find(m => m.id === id);
-    if (manual) {
-        showManualDetail(manual);
-    }
-}
-
-// 保存说明书
-document.getElementById('manual-form')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const id = document.getElementById('manual-id').value;
-    const productSelect = document.getElementById('manual-product-id');
-    const productName = productSelect.options[productSelect.selectedIndex]?.text || '';
-
-    const manualData = {
-        productId: document.getElementById('manual-product-id').value,
-        productName: productName.split(' (')[0] || '',
-        title: document.getElementById('manual-title').value,
-        cover: document.getElementById('manual-cover').value || '',
-        video: document.getElementById('manual-video').value || '',
-        content: document.getElementById('manual-content').innerHTML
-    };
-
-    if (id) {
-        API.manuals.update(parseInt(id), manualData);
-        showToast('说明书已更新！', 'success');
-        addActivity('更新说明书：' + manualData.title, 'success');
-    } else {
-        API.manuals.add(manualData);
-        showToast('说明书已添加！', 'success');
-        addActivity('添加说明书：' + manualData.title, 'success');
-    }
-
-    document.getElementById('manual-modal').classList.remove('show');
-    loadManualsTable();
-});
-
-// 显示说明书详情（前端预览）
-function showManualDetail(manual) {
-    const modal = document.getElementById('manual-detail-modal');
-
-    if (!modal) {
-        // 创建详情模态框
-        const modalHtml = `
-            <div class="manual-detail-modal" id="manual-detail-modal">
-                <button class="manual-detail-close" onclick="closeManualDetail()"><i class="fas fa-times"></i></button>
-                <div class="manual-detail-content">
-                    <div class="manual-detail-header">
-                        ${manual.cover ? `<img src="${manual.cover}" class="manual-detail-cover">` : ''}
-                        <h2 class="manual-detail-title">${manual.title}</h2>
-                        ${manual.productName ? `<p style="color:#666;">适用产品：${manual.productName}</p>` : ''}
-                    </div>
-                    ${manual.video ? `
-                        <div class="manual-detail-video">
-                            ${getVideoEmbed(manual.video)}
-                        </div>
-                    ` : ''}
-                    <div class="manual-detail-body">
-                        ${manual.content}
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    } else {
-        modal.innerHTML = `
-            <button class="manual-detail-close" onclick="closeManualDetail()"><i class="fas fa-times"></i></button>
-            <div class="manual-detail-content">
-                <div class="manual-detail-header">
-                    ${manual.cover ? `<img src="${manual.cover}" class="manual-detail-cover">` : ''}
-                    <h2 class="manual-detail-title">${manual.title}</h2>
-                    ${manual.productName ? `<p style="color:#666;">适用产品：${manual.productName}</p>` : ''}
-                </div>
-                ${manual.video ? `
-                    <div class="manual-detail-video">
-                        ${getVideoEmbed(manual.video)}
-                    </div>
-                ` : ''}
-                <div class="manual-detail-body">
-                    ${manual.content}
-                </div>
-            </div>
-        `;
-    }
-
-    document.getElementById('manual-detail-modal').classList.add('show');
-}
-
-// 关闭详情
-function closeManualDetail() {
-    const modal = document.getElementById('manual-detail-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => modal.remove(), 300);
-    }
-}
-
-// 获取视频嵌入代码
-function getVideoEmbed(url) {
-    // YouTube
-    const youtubeMatch = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&?/]+)/);
-    if (youtubeMatch) {
-        return `<iframe src="https://www.youtube.com/embed/${youtubeMatch[1]}" allowfullscreen></iframe>`;
-    }
-
-    // 哔哩哔哩
-    const bilibiliMatch = url.match(/bilibili\.com\/video\/(?:av(\d+)|BV(\w+))/);
-    if (bilibiliMatch) {
-        return `<iframe src="//player.bilibili.com/player.html?bvid=BV${bilibiliMatch[2] || bilibiliMatch[1]}" allowfullscreen></iframe>`;
-    }
-
-    // 腾讯视频
-    if (url.includes('v.qq.com')) {
-        const txMatch = url.match(/\/(\w+)\.html/);
-        if (txMatch) {
-            return `<iframe src="https://v.qq.com/txp/iframe/player.html?vid=${txMatch[1]}" allowfullscreen></iframe>`;
-        }
-    }
-
-    // 默认返回 iframe
-    return `<iframe src="${url}" allowfullscreen></iframe>`;
-}

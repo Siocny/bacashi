@@ -77,10 +77,6 @@
                     <i class="fas fa-history"></i>
                     <span>发展历程</span>
                 </a>
-                <a href="#" class="nav-item" data-tab="manuals">
-                    <i class="fas fa-file-alt"></i>
-                    <span>使用说明书</span>
-                </a>
                 <div class="nav-divider"></div>
                 <a href="#" class="nav-item" data-tab="settings">
                     <i class="fas fa-cog"></i>
@@ -345,28 +341,6 @@
                 </div>
             </div>
 
-            <!-- 产品说明书管理 -->
-            <div id="tab-manuals" class="tab-content">
-                <div class="content-card">
-                    <div class="toolbar">
-                        <div class="toolbar-left">
-                            <button class="btn btn-primary" id="add-manual-btn">
-                                <i class="fas fa-plus"></i> 添加说明书
-                            </button>
-                        </div>
-                        <div class="toolbar-right">
-                            <div class="search-box">
-                                <input type="text" id="manual-search" placeholder="搜索说明书...">
-                                <button class="search-btn"><i class="fas fa-search"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="manuals-table" class="data-table">
-                        <!-- 说明书列表由 JS 生成 -->
-                    </div>
-                </div>
-            </div>
-
             <!-- 系统设置 -->
             <div id="tab-settings" class="tab-content">
                 <div class="content-card">
@@ -532,6 +506,7 @@
             <div class="modal-body">
                 <form id="manual-item-form">
                     <input type="hidden" id="manual-item-id">
+                    <input type="hidden" id="manual-item-product-id">
                     <div class="form-group">
                         <label>说明书标题 *</label>
                         <input type="text" id="manual-item-title" required placeholder="例如：产品使用指南">
