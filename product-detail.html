@@ -203,19 +203,21 @@
 
         function renderManuals(manuals, brand) {
             if (manuals.length === 0) {
+                // 没有说明书，隐藏说明书区域
                 document.getElementById('product-manuals-section').style.display = 'none';
                 return;
             }
 
+            // 只显示第一个说明书
+            const manual = manuals[0];
             document.getElementById('product-manuals-section').style.display = 'block';
-            document.getElementById('product-manuals-container').innerHTML = manuals.map(manual => `
+            document.getElementById('product-manuals-container').innerHTML = `
                 <div class="manual-content-full">
-                    ${manual.cover ? `<div class="manual-cover"><img src="${manual.cover}" alt="${manual.title}"></div>` : ''}
                     <h3 class="manual-title">${manual.title}</h3>
                     ${manual.video ? `<div class="manual-video">${getVideoEmbed(manual.video)}</div>` : ''}
                     <div class="manual-content">${manual.content}</div>
                 </div>
-            `).join('');
+            `;
         }
 
         // 显示说明书详情 - 跳转到详情页
@@ -244,6 +246,16 @@
             const tencentMatch = url.match(/v\.qq\.com\/x\/(?:page|cover)\/([a-z0-9]+)\.html/);
             if (tencentMatch) {
                 return `<iframe src="https://v.qq.com/txp/iframe/player.html?vid=${tencentMatch[1]}" allowFullScreen="true"></iframe>`;
+            }
+
+            // 直接视频文件（mp4, webm, ogg）
+            if (url.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)) {
+                return `<video src="${url}" controls style="width: 100%; max-width: 800px; height: auto;"></video>`;
+            }
+
+            // 其他链接尝试使用 video 标签
+            if (url.startsWith('http') && url.includes('video')) {
+                return `<video src="${url}" controls style="width: 100%; max-width: 800px; height: auto;"></video>`;
             }
 
             return `<p>视频链接：${url}</p>`;

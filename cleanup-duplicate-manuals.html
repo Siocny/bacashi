@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>清理重复说明书</title>
+</head>
+<body>
+    <h1>清理重复说明书工具</h1>
+    <p>点击按钮清理每个产品重复的说明书（只保留第一个）</p>
+    <button onclick="cleanup()">开始清理</button>
+    <pre id="log" style="background: #f5f5f5; padding: 20px; margin-top: 20px;"></pre>
+
+    <script src="assets/js/storage.js"></script>
+    <script>
+        function log(msg) {
+            document.getElementById('log').innerHTML += msg + '\n';
+        }
+
+        async function cleanup() {
+            log('开始清理...');
+            const manuals = await Storage.getAllManuals();
+            log('共找到 ' + manuals.length + ' 个说明书');
+
+            const grouped = {};
+            manuals.forEach(m => {
+                if (!grouped[m.productId]) {
+                    grouped[m.productId] = [];
+                }
+                grouped[m.productId].push(m);
+            });
+
+            let deletedCount = 0;
+            for (const productId in grouped) {
+                const list = grouped[productId];
+                if (list.length > 1) {
+                    log('产品 ' + productId + ' 有 ' + list.length + ' 个说明书，将删除 ' + (list.length - 1) + ' 个');
+                    // 保留第一个，删除其他
+                    for (let i = 1; i < list.length; i++) {
+                        await Storage.deleteManual(list[i].id);
+                        deletedCount++;
+                        log('  - 删除说明书 ID: ' + list[i].id + ' (标题：' + list[i].title + ')');
+                    }
+                }
+            }
+
+            log('清理完成！共删除 ' + deletedCount + ' 个重复说明书');
+        }
+    </script>
+</body>
+</html>

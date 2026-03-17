@@ -474,12 +474,15 @@
                     <div class="form-group">
                         <label>产品说明书</label>
                         <div class="manual-list" id="manual-list">
-                            <!-- 动态添加说明书 -->
+                            <!-- 动态显示说明书 -->
                         </div>
                         <button type="button" class="btn btn-secondary btn-sm" onclick="addManual()" style="margin-top: 10px;">
                             <i class="fas fa-plus"></i> 添加说明书
                         </button>
-                        <span class="form-hint"><i class="fas fa-info-circle"></i> 可为产品添加多个说明书，支持视频教程和图文说明</span>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteProductManual()" id="delete-manual-btn" style="margin-top: 10px; display: none;">
+                            <i class="fas fa-trash"></i> 删除说明书
+                        </button>
+                        <span class="form-hint"><i class="fas fa-info-circle"></i> 每个产品限一份说明书，支持视频教程和图文说明</span>
                     </div>
 
                     <div class="form-actions">
@@ -535,11 +538,7 @@
                                 <span>暂无视频</span>
                             </div>
                             <div class="image-actions">
-                                <input type="text" id="manual-item-video" placeholder="视频 URL 或点击上传">
-                                <label class="btn btn-secondary">
-                                    <i class="fas fa-upload"></i> 上传视频
-                                    <input type="file" id="manual-item-video-upload" accept="video/*" style="display: none;">
-                                </label>
+                                <input type="text" id="manual-item-video" placeholder="请输入视频 URL（如 YouTube、B 站、腾讯视频链接）">
                             </div>
                         </div>
                         <span class="form-hint"><i class="fas fa-info-circle"></i> 支持 YouTube、腾讯视频、哔哩哔哩等平台链接</span>
