@@ -108,6 +108,7 @@
     </footer>
 
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/storage.js"></script>
     <script src="assets/js/utils.js"></script>
     <script>
         // 从 URL 获取产品 ID
@@ -179,10 +180,28 @@
                 const bacashiManuals = API.bacashi.manuals.get();
                 manuals = bacashiManuals.filter(m => m.productId == productId);
             } else {
-                const allManuals = API.manuals.getAll();
-                manuals = allManuals.filter(m => m.productId == productId);
+                // 使用 IndexedDB 获取说明书
+                if (typeof Storage !== 'undefined' && Storage.getAllManuals) {
+                    Storage.getAllManuals().then(allManuals => {
+                        manuals = allManuals.filter(m => m.productId == productId);
+                        renderManuals(manuals, brand);
+                    }).catch(err => {
+                        console.error('加载说明书失败:', err);
+                        // 回退到 localStorage
+                        const allManuals = API.manuals.getAll();
+                        manuals = allManuals.filter(m => m.productId == productId);
+                        renderManuals(manuals, brand);
+                    });
+                    return; // 异步处理，直接返回
+                } else {
+                    const allManuals = API.manuals.getAll();
+                    manuals = allManuals.filter(m => m.productId == productId);
+                }
             }
+            renderManuals(manuals, brand);
+        }
 
+        function renderManuals(manuals, brand) {
             if (manuals.length === 0) {
                 document.getElementById('product-manuals-section').style.display = 'none';
                 return;

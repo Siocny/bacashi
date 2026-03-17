@@ -666,12 +666,16 @@ document.getElementById('manual-item-form')?.addEventListener('submit', function
     };
     console.log('manualData:', manualData);
 
-    API.manuals.add(manualData);
-    showToast('说明书已添加！', 'success');
-    document.getElementById('manual-item-modal').classList.remove('show');
-
-    // 刷新产品列表以显示说明书状态
-    loadProductsTable();
+    // 使用 IndexedDB 存储说明书数据（支持更大数据量）
+    Storage.addManual(manualData).then(() => {
+        showToast('说明书已添加！', 'success');
+        document.getElementById('manual-item-modal').classList.remove('show');
+        // 刷新产品列表以显示说明书状态
+        loadProductsTable();
+    }).catch(err => {
+        console.error('保存说明书失败:', err);
+        showToast('保存失败，请重试', 'error');
+    });
 });
 
 // 格式化说明书文本（产品编辑模态框中）
