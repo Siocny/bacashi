@@ -639,10 +639,19 @@ document.getElementById('manual-item-video')?.addEventListener('input', function
 // 说明书表单提交（产品编辑模态框中）
 document.getElementById('manual-item-form')?.addEventListener('submit', function(e) {
     e.preventDefault();
+    console.log('说明书表单提交');
 
     const productId = document.getElementById('manual-item-product-id').value;
+    console.log('productId:', productId);
+
     if (!productId) {
         showToast('请先选择产品', 'error');
+        return;
+    }
+
+    const title = document.getElementById('manual-item-title').value.trim();
+    if (!title) {
+        showToast('请输入说明书标题', 'error');
         return;
     }
 
@@ -650,11 +659,12 @@ document.getElementById('manual-item-form')?.addEventListener('submit', function
     const manualData = {
         productId: productId,
         productName: product ? product.name : '',
-        title: document.getElementById('manual-item-title').value,
+        title: title,
         cover: document.getElementById('manual-item-cover').value || '',
         video: document.getElementById('manual-item-video').value || '',
         content: document.getElementById('manual-item-content').innerHTML
     };
+    console.log('manualData:', manualData);
 
     API.manuals.add(manualData);
     showToast('说明书已添加！', 'success');
@@ -671,10 +681,22 @@ function formatManualText(command, value = null) {
 
 // 插入图片到说明书（产品编辑模态框中）
 function insertManualImage() {
-    const url = prompt('请输入图片 URL：');
-    if (url) {
-        document.execCommand('insertImage', false, url);
-    }
+    // 创建隐藏的文件输入框
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64 = event.target.result;
+                document.execCommand('insertImage', false, base64);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
 }
 
 // ==================== 时间轴管理 ====================
