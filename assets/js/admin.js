@@ -490,7 +490,6 @@ function loadProductManualList() {
     Storage.getAllManuals().then(manuals => {
         const manual = manuals.find(m => m.productId == currentEditId);
         const container = document.getElementById('manual-list');
-        const deleteBtn = document.getElementById('delete-manual-btn');
 
         if (manual) {
             container.innerHTML = `
@@ -502,12 +501,10 @@ function loadProductManualList() {
                     </button>
                 </div>
             `;
-            deleteBtn.style.display = 'inline-flex';
             // 保存当前说明书供编辑按钮使用
             window.manualFromStorage = manual;
         } else {
             container.innerHTML = '<span style="color: #999;">暂无说明书</span>';
-            deleteBtn.style.display = 'none';
             window.manualFromStorage = null;
         }
     }).catch(err => {
@@ -1175,7 +1172,6 @@ window.resetData = resetData;
 window.changePassword = changePassword;
 window.addManual = addManual;
 window.editManual = editManual;
-window.deleteProductManual = deleteProductManual;
 window.formatManualText = formatManualText;
 window.insertManualImage = insertManualImage;
 window.updateVideoPreview = updateVideoPreview;
