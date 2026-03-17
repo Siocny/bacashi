@@ -590,6 +590,16 @@ function updateManualItemCoverPreview(url) {
     }
 }
 
+// 视频预览
+function updateVideoPreview(url) {
+    const preview = document.getElementById('manual-item-video-preview');
+    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
+        preview.innerHTML = `<video src="${url}" controls style="max-width: 100%; height: auto;"></video>`;
+    } else {
+        preview.innerHTML = '<i class="fas fa-video"></i><span>暂无视频</span>';
+    }
+}
+
 // 产品编辑模态框中的说明书封面上传
 document.getElementById('manual-item-cover-upload')?.addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -1075,4 +1085,5 @@ window.changePassword = changePassword;
 window.addManual = addManual;
 window.formatManualText = formatManualText;
 window.insertManualImage = insertManualImage;
+window.updateVideoPreview = updateVideoPreview;
 
