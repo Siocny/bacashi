@@ -209,12 +209,11 @@
 
             document.getElementById('product-manuals-section').style.display = 'block';
             document.getElementById('product-manuals-container').innerHTML = manuals.map(manual => `
-                <div class="manual-card" onclick="showManualDetail(${manual.id}, '${brand}')">
-                    ${manual.cover ? `<img src="${manual.cover}" alt="${manual.title}">` : ''}
-                    <div class="manual-card-body">
-                        <h4>${manual.title}</h4>
-                        <p>点击查看详细说明</p>
-                    </div>
+                <div class="manual-content-full">
+                    ${manual.cover ? `<div class="manual-cover"><img src="${manual.cover}" alt="${manual.title}"></div>` : ''}
+                    <h3 class="manual-title">${manual.title}</h3>
+                    ${manual.video ? `<div class="manual-video">${getVideoEmbed(manual.video)}</div>` : ''}
+                    <div class="manual-content">${manual.content}</div>
                 </div>
             `).join('');
         }
