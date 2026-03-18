@@ -157,12 +157,12 @@
                 <div class="product-detail-full">
                     ${product.video ? `
                     <div class="detail-section">
-                        <h3>产品视频</h3>
+                        <h3><i class="fas fa-play-circle"></i> 产品视频</h3>
                         <div class="product-video">${getVideoEmbed(product.video)}</div>
                     </div>
                     ` : ''}
                     <div class="detail-section">
-                        <h3>产品说明书</h3>
+                        <h3><i class="fas fa-file-alt"></i> 产品说明书</h3>
                         <div class="detail-content">${product.details || '暂无说明书内容'}</div>
                     </div>
                 </div>

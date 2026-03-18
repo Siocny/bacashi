@@ -1500,7 +1500,11 @@ section {
 }
 
 .detail-section {
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+    padding: 35px;
+    background: linear-gradient(to bottom, #fff, #fafbfc);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
 }
 
 .detail-section:last-child {
@@ -1508,51 +1512,89 @@ section {
 }
 
 .detail-section h3 {
-    font-size: 1.5rem;
-    color: var(--text-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--primary-color);
     margin-bottom: 25px;
     padding-bottom: 15px;
-    border-bottom: 2px solid var(--section-bg);
+    border-bottom: 2px solid var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-section h3::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+    border-radius: 2px;
 }
 
 .detail-content {
-    line-height: 1.8;
+    line-height: 1.9;
     color: var(--text-color);
+    font-size: 1.05rem;
 }
 
 .detail-content img {
     max-width: 100%;
     height: auto;
-    border-radius: 8px;
-    margin: 20px 0;
+    border-radius: 10px;
+    margin: 25px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .detail-content p {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
+    text-align: justify;
 }
 
 .detail-content h1,
 .detail-content h2,
 .detail-content h3 {
-    margin-top: 25px;
-    margin-bottom: 15px;
+    margin-top: 30px;
+    margin-bottom: 18px;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.detail-content ul,
+.detail-content ol {
+    margin-bottom: 18px;
+    padding-left: 25px;
+}
+
+.detail-content li {
+    margin-bottom: 10px;
+}
+
+.detail-content blockquote {
+    border-left: 4px solid var(--accent-color);
+    padding: 15px 20px;
+    margin: 20px 0;
+    background: var(--bg-light);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-light);
 }
 
 .product-video {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px 0;
 }
 
-.product-video iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
+.product-video iframe,
+.product-video video {
     width: 100%;
-    height: 100%;
+    max-width: 900px;
+    height: auto;
+    aspect-ratio: 16/9;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    background: #000;
 }
 
 /* 产品详情页的说明书区域 */
