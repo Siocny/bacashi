@@ -185,7 +185,9 @@ const API = {
         },
         add(item) {
             const list = this.get();
-            item.id = Date.now();
+            // 自动生成从 1 开始的连续 ID
+            const maxId = list.length > 0 ? Math.max(...list.map(p => p.id)) : 0;
+            item.id = maxId + 1;
             list.push(item);
             this.save(list);
         },

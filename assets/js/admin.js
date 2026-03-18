@@ -332,17 +332,22 @@ function loadProductsTable() {
     updateBatchDeleteButton();
 }
 
-function updateCategoryFilter(products) {
+function updateCategoryFilter() {
     const filter = document.getElementById('product-filter');
     if (!filter) return;
 
-    const categories = [...new Set(products.map(p => p.category))];
+    // 从所有产品中获取类别，而不是筛选后的产品
+    const allProducts = API.products.getAll();
+    const categories = [...new Set(allProducts.map(p => p.category))];
     const currentValue = filter.value;
 
     filter.innerHTML = '<option value="all">全部类别</option>' +
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
     filter.value = currentValue;
+
+    // 同时更新产品编辑模态框中的类别选择器
+    updateProductCategorySelect();
 }
 
 function updatePagination(totalItems, totalPages) {
@@ -442,6 +447,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('product-filter')) {
         document.getElementById('product-filter').addEventListener('change', () => { currentPage = 1; loadProductsTable(); });
     }
+    // 管理类别按钮
+    if (document.getElementById('manage-categories-btn')) {
+        document.getElementById('manage-categories-btn').addEventListener('click', openCategoriesModal);
+    }
 });
 
 function debounce(func, wait) {
@@ -454,6 +463,109 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// ==================== 类别管理 ====================
+
+// 打开类别管理模态框
+function openCategoriesModal() {
+    const modal = document.getElementById('categories-modal');
+    loadCategoriesList();
+    modal.classList.add('show');
+}
+
+// 加载类别列表
+function loadCategoriesList() {
+    const products = API.products.getAll();
+    const categories = [...new Set(products.map(p => p.category))];
+    const container = document.getElementById('categories-list');
+
+    if (categories.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-tags"></i><p>暂无类别</p></div>';
+        return;
+    }
+
+    container.innerHTML = categories.map(cat => `
+        <div class="category-item">
+            <span>${cat}</span>
+            <button class="btn btn-danger btn-sm" onclick="deleteCategory('${cat}')" title="删除类别">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// 添加类别
+window.addCategory = function() {
+    const input = document.getElementById('new-category-input');
+    const name = input.value.trim();
+
+    if (!name) {
+        showToast('请输入类别名称', 'warning');
+        return;
+    }
+
+    const products = API.products.getAll();
+    const categories = [...new Set(products.map(p => p.category))];
+
+    if (categories.includes(name)) {
+        showToast('该类别已存在', 'warning');
+        return;
+    }
+
+    // 保存类别信息到 localStorage
+    const allCategories = JSON.parse(localStorage.getItem('productCategories') || '[]');
+    allCategories.push(name);
+    localStorage.setItem('productCategories', JSON.stringify(allCategories));
+
+    input.value = '';
+    loadCategoriesList();
+    updateCategoryFilter();
+    updateProductCategorySelect();
+    showToast('类别已添加', 'success');
+    addActivity('添加产品类别：' + name, 'success');
+};
+
+// 删除类别
+window.deleteCategory = function(name) {
+    const products = API.products.getAll();
+    const productsInCategory = products.filter(p => p.category === name);
+
+    if (productsInCategory.length > 0) {
+        showToast(`该类别下有 ${productsInCategory.length} 个产品，无法删除`, 'warning');
+        return;
+    }
+
+    if (confirm(`确定要删除类别 "${name}" 吗？`)) {
+        const allCategories = JSON.parse(localStorage.getItem('productCategories') || '[]');
+        const index = allCategories.indexOf(name);
+        if (index !== -1) {
+            allCategories.splice(index, 1);
+            localStorage.setItem('productCategories', JSON.stringify(allCategories));
+        }
+
+        loadCategoriesList();
+        updateCategoryFilter();
+        updateProductCategorySelect();
+        showToast('类别已删除', 'success');
+        addActivity('删除产品类别：' + name, 'warning');
+    }
+};
+
+// 更新产品类别选择器
+function updateProductCategorySelect() {
+    const categorySelect = document.getElementById('product-category');
+    if (!categorySelect) return;
+
+    const products = API.products.getAll();
+    const categories = [...new Set(products.map(p => p.category))];
+    const allCategories = JSON.parse(localStorage.getItem('productCategories') || '[]');
+
+    // 合并已有类别和自定义类别
+    const allCats = [...new Set([...categories, ...allCategories])];
+
+    categorySelect.innerHTML = '<option value="">请选择产品类别</option>' +
+        allCats.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 }
 
 // 打开产品模态框
@@ -480,7 +592,7 @@ function openProductModal(product = null) {
         document.getElementById('modal-title').textContent = '添加产品';
         form.reset();
         document.getElementById('product-id').value = '';
-        document.getElementById('product-sort').value = '0';
+        document.getElementById('product-sort').value = '1';
         document.getElementById('product-manual-content').innerHTML = '';
         document.getElementById('product-video').value = '';
         updateImagePreview(null);
@@ -488,6 +600,7 @@ function openProductModal(product = null) {
     }
 
     modal.classList.add('show');
+    updateProductCategorySelect();
 }
 
 // 图片预览
@@ -601,11 +714,20 @@ document.getElementById('product-form').addEventListener('submit', function(e) {
     e.preventDefault();
 
     const id = document.getElementById('product-id').value;
+
+    // 如果是新增产品，自动设置排序值为最大排序 +1
+    let sortValue = parseInt(document.getElementById('product-sort').value) || 1;
+    if (!id) {
+        const products = API.products.getAll();
+        const maxSort = products.length > 0 ? Math.max(...products.map(p => p.sort)) : 0;
+        sortValue = maxSort + 1;
+    }
+
     const productData = {
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
         image: document.getElementById('product-image').value || 'https://via.placeholder.com/400x300?text=No+Image',
-        sort: parseInt(document.getElementById('product-sort').value) || 0,
+        sort: sortValue,
         description: document.getElementById('product-description').value,
         details: document.getElementById('product-manual-content').innerHTML,
         video: document.getElementById('product-video').value || ''
@@ -1103,4 +1225,7 @@ window.changePassword = changePassword;
 window.formatProductManual = formatProductManual;
 window.insertProductManualImage = insertProductManualImage;
 window.updateProductVideoPreview = updateProductVideoPreview;
+window.openCategoriesModal = openCategoriesModal;
+window.addCategory = addCategory;
+window.deleteCategory = deleteCategory;
 

@@ -261,6 +261,9 @@
                             <select id="product-filter" class="filter-select">
                                 <option value="all">全部类别</option>
                             </select>
+                            <button class="btn btn-secondary" id="manage-categories-btn" title="管理类别">
+                                <i class="fas fa-tags"></i> 管理类别
+                            </button>
                             <button class="icon-btn" id="export-products-btn" title="导出产品数据">
                                 <i class="fas fa-file-export"></i>
                             </button>
@@ -427,11 +430,6 @@
                             <label>产品类别 *</label>
                             <select id="product-category" required>
                                 <option value="">请选择产品类别</option>
-                                <option value="车用电子">车用电子</option>
-                                <option value="车用内饰">车用内饰</option>
-                                <option value="车用清洗">车用清洗</option>
-                                <option value="手持风扇">手持风扇</option>
-                                <option value="桌面风扇">桌面风扇</option>
                             </select>
                         </div>
                     </div>
@@ -499,6 +497,28 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 类别管理模态框 -->
+    <div class="modal" id="categories-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3><i class="fas fa-tags"></i> 管理产品类别</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="category-add-row">
+                    <input type="text" id="new-category-input" placeholder="输入新类别名称" onkeydown="if(event.keyCode===13) addCategory()">
+                    <button class="btn btn-primary" onclick="addCategory()">
+                        <i class="fas fa-plus"></i> 添加
+                    </button>
+                </div>
+                <div id="categories-list" class="categories-list">
+                    <!-- 类别列表由 JS 生成 -->
+                </div>
             </div>
         </div>
     </div>
