@@ -483,17 +483,21 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>产品视频 URL</label>
+                        <label>产品视频</label>
                         <div class="image-upload">
                             <div class="image-preview" id="product-video-preview">
                                 <i class="fas fa-video"></i>
                                 <span>暂无视频</span>
                             </div>
                             <div class="image-actions">
-                                <input type="text" id="product-video" placeholder="请输入视频 URL（如 YouTube、B 站、腾讯视频或 mp4 文件链接）">
+                                <input type="text" id="product-video" placeholder="视频 URL 或点击上传">
+                                <label class="btn btn-secondary">
+                                    <i class="fas fa-upload"></i> 上传视频
+                                    <input type="file" id="product-video-upload" accept="video/*" style="display: none;">
+                                </label>
                             </div>
                         </div>
-                        <span class="form-hint"><i class="fas fa-info-circle"></i> 支持 YouTube、B 站、腾讯视频或 mp4 直链</span>
+                        <span class="form-hint"><i class="fas fa-info-circle"></i> 支持 YouTube、B 站、腾讯视频或 mp4 文件上传</span>
                     </div>
 
                     <div class="form-actions">

@@ -590,15 +590,37 @@ function insertProductManualImage() {
 function updateProductVideoPreview(url) {
     const preview = document.getElementById('product-video-preview');
     if (url && (url.startsWith('http') || url.startsWith('data:'))) {
-        if (url.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)) {
-            preview.innerHTML = `<video src="${url}" controls style="max-width: 100%; height: auto;"></video>`;
+        if (url.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i) || url.startsWith('data:video')) {
+            preview.innerHTML = `<video src="${url}" controls style="max-width: 100%; height: auto; max-height: 300px;"></video>`;
         } else {
-            preview.innerHTML = `<p style="color: #666;"><i class="fas fa-link"></i> 视频链接已输入</p>`;
+            preview.innerHTML = `<p style="color: #666;"><i class="fas fa-link"></i> 视频链接：${url.substring(0, 50)}...</p>`;
         }
     } else {
         preview.innerHTML = '<i class="fas fa-video"></i><span>暂无视频</span>';
     }
 }
+
+// 产品视频上传
+document.getElementById('product-video-upload')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // 检查文件大小（限制 50MB）
+        if (file.size > 50 * 1024 * 1024) {
+            showToast('视频文件不能超过 50MB', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const base64 = event.target.result;
+            document.getElementById('product-video').value = base64;
+            updateProductVideoPreview(base64);
+        };
+        reader.onerror = function() {
+            showToast('视频读取失败', 'error');
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
 // 产品视频 URL 输入
 document.getElementById('product-video')?.addEventListener('input', function() {
