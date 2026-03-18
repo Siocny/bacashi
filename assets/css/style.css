@@ -1497,6 +1497,8 @@ section {
     border-radius: 12px;
     padding: 50px 40px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .detail-section {
@@ -1716,7 +1718,27 @@ section {
     }
 
     .product-detail-full {
-        padding: 30px 20px;
+        padding: 25px 15px;
+        max-width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .detail-section {
+        padding: 20px 15px;
+    }
+
+    .detail-section h3 {
+        font-size: 1.2rem;
+    }
+
+    .detail-content {
+        font-size: 1rem;
+    }
+
+    .product-video iframe,
+    .product-video video {
+        max-width: 100%;
     }
 
     .product-manuals-section {
