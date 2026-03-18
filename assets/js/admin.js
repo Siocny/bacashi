@@ -289,8 +289,8 @@ function loadProductsTable() {
             <span>ID</span>
             <span>产品名称</span>
             <span>类别</span>
-            <span>价格</span>
             <span>排序</span>
+            <span></span>
             <span>操作</span>
         </div>
     ` + paginatedProducts.sort((a, b) => a.sort - b.sort).map(product => `
@@ -304,8 +304,8 @@ function loadProductsTable() {
                 </div>
             </span>
             <span>${product.category}</span>
-            <span>${product.price}</span>
             <span>${product.sort}</span>
+            <span></span>
             <td class="table-actions">
                 <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id})">
                     <i class="fas fa-edit"></i>
