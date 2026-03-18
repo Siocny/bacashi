@@ -304,7 +304,12 @@ function loadProductsTable() {
                 </div>
             </span>
             <span>${product.category}</span>
-            <span>${product.sort}</span>
+            <span>
+                <input type="number" class="sort-input" value="${product.sort}" min="0"
+                    onchange="updateProductSort(${product.id}, this.value)"
+                    onclick="this.select()"
+                    style="width: 60px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center;">
+            </span>
             <span></span>
             <span class="table-actions">
                 <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id})">
@@ -461,7 +466,6 @@ function openProductModal(product = null) {
         document.getElementById('product-name').value = product.name;
         document.getElementById('product-category').value = product.category;
         document.getElementById('product-image').value = product.image || '';
-        document.getElementById('product-price').value = product.price;
         document.getElementById('product-sort').value = product.sort;
         document.getElementById('product-description').value = product.description;
         document.getElementById('product-manual-content').innerHTML = product.details || '';
@@ -532,6 +536,18 @@ function deleteProduct(id) {
     }
 }
 
+// 更新产品排序
+function updateProductSort(id, value) {
+    const products = API.products.getAll();
+    const product = products.find(p => p.id === id);
+    if (product) {
+        product.sort = parseInt(value) || 0;
+        API.products.update(id, product);
+        showToast('排序已更新', 'success');
+        loadProductsTable();
+    }
+}
+
 // 保存产品
 document.getElementById('product-form').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -541,7 +557,6 @@ document.getElementById('product-form').addEventListener('submit', function(e) {
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
         image: document.getElementById('product-image').value || 'https://via.placeholder.com/400x300?text=No+Image',
-        price: document.getElementById('product-price').value,
         sort: parseInt(document.getElementById('product-sort').value) || 0,
         description: document.getElementById('product-description').value,
         details: document.getElementById('product-manual-content').innerHTML,
@@ -1028,6 +1043,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.switchTab = switchTab;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
+window.updateProductSort = updateProductSort;
 window.editTimeline = editTimeline;
 window.deleteTimeline = deleteTimeline;
 window.changePage = changePage;
