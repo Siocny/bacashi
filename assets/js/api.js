@@ -2,6 +2,78 @@
 // 使用 localStorage 模拟后端数据库
 
 const API = {
+    // 自动备份开关
+    autoBackup: true,
+
+    // 初始化 IndexedDB 用于持久化存储
+    initIndexedDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('CAFELE_Backup', 1);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('backup')) {
+                    db.createObjectStore('backup', { keyPath: 'key' });
+                }
+            };
+        });
+    },
+
+    // 保存到 IndexedDB
+    async saveToIndexedDB(key, data) {
+        if (!this.autoBackup) return;
+        try {
+            const db = await this.initIndexedDB();
+            const transaction = db.transaction(['backup'], 'readwrite');
+            const store = transaction.objectStore('backup');
+            store.put({ key, data, timestamp: Date.now() });
+            console.log('数据已自动备份到 IndexedDB');
+        } catch (err) {
+            console.error('IndexedDB 备份失败:', err);
+        }
+    },
+
+    // 从 IndexedDB 读取
+    async loadFromIndexedDB(key) {
+        try {
+            const db = await this.initIndexedDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['backup'], 'readonly');
+                const store = transaction.objectStore('backup');
+                const request = store.get(key);
+                request.onsuccess = () => {
+                    if (request.result) {
+                        console.log('从 IndexedDB 恢复数据');
+                        resolve(request.result.data);
+                    } else {
+                        resolve(null);
+                    }
+                };
+                request.onerror = () => reject(request.error);
+            });
+        } catch (err) {
+            console.error('IndexedDB 读取失败:', err);
+            return null;
+        }
+    },
+
+    // 清除 IndexedDB 备份
+    async clearIndexedDBBackup() {
+        try {
+            const db = await this.initIndexedDB();
+            const transaction = db.transaction(['backup'], 'readwrite');
+            const store = transaction.objectStore('backup');
+            const request = store.clear();
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        } catch (err) {
+            console.error('IndexedDB 清除失败:', err);
+        }
+    },
+
     // 默认数据
     defaultData: {
         brand: {
@@ -59,10 +131,20 @@ const API = {
     },
 
     // 初始化数据
-    init() {
+    async init() {
+        // 先尝试从 IndexedDB 恢复数据
+        const backupBrand = await this.loadFromIndexedDB('brandData');
+        const backupBacashi = await this.loadFromIndexedDB('bacashiData');
+
         const brandData = localStorage.getItem('brandData');
         if (!brandData) {
-            this.saveData('brandData', this.defaultData);
+            if (backupBrand) {
+                // 从备份恢复
+                this.saveData('brandData', backupBrand);
+            } else {
+                // 使用默认数据
+                this.saveData('brandData', this.defaultData);
+            }
         } else {
             // 确保 timeline、contact 和 brand 数据存在
             const data = JSON.parse(brandData);
@@ -79,11 +161,15 @@ const API = {
                 this.saveData('brandData', data);
             }
         }
+
         const bacashiData = localStorage.getItem('bacashiData');
         if (!bacashiData) {
-            this.saveData('bacashiData', this.defaultDataBacashi);
+            if (backupBacashi) {
+                this.saveData('bacashiData', backupBacashi);
+            } else {
+                this.saveData('bacashiData', this.defaultDataBacashi);
+            }
         } else {
-            // 确保倍卡西品牌数据存在
             const data = JSON.parse(bacashiData);
             if (!data.brand || !data.brand.description) {
                 data.brand = this.defaultDataBacashi.brand;
@@ -95,6 +181,8 @@ const API = {
     // 保存数据
     saveData(key, data) {
         localStorage.setItem(key, JSON.stringify(data));
+        // 自动备份到 IndexedDB
+        this.saveToIndexedDB(key, data);
     },
 
     // 读取数据

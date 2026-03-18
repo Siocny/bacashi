@@ -954,7 +954,7 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 50px 60px 1.5fr 1fr 80px 1fr 140px;
+    grid-template-columns: 50px 60px 1.5fr 1fr 1fr 140px;
     padding: 16px 20px;
     align-items: center;
     border-bottom: 1px solid var(--border-light);
@@ -989,6 +989,19 @@ body {
     height: 45px;
     border-radius: var(--border-radius-sm);
     object-fit: cover;
+}
+
+/* 产品类型标签 */
+.product-type {
+    display: inline-block;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .table-actions {

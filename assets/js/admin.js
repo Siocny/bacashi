@@ -5,6 +5,18 @@ let currentPage = 1;
 const itemsPerPage = 10;
 let recentActivities = [];
 
+// 产品类型映射
+function getProductTypeName(category) {
+    const typeMap = {
+        '车用电子': '电子产品',
+        '车用内饰': '内饰产品',
+        '车用清洗': '清洁产品',
+        '手持风扇': '个人电器',
+        '桌面风扇': '家居电器'
+    };
+    return typeMap[category] || '其他产品';
+}
+
 // ==================== 初始化和认证 ====================
 
 // 检查登录状态
@@ -289,8 +301,7 @@ function loadProductsTable() {
             <span>ID</span>
             <span>产品名称</span>
             <span>类别</span>
-            <span>排序</span>
-            <span></span>
+            <span>产品类型</span>
             <span class="table-actions-header">操作</span>
         </div>
     ` + paginatedProducts.sort((a, b) => a.sort - b.sort).map(product => `
@@ -304,16 +315,7 @@ function loadProductsTable() {
                 </div>
             </span>
             <span>${product.category}</span>
-            <span class="sort-cell">
-                <button class="sort-btn" onclick="changeSort(${product.id}, -1)" title="向上">
-                    <i class="fas fa-chevron-up"></i>
-                </button>
-                <span class="sort-number">${product.sort}</span>
-                <button class="sort-btn" onclick="changeSort(${product.id}, 1)" title="向下">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-            </span>
-            <span></span>
+            <span class="product-type">${getProductTypeName(product.category)}</span>
             <span class="table-actions">
                 <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id})">
                     <i class="fas fa-edit"></i>
@@ -925,14 +927,14 @@ document.querySelectorAll('.modal-close').forEach(close => {
     });
 });
 
-// 点击模态框外部关闭
-document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', function(e) {
-        if (e.target === this || e.target.classList.contains('modal-overlay')) {
-            this.classList.remove('show');
-        }
-    });
-});
+// 点击模态框外部关闭 - 已禁用，防止误操作
+// document.querySelectorAll('.modal').forEach(modal => {
+//     modal.addEventListener('click', function(e) {
+//         if (e.target === this || e.target.classList.contains('modal-overlay')) {
+//             this.classList.remove('show');
+//         }
+//     });
+// });
 
 // 取消按钮
 document.querySelectorAll('.modal-cancel').forEach(btn => {
@@ -1103,11 +1105,13 @@ document.getElementById('import-file')?.addEventListener('change', function(e) {
 });
 
 // 重置数据
-function resetData() {
+async function resetData() {
     if (confirm('警告：此操作将恢复所有默认数据且无法撤销！确定要继续吗？')) {
         if (confirm('请再次确认：确定要重置所有数据吗？')) {
             localStorage.removeItem('brandData');
-            API.init();
+            localStorage.removeItem('bacashiData');
+            await API.clearIndexedDBBackup();
+            await API.init();
             showToast('数据已重置为默认值', 'success');
             addActivity('重置数据', 'warning');
             loadDashboard();
@@ -1183,9 +1187,9 @@ document.getElementById('export-timeline-btn')?.addEventListener('click', functi
 
 // ==================== 页面加载初始化 ====================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // 初始化 API 数据（确保 timeline 等数据存在）
-    API.init();
+    await API.init();
 
     checkAuth();
     initRememberMe();

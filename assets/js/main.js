@@ -271,9 +271,9 @@ function searchProducts() {
 }
 
 // 下拉菜单分类点击事件
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // 初始化 API 数据（确保 timeline 等数据存在）
-    API.init();
+    await API.init();
 
     // 检测微信浏览器并显示提示
     checkWechatBrowser();
