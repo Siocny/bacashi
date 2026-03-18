@@ -962,6 +962,10 @@ body {
     transition: background var(--transition-fast);
 }
 
+.table-actions-header {
+    text-align: right;
+}
+
 .table-row:last-child {
     border-bottom: none;
 }
