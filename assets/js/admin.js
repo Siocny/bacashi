@@ -552,11 +552,18 @@ function updateProductSort(id, value) {
 }
 
 // 改变排序（上下移动）
-function changeSort(id, delta) {
+window.changeSort = function(id, delta) {
+    console.log('changeSort called with id:', id, 'delta:', delta);
+
     const products = API.products.getAll();
     products.sort((a, b) => a.sort - b.sort);
-    const index = products.findIndex(p => p.id === id);
-    if (index === -1) return;
+    const index = products.findIndex(p => p.id == id);
+
+    if (index === -1) {
+        console.log('Product not found');
+        showToast('未找到产品', 'error');
+        return;
+    }
 
     const newIndex = index + delta;
     if (newIndex < 0 || newIndex >= products.length) {
@@ -569,12 +576,14 @@ function changeSort(id, delta) {
     products[index].sort = products[newIndex].sort;
     products[newIndex].sort = temp;
 
+    console.log('Swapping:', products[index].name, '<->', products[newIndex].name);
+
     API.products.update(products[index].id, products[index]);
     API.products.update(products[newIndex].id, products[newIndex]);
 
     showToast('排序已更新', 'success');
     loadProductsTable();
-}
+};
 
 // 重新排序产品（自动连续排序）
 function renumberProducts() {
@@ -1083,7 +1092,6 @@ window.switchTab = switchTab;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.updateProductSort = updateProductSort;
-window.changeSort = changeSort;
 window.editTimeline = editTimeline;
 window.deleteTimeline = deleteTimeline;
 window.changePage = changePage;
