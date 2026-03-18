@@ -464,52 +464,23 @@ function openProductModal(product = null) {
         document.getElementById('product-price').value = product.price;
         document.getElementById('product-sort').value = product.sort;
         document.getElementById('product-description').value = product.description;
-        document.getElementById('product-details').value = product.details;
+        document.getElementById('product-manual-content').innerHTML = product.details || '';
+        document.getElementById('product-video').value = product.video || '';
         updateImagePreview(product.image);
+        updateProductVideoPreview(product.video || '');
     } else {
         currentEditId = null;
         document.getElementById('modal-title').textContent = '添加产品';
         form.reset();
         document.getElementById('product-id').value = '';
         document.getElementById('product-sort').value = '0';
+        document.getElementById('product-manual-content').innerHTML = '';
+        document.getElementById('product-video').value = '';
         updateImagePreview(null);
+        updateProductVideoPreview('');
     }
 
     modal.classList.add('show');
-
-    // 打开产品编辑模态框时，加载该产品的说明书
-    if (product) {
-        setTimeout(() => loadProductManualList(), 100);
-    }
-}
-
-// 加载产品说明书列表（在产品编辑模态框中）
-function loadProductManualList() {
-    if (!currentEditId) return;
-
-    Storage.getAllManuals().then(manuals => {
-        const manual = manuals.find(m => m.productId == currentEditId);
-        const container = document.getElementById('manual-list');
-
-        if (manual) {
-            container.innerHTML = `
-                <div class="manual-item-display">
-                    ${manual.cover ? `<img src="${manual.cover}" alt="${manual.title}" style="height: 60px; border-radius: 4px; margin-right: 10px;">` : ''}
-                    <span style="display: inline-block; vertical-align: middle;">${manual.title}</span>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="editManual(window.manualFromStorage)" style="margin-left: 15px;">
-                        <i class="fas fa-edit"></i> 编辑
-                    </button>
-                </div>
-            `;
-            // 保存当前说明书供编辑按钮使用
-            window.manualFromStorage = manual;
-        } else {
-            container.innerHTML = '<span style="color: #999;">暂无说明书</span>';
-            window.manualFromStorage = null;
-        }
-    }).catch(err => {
-        console.error('加载说明书列表失败:', err);
-    });
 }
 
 // 图片预览
@@ -573,7 +544,8 @@ document.getElementById('product-form').addEventListener('submit', function(e) {
         price: document.getElementById('product-price').value,
         sort: parseInt(document.getElementById('product-sort').value) || 0,
         description: document.getElementById('product-description').value,
-        details: document.getElementById('product-details').value
+        details: document.getElementById('product-manual-content').innerHTML,
+        video: document.getElementById('product-video').value || ''
     };
 
     if (id) {
@@ -590,156 +562,50 @@ document.getElementById('product-form').addEventListener('submit', function(e) {
     loadProductsTable();
 });
 
-// ==================== 产品说明书管理（在产品编辑模态框中） ====================
+// 产品说明书格式化
+function formatProductManual(command, value = null) {
+    document.execCommand(command, false, value);
+}
 
-// 添加说明书（在产品编辑模态框中）
-function addManual() {
-    if (!currentEditId) {
-        showToast('请先保存产品', 'error');
-        return;
-    }
-
-    // 检查是否已存在说明书
-    Storage.getAllManuals().then(manuals => {
-        const existing = manuals.find(m => m.productId == currentEditId);
-        if (existing) {
-            // 已存在，打开编辑模式
-            editManual(existing);
-            return;
+// 产品说明书插入图片
+function insertProductManualImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64 = event.target.result;
+                document.execCommand('insertImage', false, base64);
+            };
+            reader.readAsDataURL(file);
         }
-
-        // 不存在，打开添加模式
-        const modal = document.getElementById('manual-item-modal');
-        const form = document.getElementById('manual-item-form');
-
-        // 重置表单
-        form.reset();
-        document.getElementById('manual-item-id').value = '';
-        document.getElementById('manual-item-product-id').value = currentEditId;
-        document.getElementById('manual-item-title').value = '';
-        document.getElementById('manual-item-cover').value = '';
-        document.getElementById('manual-item-video').value = '';
-        document.getElementById('manual-item-content').innerHTML = '';
-
-        // 更新预览
-        updateManualItemCoverPreview(null);
-        updateVideoPreview(null);
-
-        // 打开模态框
-        modal.classList.add('show');
-    }).catch(err => {
-        console.error('检查说明书失败:', err);
-        showToast('加载失败，请重试', 'error');
-    });
+    };
+    input.click();
 }
 
-// 编辑说明书
-function editManual(manual) {
-    const modal = document.getElementById('manual-item-modal');
-    const form = document.getElementById('manual-item-form');
-
-    document.getElementById('manual-item-id').value = manual.id;
-    document.getElementById('manual-item-product-id').value = manual.productId;
-    document.getElementById('manual-item-title').value = manual.title;
-    document.getElementById('manual-item-cover').value = manual.cover || '';
-    document.getElementById('manual-item-video').value = manual.video || '';
-    document.getElementById('manual-item-content').innerHTML = manual.content;
-
-    updateManualItemCoverPreview(manual.cover);
-    updateVideoPreview(manual.video);
-
-    modal.classList.add('show');
-}
-
-// 说明书封面预览
-function updateManualItemCoverPreview(url) {
-    const preview = document.getElementById('manual-item-cover-preview');
+// 产品视频预览
+function updateProductVideoPreview(url) {
+    const preview = document.getElementById('product-video-preview');
     if (url && (url.startsWith('http') || url.startsWith('data:'))) {
-        preview.innerHTML = `<img src="${url}" alt="封面">`;
-    } else {
-        preview.innerHTML = '<i class="fas fa-image"></i><span>暂无图片</span>';
-    }
-}
-
-// 视频预览
-function updateVideoPreview(url) {
-    const preview = document.getElementById('manual-item-video-preview');
-    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
-        preview.innerHTML = `<video src="${url}" controls style="max-width: 100%; height: auto;"></video>`;
+        if (url.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)) {
+            preview.innerHTML = `<video src="${url}" controls style="max-width: 100%; height: auto;"></video>`;
+        } else {
+            preview.innerHTML = `<p style="color: #666;"><i class="fas fa-link"></i> 视频链接已输入</p>`;
+        }
     } else {
         preview.innerHTML = '<i class="fas fa-video"></i><span>暂无视频</span>';
     }
 }
 
-// 产品编辑模态框中的说明书封面上传
-document.getElementById('manual-item-cover-upload')?.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const base64 = event.target.result;
-            document.getElementById('manual-item-cover').value = base64;
-            updateManualItemCoverPreview(base64);
-        };
-        reader.readAsDataURL(file);
-    }
+// 产品视频 URL 输入
+document.getElementById('product-video')?.addEventListener('input', function() {
+    updateProductVideoPreview(this.value);
 });
 
-document.getElementById('manual-item-cover')?.addEventListener('input', function() {
-    updateManualItemCoverPreview(this.value);
-});
-
-// 视频 URL 输入提示
-document.getElementById('manual-item-video')?.addEventListener('input', function() {
-    updateVideoPreview(this.value);
-});
-
-// 说明书表单提交（产品编辑模态框中）
-document.getElementById('manual-item-form')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    console.log('说明书表单提交');
-
-    const productId = document.getElementById('manual-item-product-id').value;
-    console.log('productId:', productId);
-
-    if (!productId) {
-        showToast('请先选择产品', 'error');
-        return;
-    }
-
-    const title = document.getElementById('manual-item-title').value.trim();
-    if (!title) {
-        showToast('请输入说明书标题', 'error');
-        return;
-    }
-
-    const product = API.products.getAll().find(p => p.id == productId);
-    const manualData = {
-        productId: productId,
-        productName: product ? product.name : '',
-        title: title,
-        cover: document.getElementById('manual-item-cover').value || '',
-        video: document.getElementById('manual-item-video').value || '',
-        content: document.getElementById('manual-item-content').innerHTML
-    };
-    console.log('manualData:', manualData);
-
-    const manualId = document.getElementById('manual-item-id').value;
-
-    // 使用 IndexedDB 存储说明书数据（支持更大数据量）
-    const savePromise = manualId ? Storage.updateManual(manualData) : Storage.addManual(manualData);
-
-    savePromise.then(() => {
-        showToast(manualId ? '说明书已更新！' : '说明书已添加！', 'success');
-        document.getElementById('manual-item-modal').classList.remove('show');
-        // 刷新产品列表以显示说明书状态
-        loadProductsTable();
-    }).catch(err => {
-        console.error('保存说明书失败:', err);
-        showToast('保存失败，请重试', 'error');
-    });
-});
-
+// ==================== 时间轴管理 ====================
 // 格式化说明书文本（产品编辑模态框中）
 function formatManualText(command, value = null) {
     document.execCommand(command, false, value);
@@ -1170,10 +1036,7 @@ window.toggleProductSelection = toggleProductSelection;
 window.exportData = exportData;
 window.resetData = resetData;
 window.changePassword = changePassword;
-window.addManual = addManual;
-window.editManual = editManual;
-window.formatManualText = formatManualText;
-window.insertManualImage = insertManualImage;
-window.updateVideoPreview = updateVideoPreview;
-window.loadProductManualList = loadProductManualList;
+window.formatProductManual = formatProductManual;
+window.insertProductManualImage = insertProductManualImage;
+window.updateProductVideoPreview = updateProductVideoPreview;
 

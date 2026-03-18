@@ -155,74 +155,20 @@
                     </div>
                 </div>
                 <div class="product-detail-full">
-                    <div class="detail-section">
-                        <h3>产品详情</h3>
-                        <div class="detail-content">${product.details}</div>
-                    </div>
                     ${product.video ? `
                     <div class="detail-section">
                         <h3>产品视频</h3>
                         <div class="product-video">${getVideoEmbed(product.video)}</div>
                     </div>
                     ` : ''}
+                    <div class="detail-section">
+                        <h3>产品说明书</h3>
+                        <div class="detail-content">${product.details || '暂无说明书内容'}</div>
+                    </div>
                 </div>
             `;
 
             document.getElementById('product-detail-content').innerHTML = detailHtml;
-
-            // 加载该产品的说明书
-            loadProductManuals(productId, brand);
-        }
-
-        function loadProductManuals(productId, brand) {
-            let manuals = [];
-            if (brand === 'bacashi') {
-                const bacashiManuals = API.bacashi.manuals.get();
-                manuals = bacashiManuals.filter(m => m.productId == productId);
-            } else {
-                // 使用 IndexedDB 获取说明书
-                if (typeof Storage !== 'undefined' && Storage.getAllManuals) {
-                    Storage.getAllManuals().then(allManuals => {
-                        manuals = allManuals.filter(m => m.productId == productId);
-                        renderManuals(manuals, brand);
-                    }).catch(err => {
-                        console.error('加载说明书失败:', err);
-                        // 回退到 localStorage
-                        const allManuals = API.manuals.getAll();
-                        manuals = allManuals.filter(m => m.productId == productId);
-                        renderManuals(manuals, brand);
-                    });
-                    return; // 异步处理，直接返回
-                } else {
-                    const allManuals = API.manuals.getAll();
-                    manuals = allManuals.filter(m => m.productId == productId);
-                }
-            }
-            renderManuals(manuals, brand);
-        }
-
-        function renderManuals(manuals, brand) {
-            if (manuals.length === 0) {
-                // 没有说明书，隐藏说明书区域
-                document.getElementById('product-manuals-section').style.display = 'none';
-                return;
-            }
-
-            // 只显示第一个说明书
-            const manual = manuals[0];
-            document.getElementById('product-manuals-section').style.display = 'block';
-            document.getElementById('product-manuals-container').innerHTML = `
-                <div class="manual-content-full">
-                    <h3 class="manual-title">${manual.title}</h3>
-                    ${manual.video ? `<div class="manual-video">${getVideoEmbed(manual.video)}</div>` : ''}
-                    <div class="manual-content">${manual.content}</div>
-                </div>
-            `;
-        }
-
-        // 显示说明书详情 - 跳转到详情页
-        function showManualDetail(manualId, brand) {
-            window.location.href = `manual-detail.html?id=${manualId}&brand=${brand}`;
         }
 
         // 获取视频嵌入代码
@@ -260,6 +206,7 @@
 
             return `<p>视频链接：${url}</p>`;
         }
+
     </script>
 </body>
 </html>
