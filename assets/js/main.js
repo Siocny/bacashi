@@ -275,6 +275,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化 API 数据（确保 timeline 等数据存在）
     API.init();
 
+    // 检测微信浏览器并显示提示
+    checkWechatBrowser();
+
     document.querySelectorAll('.dropdown-menu a[data-category]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -283,6 +286,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// 检测微信浏览器
+function checkWechatBrowser() {
+    const userAgent = navigator.userAgent;
+    const isWechat = /micromessenger|wechat|weixin/i.test(userAgent);
+
+    if (isWechat) {
+        const wechatTip = document.getElementById('wechat-tip');
+        if (wechatTip) {
+            // 检查用户是否已关闭过提示
+            const hasClosed = sessionStorage.getItem('wechatTipClosed');
+            if (!hasClosed) {
+                wechatTip.style.display = 'block';
+                // 为导航栏添加下边距
+                document.querySelector('.navbar').style.top = '48px';
+            }
+        }
+    }
+}
+
+// 关闭微信提示
+function closeWechatTip() {
+    const wechatTip = document.getElementById('wechat-tip');
+    if (wechatTip) {
+        wechatTip.style.display = 'none';
+        document.querySelector('.navbar').style.top = '0';
+        sessionStorage.setItem('wechatTipClosed', 'true');
+    }
+}
 
 // 按分类过滤产品
 function filterProductsByCategory(category) {
