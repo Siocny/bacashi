@@ -990,7 +990,7 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 50px 60px 1.5fr 1fr 80px 1fr 140px;
+    grid-template-columns: 50px 60px 1.5fr 1fr 1fr 140px;
     padding: 16px 20px;
     background: var(--bg-color);
     font-weight: 600;
@@ -1015,6 +1015,8 @@ body {
     text-align: left;
 }
 
+.table-header > span:nth-child(4),
+.table-header > span:nth-child(5),
 .table-row > span:nth-child(4),
 .table-row > span:nth-child(5) {
     text-align: center !important;
