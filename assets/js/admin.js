@@ -291,7 +291,7 @@ function loadProductsTable() {
             <span>类别</span>
             <span>排序</span>
             <span></span>
-            <span>操作</span>
+            <span class="table-actions-header">操作</span>
         </div>
     ` + paginatedProducts.sort((a, b) => a.sort - b.sort).map(product => `
         <div class="table-row ${selectedProducts.includes(product.id) ? 'selected' : ''}" data-id="${product.id}">
@@ -306,14 +306,14 @@ function loadProductsTable() {
             <span>${product.category}</span>
             <span>${product.sort}</span>
             <span></span>
-            <td class="table-actions">
+            <span class="table-actions">
                 <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id})">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
                     <i class="fas fa-trash"></i>
                 </button>
-            </td>
+            </span>
         </div>
     `).join('');
 
