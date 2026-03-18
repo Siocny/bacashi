@@ -797,6 +797,55 @@ body {
     gap: 20px;
 }
 
+/* 带按钮的输入框样式 */
+.input-with-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-with-btns select,
+.input-with-btns input {
+    flex: 1;
+    width: auto;
+}
+
+.input-btns {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+}
+
+.btn-icon.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-icon.btn-primary:hover {
+    background: var(--primary-light);
+}
+
+.btn-icon.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-icon.btn-danger:hover {
+    background: #c0392b;
+}
+
 .form-actions {
     display: flex;
     gap: 12px;
@@ -962,6 +1011,17 @@ body {
     transition: background var(--transition-fast);
 }
 
+.table-row > span {
+    text-align: left;
+}
+
+.table-row > span:nth-child(4),
+.table-row > span:nth-child(5) {
+    text-align: center;
+    justify-content: center;
+    display: flex;
+}
+
 .table-actions-header {
     text-align: right;
 }
@@ -1002,6 +1062,8 @@ body {
     color: #555;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    min-width: 120px;
+    justify-content: center;
 }
 
 .table-actions {

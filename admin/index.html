@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>后台管理 - CAFELE 卡斐乐</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin.css?v=20260318002">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -261,12 +261,13 @@
                             <select id="product-filter" class="filter-select">
                                 <option value="all">全部类别</option>
                             </select>
-                            <button class="btn btn-secondary" id="manage-categories-btn" title="管理类别">
-                                <i class="fas fa-tags"></i> 管理类别
-                            </button>
                             <button class="icon-btn" id="export-products-btn" title="导出产品数据">
                                 <i class="fas fa-file-export"></i>
                             </button>
+                            <label class="icon-btn" title="导入产品数据">
+                                <i class="fas fa-file-import"></i>
+                                <input type="file" id="import-products-file" accept=".json" style="display: none;" onchange="importProducts(this)">
+                            </label>
                         </div>
                     </div>
                     <div id="products-table" class="data-table">
@@ -428,9 +429,37 @@
                         </div>
                         <div class="form-group">
                             <label>产品类别 *</label>
-                            <select id="product-category" required>
-                                <option value="">请选择产品类别</option>
-                            </select>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <select id="product-category" required style="flex: 1;">
+                                    <option value="">请选择产品类别</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addCategoryOption()" title="添加类别">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteCategoryOption()" title="删除类别">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>产品类型</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <select id="product-type" style="flex: 1;">
+                                    <option value="">请选择产品类型</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addProductTypeOption()" title="添加类型">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteProductTypeOption()" title="删除类型">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>排序</label>
+                            <input type="number" id="product-sort" value="0" min="0">
                         </div>
                     </div>
                     <div class="form-group">
@@ -448,10 +477,6 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>排序</label>
-                        <input type="number" id="product-sort" value="0" min="0">
                     </div>
                     <div class="form-group">
                         <label>产品描述</label>
@@ -497,28 +522,6 @@
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 类别管理模态框 -->
-    <div class="modal" id="categories-modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h3><i class="fas fa-tags"></i> 管理产品类别</h3>
-                <button class="modal-close"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="category-add-row">
-                    <input type="text" id="new-category-input" placeholder="输入新类别名称" onkeydown="if(event.keyCode===13) addCategory()">
-                    <button class="btn btn-primary" onclick="addCategory()">
-                        <i class="fas fa-plus"></i> 添加
-                    </button>
-                </div>
-                <div id="categories-list" class="categories-list">
-                    <!-- 类别列表由 JS 生成 -->
-                </div>
             </div>
         </div>
     </div>
