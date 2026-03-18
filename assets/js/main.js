@@ -102,7 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="product-category">${product.category}</span>
                     <h3 class="product-name">${product.name}</h3>
                     <p class="product-description">${product.description}</p>
-                    <div class="product-price">${product.price}</div>
                 </div>
             </div>
         `).join('');
@@ -259,7 +258,6 @@ function searchProducts() {
                 <span class="product-category">${product.category}</span>
                 <h3 class="product-name">${product.name}</h3>
                 <p class="product-description">${product.description}</p>
-                <div class="product-price">${product.price}</div>
             </div>
         </div>
     `).join('');
@@ -318,7 +316,6 @@ function filterProductsByCategory(category) {
                 <span class="product-category">${product.category}</span>
                 <h3 class="product-name">${product.name}</h3>
                 <p class="product-description">${product.description}</p>
-                <div class="product-price">${product.price}</div>
             </div>
         </div>
     `).join('');
