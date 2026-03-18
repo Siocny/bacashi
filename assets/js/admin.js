@@ -304,11 +304,14 @@ function loadProductsTable() {
                 </div>
             </span>
             <span>${product.category}</span>
-            <span>
-                <input type="number" class="sort-input" value="${product.sort}" min="0"
-                    onchange="updateProductSort(${product.id}, this.value)"
-                    onclick="this.select()"
-                    style="width: 60px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center;">
+            <span class="sort-cell">
+                <button class="sort-btn" onclick="changeSort(${product.id}, -1)" title="向上">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+                <span class="sort-number">${product.sort}</span>
+                <button class="sort-btn" onclick="changeSort(${product.id}, 1)" title="向下">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </span>
             <span></span>
             <span class="table-actions">
@@ -530,7 +533,7 @@ function editProduct(id) {
 function deleteProduct(id) {
     if (confirm('确定要删除这个产品吗？')) {
         API.products.delete(id);
-        loadProductsTable();
+        renumberProducts();
         showToast('产品已删除', 'success');
         addActivity('删除产品 ID:' + id, 'warning');
     }
@@ -544,8 +547,44 @@ function updateProductSort(id, value) {
         product.sort = parseInt(value) || 0;
         API.products.update(id, product);
         showToast('排序已更新', 'success');
-        loadProductsTable();
+        renumberProducts();
     }
+}
+
+// 改变排序（上下移动）
+function changeSort(id, delta) {
+    const products = API.products.getAll();
+    products.sort((a, b) => a.sort - b.sort);
+    const index = products.findIndex(p => p.id === id);
+    if (index === -1) return;
+
+    const newIndex = index + delta;
+    if (newIndex < 0 || newIndex >= products.length) {
+        showToast('已到达边界', 'info');
+        return;
+    }
+
+    // 交换排序值
+    const temp = products[index].sort;
+    products[index].sort = products[newIndex].sort;
+    products[newIndex].sort = temp;
+
+    API.products.update(products[index].id, products[index]);
+    API.products.update(products[newIndex].id, products[newIndex]);
+
+    showToast('排序已更新', 'success');
+    loadProductsTable();
+}
+
+// 重新排序产品（自动连续排序）
+function renumberProducts() {
+    const products = API.products.getAll();
+    products.sort((a, b) => a.sort - b.sort);
+    products.forEach((product, index) => {
+        product.sort = index + 1;
+        API.products.update(product.id, product);
+    });
+    loadProductsTable();
 }
 
 // 保存产品
@@ -1044,6 +1083,7 @@ window.switchTab = switchTab;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.updateProductSort = updateProductSort;
+window.changeSort = changeSort;
 window.editTimeline = editTimeline;
 window.deleteTimeline = deleteTimeline;
 window.changePage = changePage;
