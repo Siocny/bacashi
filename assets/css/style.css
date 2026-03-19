@@ -2196,72 +2196,105 @@ section {
 }
 
 /* 关于页面 */
-/* 品牌中心标题 */
-.brand-center-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    color: white;
+/* 品牌介绍标题 */
+.brand-intro-header {
+    background: #fff;
     padding: 120px 0 60px;
     text-align: center;
-    margin-top: 60px;
 }
 
-.brand-center-header .section-subtitle {
+.brand-intro-header .section-subtitle {
     font-size: 14px;
     letter-spacing: 5px;
-    opacity: 0.9;
+    color: var(--accent-color);
     margin-bottom: 15px;
+    font-weight: 600;
 }
 
-.brand-center-header .section-title {
+.brand-intro-header .section-title {
     font-size: 48px;
     font-weight: 700;
+    color: var(--primary-color);
     margin-bottom: 20px;
 }
 
-.brand-center-header .section-line {
+.brand-intro-header .section-line {
     width: 60px;
     height: 3px;
     background: linear-gradient(90deg, var(--accent-color), transparent);
     margin: 0 auto;
 }
 
-/* 品牌统计数据 */
-.brand-stats-section {
+/* 品牌介绍内容 */
+.brand-intro-section {
     padding: 60px 0;
-    background: var(--bg-light);
 }
 
-.brand-stats-grid {
+.brand-intro-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    margin-bottom: 60px;
+}
+
+.brand-desc h2 {
+    font-size: 32px;
+    color: var(--primary-color);
+    margin-bottom: 25px;
+}
+
+.brand-desc p {
+    font-size: 16px;
+    line-height: 2;
+    color: var(--text-light);
+    margin-bottom: 20px;
+}
+
+.brand-team {
+    color: var(--accent-color) !important;
+    font-weight: 500;
+}
+
+.brand-image img {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+/* 品牌统计数据 */
+.brand-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 30px;
     max-width: 1000px;
     margin: 0 auto;
+    padding: 40px;
+    background: var(--bg-light);
+    border-radius: 20px;
 }
 
-.brand-stat-card {
-    background: white;
-    padding: 40px 25px;
-    border-radius: 15px;
+.stat-item {
     text-align: center;
+    padding: 25px;
+    background: white;
+    border-radius: 15px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.06);
     transition: all 0.3s ease;
-    border: 1px solid var(--border-color);
 }
 
-.brand-stat-card:hover {
+.stat-item:hover {
     transform: translateY(-8px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    border-color: var(--accent-color);
 }
 
-.brand-stat-card .stat-icon {
+.stat-item .stat-icon {
     font-size: 36px;
     color: var(--accent-color);
     margin-bottom: 15px;
 }
 
-.brand-stat-card .stat-num {
+.stat-item .stat-number {
     display: block;
     font-size: 36px;
     font-weight: 700;
@@ -2269,7 +2302,7 @@ section {
     margin-bottom: 8px;
 }
 
-.brand-stat-card .stat-label {
+.stat-item .stat-label {
     font-size: 14px;
     color: var(--text-muted);
 }
