@@ -2292,7 +2292,7 @@ section {
 .stat-item {
     text-align: center;
     padding: 35px 25px;
-    background: white;
+    background: #f8f9fa;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     transition: all 0.3s ease;
