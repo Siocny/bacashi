@@ -2037,9 +2037,8 @@ section {
 .brand-intro-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    gap: 50px;
     align-items: center;
-    margin-top: 40px;
 }
 
 .brand-desc p {
@@ -2220,14 +2219,6 @@ section {
 /* 品牌介绍内容 */
 .brand-intro-section {
     padding: 50px 0 80px;
-}
-
-.brand-intro-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    align-items: start;
-    margin-bottom: 20px;
 }
 
 /* 品牌介绍标题字体 */
