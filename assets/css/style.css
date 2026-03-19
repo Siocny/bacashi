@@ -1885,24 +1885,48 @@ section {
 
 .category-btn {
     padding: 10px 25px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e0e0e0;
     background: white;
     border-radius: 25px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 14px;
-    color: var(--text-color);
+    color: #666;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(26, 58, 92, 0.08);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.category-btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .category-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    border-color: #1a3a5c;
+    color: #1a3a5c;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(26, 58, 92, 0.15);
 }
 
 .category-btn.active {
-    background: var(--primary-color);
+    background: #1a3a5c;
     color: white;
-    border-color: var(--primary-color);
+    border-color: #1a3a5c;
+    box-shadow: 0 4px 15px rgba(26, 58, 92, 0.3);
+    transform: translateY(-2px);
 }
 
 /* 产品网格 */
@@ -2218,14 +2242,14 @@ section {
 
 /* 品牌介绍内容 */
 .brand-intro-section {
-    padding: 50px 0 80px;
+    padding: 30px 0 40px;
 }
 
 /* 品牌介绍标题字体 */
 .brand-desc h2 {
     font-size: 32px;
     color: #1a3a5c;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     font-weight: 700;
     letter-spacing: 1px;
 }
@@ -2233,9 +2257,9 @@ section {
 /* 品牌介绍描述文字 */
 .brand-desc p {
     font-size: 14px;
-    line-height: 2;
+    line-height: 1.8;
     color: #666;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     font-weight: 400;
     text-align: justify;
 }
@@ -2245,7 +2269,7 @@ section {
     font-weight: 600;
     font-size: 14px;
     letter-spacing: 1px;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 /* 品牌图片 */
