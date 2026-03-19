@@ -2199,84 +2199,90 @@ section {
 /* 品牌介绍标题 */
 .brand-intro-header {
     background: #fff;
-    padding: 120px 0 60px;
+    padding: 100px 0 50px;
     text-align: center;
 }
 
 .brand-intro-header .section-subtitle {
-    font-size: 14px;
-    letter-spacing: 5px;
-    color: var(--accent-color);
-    margin-bottom: 15px;
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: #c9a962;
+    margin-bottom: 12px;
     font-weight: 600;
+    text-transform: uppercase;
 }
 
 .brand-intro-header .section-title {
-    font-size: 48px;
+    font-size: 42px;
     font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 20px;
+    color: #1a3a5c;
+    margin-bottom: 18px;
+    letter-spacing: 3px;
 }
 
 .brand-intro-header .section-line {
-    width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent-color), transparent);
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #c9a962, transparent);
     margin: 0 auto;
 }
 
 /* 品牌介绍内容 */
 .brand-intro-section {
-    padding: 60px 0;
+    padding: 50px 0 80px;
 }
 
 .brand-intro-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: center;
-    margin-bottom: 60px;
+    gap: 50px;
+    align-items: start;
+    margin-bottom: 20px;
 }
 
 /* 品牌介绍标题字体 */
 .brand-desc h2 {
-    font-size: 36px;
-    color: var(--primary-color);
+    font-size: 32px;
+    color: #1a3a5c;
     margin-bottom: 25px;
     font-weight: 700;
+    letter-spacing: 1px;
 }
 
 /* 品牌介绍描述文字 */
 .brand-desc p {
-    font-size: 15px;
-    line-height: 2.2;
+    font-size: 14px;
+    line-height: 2.4;
     color: #666;
-    margin-bottom: 20px;
-    font-weight: 300;
+    margin-bottom: 15px;
+    font-weight: 400;
+    text-align: justify;
 }
 
 .brand-team {
-    color: var(--accent-color) !important;
+    color: #c9a962 !important;
     font-weight: 400;
     font-size: 14px;
     letter-spacing: 1px;
-    margin-top: 30px;
+    margin-top: 25px;
 }
 
 /* 品牌图片 */
 .brand-image img {
     width: 100%;
+    height: auto;
     border-radius: 0;
     box-shadow: none;
+    display: block;
 }
 
 /* 品牌统计数据 */
 .brand-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 25px;
     max-width: 1000px;
-    margin: 50px auto 0;
+    margin: 60px auto 0;
     padding: 0;
     background: transparent;
     border-radius: 0;
@@ -2284,42 +2290,46 @@ section {
 
 .stat-item {
     text-align: center;
-    padding: 30px 20px;
+    padding: 35px 25px;
     background: white;
-    border: 1px solid #e8e8e8;
-    border-radius: 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .stat-item:hover {
-    border-color: var(--accent-color);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    border-color: #c9a962;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transform: translateY(-3px);
 }
 
 .stat-item .stat-icon {
-    font-size: 40px;
-    margin-bottom: 15px;
+    font-size: 42px;
+    margin-bottom: 18px;
     display: block;
 }
 
-/* 彩色图标 */
-.stat-item:nth-child(1) .stat-icon { color: #f59e0b; }
+/* 彩色图标 - 与参考图一致 */
+.stat-item:nth-child(1) .stat-icon { color: #e6a23c; }
 .stat-item:nth-child(2) .stat-icon { color: #d97706; }
-.stat-item:nth-child(3) .stat-icon { color: #7c3aed; }
+.stat-item:nth-child(3) .stat-icon { color: #6366f1; }
 .stat-item:nth-child(4) .stat-icon { color: #2563eb; }
 
 .stat-item .stat-number {
     display: block;
-    font-size: 40px;
+    font-size: 38px;
     font-weight: 700;
-    color: var(--primary-color);
+    color: #1a3a5c;
     margin-bottom: 10px;
+    letter-spacing: 0.5px;
 }
 
 .stat-item .stat-label {
     font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 300;
+    color: #999;
+    font-weight: 400;
+    letter-spacing: 0.5px;
 }
 
 .company-intro-section {
