@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>关于我们 - CAFELE & BACASHI</title>
+    <link rel="stylesheet" href="assets/css/style.css?v=20260319002">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-brand">
+                    <span class="logo-text">CAFELE</span>
+                    <span class="logo-cn">卡斐乐</span>
+                </div>
+                <span class="logo-divider">|</span>
+                <div class="logo-brand">
+                    <span class="logo-text">BACASHI</span>
+                    <span class="logo-cn">倍卡西</span>
+                </div>
+            </div>
+
+            <!-- 主导航 -->
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="products.html">品牌产品</a></li>
+                <li><a href="service.html">服务与支持</a></li>
+                <li class="active"><a href="javascript:void(0)">关于我们</a></li>
+            </ul>
+
+            <!-- 右侧按钮 -->
+            <div class="nav-right">
+                <a href="service.html#contact" class="btn-buy">购买</a>
+                <div class="search-box">
+                    <input type="text" placeholder="请输入关键字" id="search-input">
+                    <button class="search-btn" onclick="searchProducts()">🔍</button>
+                </div>
+            </div>
+
+            <button class="mobile-menu-btn"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- WeChat 提示横幅 -->
+    <div id="wechat-tip" class="wechat-tip" style="display: none;">
+        <div class="wechat-tip-content">
+            <span class="wechat-tip-icon">💬</span>
+            <span class="wechat-tip-text">检测到您在微信中访问，请点击右上角 <strong>...</strong> 选择 <strong>在浏览器打开</strong> 以获得最佳体验</span>
+            <button class="wechat-tip-close" onclick="closeWechatTip()">×</button>
+        </div>
+    </div>
+
+    <!-- 关于我们页面 -->
+    <main class="about-page">
+        <!-- 页头横幅 -->
+        <div class="about-hero">
+            <div class="container">
+                <h1>关于我们</h1>
+                <p>ABOUT US</p>
+            </div>
+        </div>
+
+        <!-- 公司简介 -->
+        <section class="company-intro-section">
+            <div class="container">
+                <div class="company-intro-content">
+                    <div class="intro-text">
+                        <h2>CAFELE & BACASHI</h2>
+                        <p class="intro-desc">卡斐乐是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。</p>
+                        <p class="intro-desc">经过多年的发展，我们已经成为行业内的知名品牌，产品远销海内外，赢得了广大客户的信赖和好评。</p>
+
+                        <div class="intro-stats">
+                            <div class="intro-stat">
+                                <span class="stat-num" id="stat-years">3</span>
+                                <span class="stat-label">年成立</span>
+                            </div>
+                            <div class="intro-stat">
+                                <span class="stat-num" id="stat-products">120</span>
+                                <span class="stat-label">款产品</span>
+                            </div>
+                            <div class="intro-stat">
+                                <span class="stat-num" id="stat-customers">5000+</span>
+                                <span class="stat-label">服务客户</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="intro-image">
+                        <img src="assets/images/微信图片_20260313141449_149_2.jpg" alt="公司介绍" onerror="this.src='https://via.placeholder.com/500x400?text=CAFELE'">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 发展历程 -->
+        <section class="timeline-section">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-subtitle">OUR JOURNEY</p>
+                    <h2 class="section-title">发展历程</h2>
+                    <div class="section-line"></div>
+                </div>
+
+                <div id="timeline-container" class="timeline-container">
+                    <!-- 时间轴由 JS 动态加载 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 企业文化 -->
+        <section class="culture-section">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-subtitle">OUR CULTURE</p>
+                    <h2 class="section-title">企业文化</h2>
+                    <div class="section-line"></div>
+                </div>
+
+                <div class="culture-grid">
+                    <div class="culture-card">
+                        <div class="culture-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3>企业使命</h3>
+                        <p>匠心品质、创新无限</p>
+                    </div>
+
+                    <div class="culture-card">
+                        <div class="culture-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3>企业愿景</h3>
+                        <p>成为行业内的知名品牌，赢得广大客户的信赖和好评</p>
+                    </div>
+
+                    <div class="culture-card">
+                        <div class="culture-icon">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <h3>核心价值观</h3>
+                        <p>专注品质 · 匠心制造 · 全球信赖</p>
+                    </div>
+
+                    <div class="culture-card">
+                        <div class="culture-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>团队精神</h3>
+                        <p>团结协作、追求卓越、共创未来</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系我们 -->
+        <section class="contact-section">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-subtitle">CONTACT US</p>
+                    <h2 class="section-title">联系我们</h2>
+                    <div class="section-line"></div>
+                </div>
+
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3>公司地址</h3>
+                        <p id="contact-address">浙江省义乌市北苑街道秋实路 121 号 2 号楼 8 楼</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <h3>联系电话</h3>
+                        <p id="contact-phone">400-888-8888</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>电子邮箱</h3>
+                        <p id="contact-email">info@cafele.com</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>关于 CAFELE</h4>
+                    <p>专注于高品质车用电子产品的研发与销售</p>
+                </div>
+                <div class="footer-section">
+                    <h4>关于 BACASHI</h4>
+                    <p>提供优质的车用清洗与护理产品</p>
+                </div>
+                <div class="footer-section">
+                    <h4>联系方式</h4>
+                    <p>邮箱：info@cafele.com</p>
+                    <p>电话：400-888-8888</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 CAFELE & BACASHI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/api.js?v=20260319001"></script>
+    <script>
+        // 检测微信浏览器
+        function checkWechatBrowser() {
+            const userAgent = navigator.userAgent;
+            const isWechat = /micromessenger|wechat|weixin/i.test(userAgent);
+            if (isWechat) {
+                const wechatTip = document.getElementById('wechat-tip');
+                const hasClosed = sessionStorage.getItem('wechatTipClosed');
+                if (!hasClosed) {
+                    wechatTip.style.display = 'block';
+                    document.querySelector('.navbar').style.top = '48px';
+                }
+            }
+        }
+
+        function closeWechatTip() {
+            document.getElementById('wechat-tip').style.display = 'none';
+            document.querySelector('.navbar').style.top = '0';
+            sessionStorage.setItem('wechatTipClosed', 'true');
+        }
+
+        // 搜索产品
+        function searchProducts() {
+            const keyword = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!keyword) return;
+
+            const products = API.products.getAll();
+            const filtered = products.filter(p =>
+                p.name.toLowerCase().includes(keyword) ||
+                p.description.toLowerCase().includes(keyword) ||
+                p.category.toLowerCase().includes(keyword)
+            );
+
+            if (filtered.length === 0) {
+                alert('未找到相关产品');
+            } else {
+                window.location.href = 'products.html';
+            }
+        }
+
+        // 加载时间轴
+        function loadTimeline() {
+            const timeline = API.timeline.getAll();
+            const container = document.getElementById('timeline-container');
+
+            if (timeline.length === 0) {
+                container.innerHTML = '<p class="empty-text">暂无时间轴数据</p>';
+                return;
+            }
+
+            // 按年份排序
+            timeline.sort((a, b) => parseInt(b.year) - parseInt(a.year));
+
+            container.innerHTML = timeline.map(item => `
+                <div class="timeline-item">
+                    <div class="timeline-year">${item.year}</div>
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4 class="timeline-title">${item.title}</h4>
+                        <p class="timeline-description">${item.description || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 加载联系信息
+        function loadContactInfo() {
+            const contact = API.contact.get();
+            const brand = API.brand.get();
+
+            if (contact.address) {
+                document.getElementById('contact-address').textContent = contact.address;
+            }
+            if (contact.phone) {
+                document.getElementById('contact-phone').textContent = contact.phone;
+            }
+            if (contact.email) {
+                document.getElementById('contact-email').textContent = contact.email;
+            }
+            if (brand.stats) {
+                document.getElementById('stat-years').textContent = brand.stats.years;
+                document.getElementById('stat-products').textContent = brand.stats.products;
+                document.getElementById('stat-customers').textContent = brand.stats.customers;
+            }
+        }
+
+        // 页面加载初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkWechatBrowser();
+            loadTimeline();
+            loadContactInfo();
+        });
+    </script>
+</body>
+</html>
