@@ -1100,17 +1100,26 @@ function exportData() {
 }
 
 // 导入产品数据
-function importProducts(input) {
+async function importProducts(input) {
     const file = input.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = async function(event) {
         try {
             const data = JSON.parse(event.target.result);
+            let productsArray = null;
 
-            if (!data.products || !Array.isArray(data.products)) {
+            // 支持两种格式：{ products: [...] } 或直接是 [...]
+            if (data.products && Array.isArray(data.products)) {
+                productsArray = data.products;
+            } else if (Array.isArray(data)) {
+                productsArray = data;
+            }
+
+            if (!productsArray) {
                 showToast('导入失败：文件中没有产品数据', 'error');
+                input.value = '';
                 return;
             }
 
@@ -1119,12 +1128,14 @@ function importProducts(input) {
                 return;
             }
 
-            API.products.save(data.products);
+            await API.products.save(productsArray);
             showToast('产品数据导入成功！', 'success');
             addActivity('导入产品数据', 'success');
             loadProductsTable();
         } catch (err) {
+            console.error('导入错误:', err);
             showToast('导入失败：文件格式不正确', 'error');
+            input.value = '';
         }
     };
     reader.readAsText(file);
@@ -1132,12 +1143,12 @@ function importProducts(input) {
 }
 
 // 导入数据
-document.getElementById('import-file')?.addEventListener('change', function(e) {
+document.getElementById('import-file')?.addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = async function(event) {
         try {
             const data = JSON.parse(event.target.result);
 
@@ -1145,20 +1156,32 @@ document.getElementById('import-file')?.addEventListener('change', function(e) {
                 return;
             }
 
-            if (data.brand) API.brand.save(data.brand);
-            if (data.contact) API.contact.save(data.contact);
-            if (data.timeline) API.timeline.save(data.timeline);
-            if (data.products) API.products.save(data.products);
+            // 支持两种格式：完整格式 { brand, contact, timeline, products } 或直接是产品数组 [...]
+            if (Array.isArray(data)) {
+                // 直接是产品数组，只导入产品
+                await API.products.save(data);
+                showToast('产品数据导入成功！', 'success');
+                addActivity('导入产品数据', 'success');
+                loadProductsTable();
+            } else {
+                // 完整格式
+                if (data.brand) await API.brand.save(data.brand);
+                if (data.contact) await API.contact.save(data.contact);
+                if (data.timeline) await API.timeline.save(data.timeline);
+                if (data.products) await API.products.save(data.products);
 
-            showToast('数据导入成功！', 'success');
-            addActivity('导入数据', 'success');
-            loadDashboard();
+                showToast('数据导入成功！', 'success');
+                addActivity('导入数据', 'success');
+                loadDashboard();
+            }
         } catch (err) {
+            console.error('导入错误:', err);
             showToast('导入失败：文件格式不正确', 'error');
+        } finally {
+            this.value = '';
         }
     };
     reader.readAsText(file);
-    this.value = '';
 });
 
 // 重置数据

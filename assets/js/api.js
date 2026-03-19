@@ -390,9 +390,13 @@ const API = {
             return categories;
         },
         async save(list) {
+            console.log('products.save: 保存产品列表，数量=', list.length);
             const data = API.getData('brandData') || { ...defaultData };
+            console.log('products.save: 当前 brandData 有 products 吗？', data.products ? '有' : '无');
             data.products = list;
+            console.log('products.save: 准备保存到 localStorage 和云端');
             await API.saveData('brandData', data, 'brand_data');
+            console.log('products.save: 保存完成');
         },
         async add(item) {
             const list = this.get();
@@ -599,5 +603,4 @@ const API = {
     }
 };
 
-// 页面加载时初始化
-document.addEventListener('DOMContentLoaded', () => API.init());
+// API 初始化在调用时自动执行（由 admin.js 或其他入口文件负责）
