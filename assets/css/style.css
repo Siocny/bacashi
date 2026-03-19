@@ -2257,6 +2257,40 @@ section {
     display: block;
 }
 
+/* 品牌图片装饰框 */
+.brand-image-wrap {
+    position: relative;
+}
+
+.brand-image-box {
+    position: relative;
+}
+
+.brand-image-box::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    bottom: -30px;
+    left: auto;
+    width: 100%;
+    height: calc(100% + 60px);
+    border: 2px solid #c9a962;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.brand-image-box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    border-top: 2px solid #c9a962;
+    border-right: 2px solid #c9a962;
+}
+
 /* 品牌统计数据 */
 .brand-stats {
     display: grid;
