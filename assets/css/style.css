@@ -2238,73 +2238,88 @@ section {
     margin-bottom: 60px;
 }
 
+/* 品牌介绍标题字体 */
 .brand-desc h2 {
-    font-size: 32px;
+    font-size: 36px;
     color: var(--primary-color);
     margin-bottom: 25px;
+    font-weight: 700;
 }
 
+/* 品牌介绍描述文字 */
 .brand-desc p {
-    font-size: 16px;
-    line-height: 2;
-    color: var(--text-light);
+    font-size: 15px;
+    line-height: 2.2;
+    color: #666;
     margin-bottom: 20px;
+    font-weight: 300;
 }
 
 .brand-team {
     color: var(--accent-color) !important;
-    font-weight: 500;
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 1px;
+    margin-top: 30px;
 }
 
+/* 品牌图片 */
 .brand-image img {
     width: 100%;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border-radius: 0;
+    box-shadow: none;
 }
 
 /* 品牌统计数据 */
 .brand-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
+    gap: 20px;
     max-width: 1000px;
-    margin: 0 auto;
-    padding: 40px;
-    background: var(--bg-light);
-    border-radius: 20px;
+    margin: 50px auto 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
 }
 
 .stat-item {
     text-align: center;
-    padding: 25px;
+    padding: 30px 20px;
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
     transition: all 0.3s ease;
 }
 
 .stat-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    border-color: var(--accent-color);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
 }
 
 .stat-item .stat-icon {
-    font-size: 36px;
-    color: var(--accent-color);
+    font-size: 40px;
     margin-bottom: 15px;
+    display: block;
 }
+
+/* 彩色图标 */
+.stat-item:nth-child(1) .stat-icon { color: #f59e0b; }
+.stat-item:nth-child(2) .stat-icon { color: #d97706; }
+.stat-item:nth-child(3) .stat-icon { color: #7c3aed; }
+.stat-item:nth-child(4) .stat-icon { color: #2563eb; }
 
 .stat-item .stat-number {
     display: block;
-    font-size: 36px;
+    font-size: 40px;
     font-weight: 700;
     color: var(--primary-color);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .stat-item .stat-label {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-muted);
+    font-weight: 300;
 }
 
 .company-intro-section {
