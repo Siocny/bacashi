@@ -2196,24 +2196,82 @@ section {
 }
 
 /* 关于页面 */
-.about-hero {
+/* 品牌中心标题 */
+.brand-center-header {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     color: white;
-    padding: 150px 0 80px;
+    padding: 120px 0 60px;
     text-align: center;
     margin-top: 60px;
 }
 
-.about-hero h1 {
-    font-size: 48px;
-    font-weight: 700;
+.brand-center-header .section-subtitle {
+    font-size: 14px;
+    letter-spacing: 5px;
+    opacity: 0.9;
     margin-bottom: 15px;
 }
 
-.about-hero p {
-    font-size: 16px;
-    opacity: 0.9;
-    letter-spacing: 3px;
+.brand-center-header .section-title {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.brand-center-header .section-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-color), transparent);
+    margin: 0 auto;
+}
+
+/* 品牌统计数据 */
+.brand-stats-section {
+    padding: 60px 0;
+    background: var(--bg-light);
+}
+
+.brand-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.brand-stat-card {
+    background: white;
+    padding: 40px 25px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.brand-stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    border-color: var(--accent-color);
+}
+
+.brand-stat-card .stat-icon {
+    font-size: 36px;
+    color: var(--accent-color);
+    margin-bottom: 15px;
+}
+
+.brand-stat-card .stat-num {
+    display: block;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.brand-stat-card .stat-label {
+    font-size: 14px;
+    color: var(--text-muted);
 }
 
 .company-intro-section {
@@ -2423,6 +2481,10 @@ section {
         grid-template-columns: repeat(3, 1fr);
         gap: 15px;
     }
+
+    .brand-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
@@ -2452,6 +2514,10 @@ section {
         flex-wrap: wrap;
         justify-content: center;
         gap: 20px;
+    }
+
+    .brand-stats-grid {
+        grid-template-columns: 1fr;
     }
 
     .contact-form {

@@ -22,27 +22,6 @@ function searchProducts() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 加载时间轴
-    function loadTimeline() {
-        const timeline = API.timeline.getAll();
-        const container = document.getElementById('timeline-container');
-
-        if (timeline.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:#999;">暂无数据</p>';
-            return;
-        }
-
-        container.innerHTML = timeline.map(item => `
-            <div class="timeline-item">
-                <div class="timeline-year-box">${item.year}</div>
-                <div class="timeline-content">
-                    <h4>${item.title}</h4>
-                    <p>${item.description}</p>
-                </div>
-            </div>
-        `).join('');
-    }
-
     // 移动端菜单
     document.querySelector('.mobile-menu-btn')?.addEventListener('click', function() {
         document.querySelector('.nav-links')?.classList.toggle('active');
@@ -64,9 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
             navbar.style.boxShadow = '0 2px 20px rgba(0,0,0,0.06)';
         }
     });
-
-    // 初始化
-    loadTimeline();
 });
 
 // 检测微信浏览器
