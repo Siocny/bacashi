@@ -2233,7 +2233,7 @@ section {
 /* 品牌介绍描述文字 */
 .brand-desc p {
     font-size: 14px;
-    line-height: 2.4;
+    line-height: 2;
     color: #666;
     margin-bottom: 15px;
     font-weight: 400;
@@ -2242,10 +2242,10 @@ section {
 
 .brand-team {
     color: #c9a962 !important;
-    font-weight: 400;
+    font-weight: 600;
     font-size: 14px;
     letter-spacing: 1px;
-    margin-top: 25px;
+    margin-top: 15px;
 }
 
 /* 品牌图片 */
