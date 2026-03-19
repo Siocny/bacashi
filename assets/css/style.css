@@ -1931,7 +1931,7 @@ section {
     width: 100%;
     height: 220px;
     overflow: hidden;
-    background: var(--bg-light);
+    background: #ffffff;
 }
 
 .product-image-wrap img {
