@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>后台管理 - CAFELE 卡斐乐</title>
-    <link rel="stylesheet" href="../assets/css/admin.css?v=20260318004">
+    <link rel="stylesheet" href="../assets/css/admin.css?v=20260318005">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -394,11 +394,21 @@
                         <div class="setting-item">
                             <div class="setting-label">
                                 <span>导入数据</span>
-                                <span class="setting-desc">从 JSON 文件导入数据</span>
+                                <span class="setting-desc">从 JSON 文件导入完整数据（品牌、产品、联系方式等）</span>
                             </div>
                             <label class="btn btn-secondary">
-                                <i class="fas fa-upload"></i> 导入
-                                <input type="file" id="import-file" accept=".json" style="display: none;">
+                                <i class="fas fa-upload"></i> 导入完整数据
+                                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importFullData(this)">
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-label">
+                                <span>仅导入产品</span>
+                                <span class="setting-desc">只导入产品数据（适用于从产品管理页面导出）</span>
+                            </div>
+                            <label class="btn btn-secondary">
+                                <i class="fas fa-upload"></i> 导入产品数据
+                                <input type="file" id="import-products-file" accept=".json" style="display: none;" onchange="importProducts(this)">
                             </label>
                         </div>
                         <div class="setting-item">

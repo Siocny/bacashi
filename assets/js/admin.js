@@ -1128,10 +1128,63 @@ async function importProducts(input) {
                 return;
             }
 
-            await API.products.save(productsArray);
-            showToast('产品数据导入成功！', 'success');
+            // 保留原有 ID，确保数据完整性
+            const productsWithIds = productsArray.map((p, index) => ({
+                ...p,
+                id: p.id || (index + 1)
+            }));
+
+            await API.products.save(productsWithIds);
+            showToast(`产品数据导入成功！共导入 ${productsWithIds.length} 个产品`, 'success');
             addActivity('导入产品数据', 'success');
             loadProductsTable();
+        } catch (err) {
+            console.error('导入错误:', err);
+            showToast('导入失败：文件格式不正确', 'error');
+            input.value = '';
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
+}
+
+// 导入完整数据（品牌、产品、联系方式、发展历程）
+function importFullData(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function(event) {
+        try {
+            const data = JSON.parse(event.target.result);
+
+            if (!data.brand || !data.products) {
+                showToast('导入失败：文件格式不正确，缺少必要数据', 'error');
+                input.value = '';
+                return;
+            }
+
+            if (!confirm('警告：导入完整数据将覆盖当前所有数据！\n\n将导入：\n- 品牌信息\n- 联系方式\n- 发展历程\n- 产品数据\n\n确定要继续吗？')) {
+                input.value = '';
+                return;
+            }
+
+            // 依次导入各项数据
+            if (data.brand) API.brand.save(data.brand);
+            if (data.contact) API.contact.save(data.contact);
+            if (data.timeline) API.timeline.save(data.timeline);
+            if (data.products) await API.products.save(data.products);
+
+            showToast('完整数据导入成功！', 'success');
+            addActivity('导入完整数据', 'success');
+
+            // 如果在产品管理页面，刷新表格；否则切换到产品页面
+            const currentPage = document.getElementById('page-title').textContent;
+            if (currentPage === '产品管理') {
+                loadProductsTable();
+            } else {
+                switchTab('products');
+            }
         } catch (err) {
             console.error('导入错误:', err);
             showToast('导入失败：文件格式不正确', 'error');
@@ -1335,6 +1388,7 @@ window.changePage = changePage;
 window.toggleSelectAll = toggleSelectAll;
 window.toggleProductSelection = toggleProductSelection;
 window.exportData = exportData;
+window.importFullData = importFullData;
 window.importProducts = importProducts;
 window.resetData = resetData;
 window.changePassword = changePassword;

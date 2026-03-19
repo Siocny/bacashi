@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>品牌产品 - CAFELE & BACASHI</title>
+    <link rel="stylesheet" href="assets/css/style.css?v=20260319002">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-brand">
+                    <span class="logo-text">CAFELE</span>
+                    <span class="logo-cn">卡斐乐</span>
+                </div>
+                <span class="logo-divider">|</span>
+                <div class="logo-brand">
+                    <span class="logo-text">BACASHI</span>
+                    <span class="logo-cn">倍卡西</span>
+                </div>
+            </div>
+
+            <!-- 主导航 -->
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li class="has-dropdown">
+                    <a href="javascript:void(0)" class="dropdown-toggle">品牌产品 <span class="arrow">▼</span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="javascript:void(0)" onclick="filterCategory('车用电子')">车用电子</a></li>
+                        <li><a href="javascript:void(0)" onclick="filterCategory('车用内饰')">车用内饰</a></li>
+                        <li><a href="javascript:void(0)" onclick="filterCategory('车用清洗')">车用清洗</a></li>
+                        <li><a href="javascript:void(0)" onclick="filterCategory('手持风扇')">手持风扇</a></li>
+                        <li><a href="javascript:void(0)" onclick="filterCategory('桌面风扇')">桌面风扇</a></li>
+                    </ul>
+                </li>
+                <li><a href="service.html">服务与支持</a></li>
+                <li><a href="about.html">关于我们</a></li>
+            </ul>
+
+            <!-- 右侧按钮 -->
+            <div class="nav-right">
+                <a href="service.html#contact" class="btn-buy">购买</a>
+                <div class="search-box">
+                    <input type="text" placeholder="请输入关键字" id="search-input">
+                    <button class="search-btn" onclick="searchProducts()">🔍</button>
+                </div>
+            </div>
+
+            <button class="mobile-menu-btn"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- WeChat 提示横幅 -->
+    <div id="wechat-tip" class="wechat-tip" style="display: none;">
+        <div class="wechat-tip-content">
+            <span class="wechat-tip-icon">💬</span>
+            <span class="wechat-tip-text">检测到您在微信中访问，请点击右上角 <strong>...</strong> 选择 <strong>在浏览器打开</strong> 以获得最佳体验</span>
+            <button class="wechat-tip-close" onclick="closeWechatTip()">×</button>
+        </div>
+    </div>
+
+    <!-- 产品列表页面 -->
+    <main class="products-page">
+        <div class="page-header">
+            <div class="container">
+                <h1>品牌产品</h1>
+                <p>CAFELE & BACASHI 系列产品</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- 品牌切换 -->
+            <div class="brand-tabs">
+                <button class="brand-tab active" data-brand="cafele" onclick="switchBrand('cafele')">
+                    <span class="brand-name">CAFELE</span>
+                    <span class="brand-cn">卡斐乐</span>
+                </button>
+                <button class="brand-tab" data-brand="bacashi" onclick="switchBrand('bacashi')">
+                    <span class="brand-name">BACASHI</span>
+                    <span class="brand-cn">倍卡西</span>
+                </button>
+            </div>
+
+            <!-- 分类筛选 -->
+            <div class="category-filter">
+                <button class="category-btn active" data-category="all" onclick="filterCategory('all')">全部</button>
+                <button class="category-btn" data-category="车用电子" onclick="filterCategory('车用电子')">车用电子</button>
+                <button class="category-btn" data-category="车用内饰" onclick="filterCategory('车用内饰')">车用内饰</button>
+                <button class="category-btn" data-category="车用清洗" onclick="filterCategory('车用清洗')">车用清洗</button>
+                <button class="category-btn" data-category="手持风扇" onclick="filterCategory('手持风扇')">手持风扇</button>
+                <button class="category-btn" data-category="桌面风扇" onclick="filterCategory('桌面风扇')">桌面风扇</button>
+            </div>
+
+            <!-- 产品网格 -->
+            <div id="products-grid" class="products-grid">
+                <!-- 产品由 JS 动态加载 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>关于 CAFELE</h4>
+                    <p>专注于高品质车用电子产品的研发与销售</p>
+                </div>
+                <div class="footer-section">
+                    <h4>关于 BACASHI</h4>
+                    <p>提供优质的车用清洗与护理产品</p>
+                </div>
+                <div class="footer-section">
+                    <h4>联系方式</h4>
+                    <p>邮箱：info@cafele.com</p>
+                    <p>电话：400-888-8888</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 CAFELE & BACASHI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/api.js?v=20260319001"></script>
+    <script>
+        let currentBrand = 'cafele';
+        let currentCategory = 'all';
+
+        // 检测微信浏览器
+        function checkWechatBrowser() {
+            const userAgent = navigator.userAgent;
+            const isWechat = /micromessenger|wechat|weixin/i.test(userAgent);
+            if (isWechat) {
+                const wechatTip = document.getElementById('wechat-tip');
+                const hasClosed = sessionStorage.getItem('wechatTipClosed');
+                if (!hasClosed) {
+                    wechatTip.style.display = 'block';
+                    document.querySelector('.navbar').style.top = '48px';
+                }
+            }
+        }
+
+        function closeWechatTip() {
+            document.getElementById('wechat-tip').style.display = 'none';
+            document.querySelector('.navbar').style.top = '0';
+            sessionStorage.setItem('wechatTipClosed', 'true');
+        }
+
+        // 切换品牌
+        function switchBrand(brand) {
+            currentBrand = brand;
+            document.querySelectorAll('.brand-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.brand-tab[data-brand="${brand}"]`).classList.add('active');
+            loadProducts();
+        }
+
+        // 分类筛选
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.category-btn[data-category="${category}"]`).classList.add('active');
+            loadProducts();
+        }
+
+        // 加载产品
+        function loadProducts() {
+            const grid = document.getElementById('products-grid');
+            let products = [];
+
+            if (currentBrand === 'cafele') {
+                products = API.products.getAll();
+            } else {
+                products = API.bacashi.products.getAll();
+            }
+
+            // 应用分类筛选
+            if (currentCategory !== 'all') {
+                products = products.filter(p => p.category === currentCategory);
+            }
+
+            // 排序
+            products.sort((a, b) => a.sort - b.sort);
+
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无产品</p></div>';
+                return;
+            }
+
+            grid.innerHTML = products.map(product => `
+                <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}&brand=${currentBrand}'">
+                    <div class="product-image-wrap">
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x300?text=${currentBrand === 'bacashi' ? 'BACASHI' : 'CAFELE'}'">
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">${product.category}</span>
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-desc">${product.description}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 搜索产品
+        function searchProducts() {
+            const keyword = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!keyword) return;
+
+            let products = currentBrand === 'cafele' ? API.products.getAll() : API.bacashi.products.getAll();
+            const filtered = products.filter(p =>
+                p.name.toLowerCase().includes(keyword) ||
+                p.description.toLowerCase().includes(keyword) ||
+                p.category.toLowerCase().includes(keyword)
+            );
+
+            if (filtered.length === 0) {
+                document.getElementById('products-grid').innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>未找到相关产品</p></div>';
+            } else {
+                currentCategory = 'all';
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.category-btn[data-category="all"]').classList.add('active');
+
+                const grid = document.getElementById('products-grid');
+                grid.innerHTML = filtered.sort((a, b) => a.sort - b.sort).map(product => `
+                    <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}&brand=${currentBrand}'">
+                        <div class="product-image-wrap">
+                            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x300?text=${currentBrand === 'bacashi' ? 'BACASHI' : 'CAFELE'}'">
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">${product.category}</span>
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-desc">${product.description}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 页面加载初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkWechatBrowser();
+            loadProducts();
+        });
+    </script>
+</body>
+</html>
