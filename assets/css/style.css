@@ -933,10 +933,11 @@ section {
 }
 
 .footer-links a {
-    color: rgba(255,255,255,0.8);
+    color: rgba(255,255,255,0.9);
     text-decoration: none;
-    font-size: 14px;
-    letter-spacing: 1px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
     transition: color 0.3s ease;
 }
 
