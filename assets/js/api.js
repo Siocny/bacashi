@@ -1,188 +1,262 @@
-// API 和数据管理模块
-// 使用 localStorage 模拟后端数据库
+// API 和数据管理模块 - 集成 Supabase 云同步
+// 使用 Supabase 作为后端存储，localStorage 作为本地缓存
 
-const API = {
-    // 自动备份开关
-    autoBackup: true,
+// Supabase 配置
+const SUPABASE_CONFIG = {
+    url: 'https://twwxiucjojfujxqfaddy.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3d3hpdWNqb2pmdWp4cWZhZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTE0NDgsImV4cCI6MjA4OTQ2NzQ0OH0.AXYrS6BgvJqEkXBp-pN613FSXetm4iB_2O_SHSxTRFc'
+};
 
-    // 初始化 IndexedDB 用于持久化存储
-    initIndexedDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open('CAFELE_Backup', 1);
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => resolve(request.result);
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains('backup')) {
-                    db.createObjectStore('backup', { keyPath: 'key' });
-                }
-            };
-        });
-    },
-
-    // 保存到 IndexedDB
-    async saveToIndexedDB(key, data) {
-        if (!this.autoBackup) return;
-        try {
-            const db = await this.initIndexedDB();
-            const transaction = db.transaction(['backup'], 'readwrite');
-            const store = transaction.objectStore('backup');
-            store.put({ key, data, timestamp: Date.now() });
-            console.log('数据已自动备份到 IndexedDB');
-        } catch (err) {
-            console.error('IndexedDB 备份失败:', err);
+// 简单的 Supabase 客户端（无需额外库）
+const SupabaseClient = {
+    async init() {
+        // 动态加载 Supabase SDK
+        if (typeof supabase === 'undefined') {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+                script.onload = () => {
+                    this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                    console.log('Supabase SDK 已加载');
+                    resolve();
+                };
+                script.onerror = () => reject(new Error('Supabase SDK 加载失败'));
+                document.head.appendChild(script);
+            });
+        } else {
+            this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+            return Promise.resolve();
         }
     },
 
-    // 从 IndexedDB 读取
-    async loadFromIndexedDB(key) {
+    async getData(table, key) {
         try {
-            const db = await this.initIndexedDB();
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction(['backup'], 'readonly');
-                const store = transaction.objectStore('backup');
-                const request = store.get(key);
-                request.onsuccess = () => {
-                    if (request.result) {
-                        console.log('从 IndexedDB 恢复数据');
-                        resolve(request.result.data);
-                    } else {
-                        resolve(null);
-                    }
-                };
-                request.onerror = () => reject(request.error);
-            });
+            const { data, error } = await this.client
+                .from(table)
+                .select('data')
+                .eq('key', key)
+                .single();
+
+            if (error) {
+                if (error.code === 'PGRST116') return null; // 没有找到记录
+                throw error;
+            }
+            return data ? data.data : null;
         } catch (err) {
-            console.error('IndexedDB 读取失败:', err);
+            console.error('Supabase 读取失败:', err);
             return null;
         }
     },
 
-    // 清除 IndexedDB 备份
-    async clearIndexedDBBackup() {
+    async saveData(table, key, data) {
         try {
-            const db = await this.initIndexedDB();
-            const transaction = db.transaction(['backup'], 'readwrite');
-            const store = transaction.objectStore('backup');
-            const request = store.clear();
-            return new Promise((resolve, reject) => {
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
+            const { error } = await this.client
+                .from(table)
+                .upsert({ key, data, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+
+            if (error) throw error;
+            console.log(`Supabase 保存成功：${table}.${key}`);
+            return true;
         } catch (err) {
-            console.error('IndexedDB 清除失败:', err);
+            console.error('Supabase 保存失败:', err);
+            return false;
         }
     },
 
-    // 默认数据
-    defaultData: {
-        brand: {
-            description: '卡斐乐是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。经过多年的发展，我们已经成为行业内的知名品牌，产品远销海内外，赢得了广大客户的信赖和好评。',
-            stats: {
-                years: 3,
-                products: 120,
-                customers: 5000
-            }
-        },
-        contact: {
-            address: '浙江省义乌市北苑街道秋实路 121 号 2 号楼 8 楼',
-            phone: '400-888-8888',
-            email: 'contact@cafele.com'
-        },
-        timeline: [
-            { id: 1, year: '2023', title: '公司成立', description: '在浙江省义乌市大三里塘的某座 100 平地下室，开始创业之旅' },
-            { id: 2, year: '2024', title: '公司发展', description: '完成品牌战略升级，确立拼多多车品头部市场定位' },
-            { id: 3, year: '2025', title: '公司拓展', description: '在浙江春华路 566 号入驻 680 平仓库，进军数码类目，在风扇类目取得头筹' },
-            { id: 4, year: '2025', title: '持续扩大', description: '搬迁至义乌市北苑街道秋实路 121 号 2 号楼 8 楼，签约卡斐乐品牌在拼多多独家车品类目，公司人员扩展到 50+' }
-        ],
-        products: [
-            { id: 1, name: '卡斐乐主打产品', category: '车用电子', image: 'assets/images/微信图片_20260313141449_149_2.jpg', price: '¥1,999', sort: 1, description: '我们的旗舰产品，集成了最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
-            { id: 2, name: '时尚款产品 B', category: '车用内饰', image: 'https://via.placeholder.com/400x300/D94A4A/ffffff?text=Product+B', price: '¥1,599', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
-            { id: 3, name: '专业款产品 C', category: '桌面风扇', image: 'https://via.placeholder.com/400x300/4AD94A/ffffff?text=Product+C', price: '¥2,999', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
-        ]
-    },
+    // 初始化数据库表
+    async initTables() {
+        try {
+            // 尝试创建 brand_data 表
+            await this.client.rpc('create_table_if_not_exists', {
+                table_name: 'brand_data',
+                table_def: JSON.stringify([
+                    { name: 'id', type: 'int8', primary: true },
+                    { name: 'key', type: 'text', unique: true },
+                    { name: 'data', type: 'jsonb' },
+                    { name: 'updated_at', type: 'timestamptz', default: 'now()' }
+                ])
+            }).then(({ error }) => {
+                if (error) console.log('表已存在或无法自动创建:', error.message);
+            });
 
-    // 默认数据 - 倍卡西 BACASHI
-    defaultDataBacashi: {
-        brand: {
-            name: '倍卡西',
-            description: '倍卡西（BACASHI）是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。',
-            stats: {
-                years: 2,
-                products: 80,
-                customers: 3000
-            }
-        },
-        contact: {
-            address: '浙江省义乌市北苑街道秋实路 121 号 2 号楼 8 楼',
-            phone: '400-666-6666',
-            email: 'contact@bacashi.com'
-        },
-        timeline: [
-            { id: 1, year: '2024', title: '品牌创立', description: '倍卡西品牌正式成立，开启创业之旅' },
-            { id: 2, year: '2025', title: '品牌发展', description: '完成产品线布局，在多个类目取得优异成绩' },
-            { id: 3, year: '2025', title: '市场拓展', description: '产品销往全国，赢得广大客户信赖' }
-        ],
-        products: [
-            { id: 1, name: '倍卡西主打产品', category: '车用电子', image: 'https://via.placeholder.com/400x300/4A4AD9/ffffff?text=BACASHI+A', price: '¥1,599', sort: 1, description: '倍卡西旗舰产品，集成最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
-            { id: 2, name: '倍卡西时尚款', category: '车用内饰', image: 'https://via.placeholder.com/400x300/D94AD9/ffffff?text=BACASHI+B', price: '¥1,299', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
-            { id: 3, name: '倍卡西专业款', category: '桌面风扇', image: 'https://via.placeholder.com/400x300/4AD9D9/ffffff?text=BACASHI+C', price: '¥2,599', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
-        ]
-    },
+            // 尝试创建 bacashi_data 表
+            await this.client.rpc('create_table_if_not_exists', {
+                table_name: 'bacashi_data',
+                table_def: JSON.stringify([
+                    { name: 'id', type: 'int8', primary: true },
+                    { name: 'key', type: 'text', unique: true },
+                    { name: 'data', type: 'jsonb' },
+                    { name: 'updated_at', type: 'timestamptz', default: 'now()' }
+                ])
+            }).then(({ error }) => {
+                if (error) console.log('表已存在或无法自动创建:', error.message);
+            });
 
-    // 初始化数据
+            console.log('Supabase 表初始化完成');
+        } catch (err) {
+            console.log('Supabase 表初始化跳过（需手动创建）:', err.message);
+        }
+    }
+};
+
+// 默认数据
+const defaultData = {
+    brand: {
+        description: '卡斐乐是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。经过多年的发展，我们已经成为行业内的知名品牌，产品远销海内外，赢得了广大客户的信赖和好评。',
+        stats: {
+            years: 3,
+            products: 120,
+            customers: 5000
+        }
+    },
+    contact: {
+        address: '浙江省义乌市北苑街道秋实路 121 号 2 号楼 8 楼',
+        phone: '400-888-8888',
+        email: 'contact@cafele.com'
+    },
+    timeline: [
+        { id: 1, year: '2023', title: '公司成立', description: '在浙江省义乌市大三里塘的某座 100 平地下室，开始创业之旅' },
+        { id: 2, year: '2024', title: '公司发展', description: '完成品牌战略升级，确立拼多多车品头部市场定位' },
+        { id: 3, year: '2025', title: '公司拓展', description: '在浙江春华路 566 号入驻 680 平仓库，进军数码类目，在风扇类目取得头筹' },
+        { id: 4, year: '2025', title: '持续扩大', description: '搬迁至义乌市北苑街道秋实路 121 号 2 号楼 8 楼，签约卡斐乐品牌在拼多多独家车品类目，公司人员扩展到 50+' }
+    ],
+    products: [
+        { id: 1, name: '卡斐乐主打产品', category: '车用电子', image: 'assets/images/微信图片_20260313141449_149_2.jpg', price: '¥1,999', sort: 1, description: '我们的旗舰产品，集成了最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
+        { id: 2, name: '时尚款产品 B', category: '车用内饰', image: 'https://via.placeholder.com/400x300/D94A4A/ffffff?text=Product+B', price: '¥1,599', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
+        { id: 3, name: '专业款产品 C', category: '桌面风扇', image: 'https://via.placeholder.com/400x300/4AD94A/ffffff?text=Product+C', price: '¥2,999', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
+    ]
+};
+
+// 默认数据 - 倍卡西 BACASHI
+const defaultDataBacashi = {
+    brand: {
+        name: '倍卡西',
+        description: '倍卡西（BACASHI）是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。',
+        stats: {
+            years: 2,
+            products: 80,
+            customers: 3000
+        }
+    },
+    contact: {
+        address: '浙江省义乌市北苑街道秋实路 121 号 2 号楼 8 楼',
+        phone: '400-666-6666',
+        email: 'contact@bacashi.com'
+    },
+    timeline: [
+        { id: 1, year: '2024', title: '品牌创立', description: '倍卡西品牌正式成立，开启创业之旅' },
+        { id: 2, year: '2025', title: '品牌发展', description: '完成产品线布局，在多个类目取得优异成绩' },
+        { id: 3, year: '2025', title: '市场拓展', description: '产品销往全国，赢得广大客户信赖' }
+    ],
+    products: [
+        { id: 1, name: '倍卡西主打产品', category: '车用电子', image: 'https://via.placeholder.com/400x300/4A4AD9/ffffff?text=BACASHI+A', price: '¥1,599', sort: 1, description: '倍卡西旗舰产品，集成最新技术', details: '产品特点：\n1. 高性能处理器\n2. 超长续航能力\n3. 精美外观设计\n4. 智能互联功能' },
+        { id: 2, name: '倍卡西时尚款', category: '车用内饰', image: 'https://via.placeholder.com/400x300/D94AD9/ffffff?text=BACASHI+B', price: '¥1,299', sort: 2, description: '专为年轻时尚人士设计', details: '产品特点：\n1. 轻薄便携\n2. 多彩配色\n3. 触控操作\n4. 快充技术' },
+        { id: 3, name: '倍卡西专业款', category: '桌面风扇', image: 'https://via.placeholder.com/400x300/4AD9D9/ffffff?text=BACASHI+C', price: '¥2,599', sort: 3, description: '满足专业用户的需求', details: '产品特点：\n1. 专业级性能\n2. 精准控制\n3. 扩展接口丰富\n4. 耐用可靠' }
+    ]
+};
+
+const API = {
+    // 同步状态
+    isOnline: navigator.onLine,
+    supabaseReady: false,
+
+    // 初始化
     async init() {
-        // 先尝试从 IndexedDB 恢复数据
-        const backupBrand = await this.loadFromIndexedDB('brandData');
-        const backupBacashi = await this.loadFromIndexedDB('bacashiData');
+        // 监听网络状态
+        window.addEventListener('online', () => { this.isOnline = true; console.log('网络已连接'); });
+        window.addEventListener('offline', () => { this.isOnline = false; console.log('网络已断开'); });
 
-        const brandData = localStorage.getItem('brandData');
-        if (!brandData) {
-            if (backupBrand) {
-                // 从备份恢复
-                this.saveData('brandData', backupBrand);
-            } else {
-                // 使用默认数据
-                this.saveData('brandData', this.defaultData);
-            }
-        } else {
-            // 确保 timeline、contact 和 brand 数据存在
-            const data = JSON.parse(brandData);
-            if (!data.timeline || data.timeline.length === 0) {
-                data.timeline = this.defaultData.timeline;
-                this.saveData('brandData', data);
-            }
-            if (!data.contact || !data.contact.address) {
-                data.contact = this.defaultData.contact;
-                this.saveData('brandData', data);
-            }
-            if (!data.brand || !data.brand.description) {
-                data.brand = this.defaultData.brand;
-                this.saveData('brandData', data);
+        // 初始化 Supabase
+        try {
+            await SupabaseClient.init();
+            await SupabaseClient.initTables();
+            this.supabaseReady = true;
+            console.log('Supabase 已初始化');
+        } catch (err) {
+            console.warn('Supabase 初始化失败，使用本地存储:', err);
+            this.supabaseReady = false;
+        }
+
+        // 从云端或本地加载数据
+        await this.loadData();
+    },
+
+    // 加载数据（优先从云端，失败则从本地）
+    async loadData() {
+        // 加载 brandData
+        let brandData = null;
+        if (this.isOnline && this.supabaseReady) {
+            brandData = await SupabaseClient.getData('brand_data', 'main');
+            if (brandData) {
+                console.log('从 Supabase 加载 brandData');
+                localStorage.setItem('brandData', JSON.stringify(brandData));
             }
         }
 
-        const bacashiData = localStorage.getItem('bacashiData');
-        if (!bacashiData) {
-            if (backupBacashi) {
-                this.saveData('bacashiData', backupBacashi);
+        if (!brandData) {
+            brandData = localStorage.getItem('brandData');
+            if (brandData) {
+                brandData = JSON.parse(brandData);
+                console.log('从 localStorage 加载 brandData');
             } else {
-                this.saveData('bacashiData', this.defaultDataBacashi);
+                brandData = { ...defaultData };
+                console.log('使用默认 brandData');
             }
-        } else {
-            const data = JSON.parse(bacashiData);
-            if (!data.brand || !data.brand.description) {
-                data.brand = this.defaultDataBacashi.brand;
-                this.saveData('bacashiData', data);
+            localStorage.setItem('brandData', JSON.stringify(brandData));
+        }
+
+        // 确保数据完整
+        if (!brandData.timeline || brandData.timeline.length === 0) {
+            brandData.timeline = defaultData.timeline;
+        }
+        if (!brandData.contact || !brandData.contact.address) {
+            brandData.contact = defaultData.contact;
+        }
+        if (!brandData.brand || !brandData.brand.description) {
+            brandData.brand = defaultData.brand;
+        }
+
+        // 加载 bacashiData
+        let bacashiData = null;
+        if (this.isOnline && this.supabaseReady) {
+            bacashiData = await SupabaseClient.getData('bacashi_data', 'main');
+            if (bacashiData) {
+                console.log('从 Supabase 加载 bacashiData');
+                localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
             }
+        }
+
+        if (!bacashiData) {
+            bacashiData = localStorage.getItem('bacashiData');
+            if (bacashiData) {
+                bacashiData = JSON.parse(bacashiData);
+                console.log('从 localStorage 加载 bacashiData');
+            } else {
+                bacashiData = { ...defaultDataBacashi };
+                console.log('使用默认 bacashiData');
+            }
+            localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
+        }
+
+        // 确保 bacashi 数据完整
+        if (!bacashiData.brand || !bacashiData.brand.description) {
+            bacashiData.brand = defaultDataBacashi.brand;
+            localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
         }
     },
 
-    // 保存数据
-    saveData(key, data) {
+    // 保存数据到云端和本地
+    async saveData(key, data, table = 'brand_data') {
+        // 总是先保存到本地
         localStorage.setItem(key, JSON.stringify(data));
-        // 自动备份到 IndexedDB
-        this.saveToIndexedDB(key, data);
+
+        // 如果在线且 Supabase 可用，同步到云端
+        if (this.isOnline && this.supabaseReady) {
+            const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
+            if (success) {
+                console.log(`数据已同步到云端：${key}`);
+            }
+        }
     },
 
     // 读取数据
@@ -191,16 +265,65 @@ const API = {
         return data ? JSON.parse(data) : null;
     },
 
+    // 从云端同步数据（手动刷新用）
+    async syncFromCloud() {
+        if (!this.isOnline || !this.supabaseReady) {
+            console.warn('无法同步：网络离线或 Supabase 未就绪');
+            return false;
+        }
+
+        try {
+            const brandData = await SupabaseClient.getData('brand_data', 'main');
+            const bacashiData = await SupabaseClient.getData('bacashi_data', 'main');
+
+            if (brandData) {
+                localStorage.setItem('brandData', JSON.stringify(brandData));
+                console.log('已从云端同步 brandData');
+            }
+            if (bacashiData) {
+                localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
+                console.log('已从云端同步 bacashiData');
+            }
+
+            // 重新加载页面
+            location.reload();
+            return true;
+        } catch (err) {
+            console.error('同步失败:', err);
+            return false;
+        }
+    },
+
+    // 导出所有数据（用于备份）
+    exportData() {
+        return {
+            brandData: this.getData('brandData'),
+            bacashiData: this.getData('bacashiData'),
+            exportedAt: new Date().toISOString()
+        };
+    },
+
+    // 导入数据并同步到云端
+    async importData(data) {
+        if (data.brandData) {
+            await this.saveData('brandData', data.brandData, 'brand_data');
+        }
+        if (data.bacashiData) {
+            await this.saveData('bacashiData', data.bacashiData, 'bacashi_data');
+        }
+        location.reload();
+    },
+
     // 品牌信息
     brand: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.brand : API.defaultData.brand;
+            return data ? data.brand : defaultData.brand;
         },
-        save(brandData) {
-            const data = API.getData('brandData') || { ...API.defaultData };
+        async save(brandData) {
+            const data = API.getData('brandData') || { ...defaultData };
             data.brand = brandData;
-            API.saveData('brandData', data);
+            await API.saveData('brandData', data, 'brand_data');
         }
     },
 
@@ -208,12 +331,12 @@ const API = {
     contact: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.contact : API.defaultData.contact;
+            return data ? data.contact : defaultData.contact;
         },
-        save(contactData) {
-            const data = API.getData('brandData') || { ...API.defaultData };
+        async save(contactData) {
+            const data = API.getData('brandData') || { ...defaultData };
             data.contact = contactData;
-            API.saveData('brandData', data);
+            await API.saveData('brandData', data, 'brand_data');
         }
     },
 
@@ -221,34 +344,34 @@ const API = {
     timeline: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.timeline : API.defaultData.timeline;
+            return data ? data.timeline : defaultData.timeline;
         },
         getAll() {
             return this.get();
         },
-        save(list) {
-            const data = API.getData('brandData') || { ...API.defaultData };
+        async save(list) {
+            const data = API.getData('brandData') || { ...defaultData };
             data.timeline = list;
-            API.saveData('brandData', data);
+            await API.saveData('brandData', data, 'brand_data');
         },
-        add(item) {
+        async add(item) {
             const list = this.get();
             item.id = Date.now();
             list.push(item);
-            this.save(list);
+            await this.save(list);
         },
-        update(id, item) {
+        async update(id, item) {
             const list = this.get();
             const index = list.findIndex(i => i.id == id);
             if (index !== -1) {
                 list[index] = { ...item, id: parseInt(id) };
-                this.save(list);
+                await this.save(list);
             }
         },
-        delete(id) {
+        async delete(id) {
             const list = this.get();
             const filtered = list.filter(i => i.id != id);
-            this.save(filtered);
+            await this.save(filtered);
         }
     },
 
@@ -256,7 +379,7 @@ const API = {
     products: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.products : API.defaultData.products;
+            return data ? data.products : defaultData.products;
         },
         getAll() {
             return this.get();
@@ -266,31 +389,30 @@ const API = {
             const categories = [...new Set(products.map(p => p.category))];
             return categories;
         },
-        save(list) {
-            const data = API.getData('brandData') || { ...API.defaultData };
+        async save(list) {
+            const data = API.getData('brandData') || { ...defaultData };
             data.products = list;
-            API.saveData('brandData', data);
+            await API.saveData('brandData', data, 'brand_data');
         },
-        add(item) {
+        async add(item) {
             const list = this.get();
-            // 自动生成从 1 开始的连续 ID
             const maxId = list.length > 0 ? Math.max(...list.map(p => p.id)) : 0;
             item.id = maxId + 1;
             list.push(item);
-            this.save(list);
+            await this.save(list);
         },
-        update(id, item) {
+        async update(id, item) {
             const list = this.get();
             const index = list.findIndex(i => i.id == id);
             if (index !== -1) {
                 list[index] = { ...item, id: parseInt(id) };
-                this.save(list);
+                await this.save(list);
             }
         },
-        delete(id) {
+        async delete(id) {
             const list = this.get();
             const filtered = list.filter(i => i.id != id);
-            this.save(filtered);
+            await this.save(filtered);
         }
     },
 
@@ -324,30 +446,30 @@ const API = {
             const manuals = this.get();
             return manuals.filter(m => m.productId == productId);
         },
-        save(list) {
-            const data = API.getData('brandData') || { ...API.defaultData };
+        async save(list) {
+            const data = API.getData('brandData') || { ...defaultData };
             data.manuals = list;
-            API.saveData('brandData', data);
+            await API.saveData('brandData', data, 'brand_data');
         },
-        add(item) {
+        async add(item) {
             const list = this.get();
             item.id = Date.now();
             item.createdAt = new Date().toISOString();
             list.push(item);
-            this.save(list);
+            await this.save(list);
         },
-        update(id, item) {
+        async update(id, item) {
             const list = this.get();
             const index = list.findIndex(m => m.id == id);
             if (index !== -1) {
                 list[index] = { ...item, id: parseInt(id), updatedAt: new Date().toISOString() };
-                this.save(list);
+                await this.save(list);
             }
         },
-        delete(id) {
+        async delete(id) {
             const list = this.get();
             const filtered = list.filter(m => m.id != id);
-            this.save(filtered);
+            await this.save(filtered);
         }
     },
 
@@ -356,59 +478,59 @@ const API = {
         brand: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.brand : API.defaultDataBacashi.brand;
+                return data ? data.brand : defaultDataBacashi.brand;
             },
-            save(brandData) {
-                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+            async save(brandData) {
+                const data = API.getData('bacashiData') || { ...defaultDataBacashi };
                 data.brand = brandData;
-                API.saveData('bacashiData', data);
+                await API.saveData('bacashiData', data, 'bacashi_data');
             }
         },
         contact: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.contact : API.defaultDataBacashi.contact;
+                return data ? data.contact : defaultDataBacashi.contact;
             },
-            save(contactData) {
-                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+            async save(contactData) {
+                const data = API.getData('bacashiData') || { ...defaultDataBacashi };
                 data.contact = contactData;
-                API.saveData('bacashiData', data);
+                await API.saveData('bacashiData', data, 'bacashi_data');
             }
         },
         timeline: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.timeline : API.defaultDataBacashi.timeline;
+                return data ? data.timeline : defaultDataBacashi.timeline;
             },
-            save(list) {
-                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+            async save(list) {
+                const data = API.getData('bacashiData') || { ...defaultDataBacashi };
                 data.timeline = list;
-                API.saveData('bacashiData', data);
+                await API.saveData('bacashiData', data, 'bacashi_data');
             },
-            add(item) {
+            async add(item) {
                 const list = this.get();
                 item.id = Date.now();
                 list.push(item);
-                this.save(list);
+                await this.save(list);
             },
-            update(id, item) {
+            async update(id, item) {
                 const list = this.get();
                 const index = list.findIndex(i => i.id == id);
                 if (index !== -1) {
                     list[index] = { ...item, id: parseInt(id) };
-                    this.save(list);
+                    await this.save(list);
                 }
             },
-            delete(id) {
+            async delete(id) {
                 const list = this.get();
                 const filtered = list.filter(i => i.id != id);
-                this.save(filtered);
+                await this.save(filtered);
             }
         },
         products: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.products : API.defaultDataBacashi.products;
+                return data ? data.products : defaultDataBacashi.products;
             },
             getAll() {
                 return this.get();
@@ -418,29 +540,29 @@ const API = {
                 const categories = [...new Set(products.map(p => p.category))];
                 return categories;
             },
-            save(list) {
-                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+            async save(list) {
+                const data = API.getData('bacashiData') || { ...defaultDataBacashi };
                 data.products = list;
-                API.saveData('bacashiData', data);
+                await API.saveData('bacashiData', data, 'bacashi_data');
             },
-            add(item) {
+            async add(item) {
                 const list = this.get();
                 item.id = Date.now();
                 list.push(item);
-                this.save(list);
+                await this.save(list);
             },
-            update(id, item) {
+            async update(id, item) {
                 const list = this.get();
                 const index = list.findIndex(i => i.id == id);
                 if (index !== -1) {
                     list[index] = { ...item, id: parseInt(id) };
-                    this.save(list);
+                    await this.save(list);
                 }
             },
-            delete(id) {
+            async delete(id) {
                 const list = this.get();
                 const filtered = list.filter(i => i.id != id);
-                this.save(filtered);
+                await this.save(filtered);
             }
         },
         manuals: {
@@ -448,34 +570,34 @@ const API = {
                 const data = API.getData('bacashiData');
                 return data ? (data.manuals || []) : [];
             },
-            save(list) {
-                const data = API.getData('bacashiData') || { ...API.defaultDataBacashi };
+            async save(list) {
+                const data = API.getData('bacashiData') || { ...defaultDataBacashi };
                 data.manuals = list;
-                API.saveData('bacashiData', data);
+                await API.saveData('bacashiData', data, 'bacashi_data');
             },
-            add(item) {
+            async add(item) {
                 const list = this.get();
                 item.id = Date.now();
                 item.createdAt = new Date().toISOString();
                 list.push(item);
-                this.save(list);
+                await this.save(list);
             },
-            update(id, item) {
+            async update(id, item) {
                 const list = this.get();
                 const index = list.findIndex(m => m.id == id);
                 if (index !== -1) {
                     list[index] = { ...item, id: parseInt(id), updatedAt: new Date().toISOString() };
-                    this.save(list);
+                    await this.save(list);
                 }
             },
-            delete(id) {
+            async delete(id) {
                 const list = this.get();
                 const filtered = list.filter(m => m.id != id);
-                this.save(filtered);
+                await this.save(filtered);
             }
         }
     }
 };
 
-// 初始化
-API.init();
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', () => API.init());

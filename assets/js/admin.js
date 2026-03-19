@@ -1176,6 +1176,37 @@ async function resetData() {
     }
 }
 
+// 从云端同步数据
+async function syncFromCloud() {
+    if (!navigator.onLine) {
+        showToast('当前离线，无法同步', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('sync-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 同步中...';
+    }
+
+    try {
+        const success = await API.syncFromCloud();
+        if (success) {
+            showToast('数据已从云端同步！', 'success');
+            addActivity('从云端同步数据', 'success');
+        } else {
+            showToast('同步失败，请检查网络', 'error');
+        }
+    } catch (err) {
+        showToast('同步失败：' + err.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> 从云端同步';
+        }
+    }
+}
+
 // 修改密码
 function changePassword() {
     const oldPassword = prompt('请输入当前密码：');
