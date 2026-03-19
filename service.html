@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>服务与支持 - CAFELE & BACASHI</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=20260319002">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260319003">
 </head>
 <body>
     <!-- 顶部导航栏 -->
@@ -33,7 +33,6 @@
                     <a href="javascript:void(0)" class="dropdown-toggle">服务与支持 <span class="arrow">▼</span></a>
                     <ul class="dropdown-menu">
                         <li><a href="#contact">联系我们</a></li>
-                        <li><a href="#brand-intro">品牌介绍</a></li>
                         <li><a href="#after-sales">售后服务</a></li>
                     </ul>
                 </li>
@@ -111,39 +110,6 @@
                         </div>
                         <h3>工作时间</h3>
                         <p>周一至周五 9:00 - 18:00</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 品牌介绍 -->
-        <section id="brand-intro" class="brand-intro-section">
-            <div class="container">
-                <div class="section-header">
-                    <p class="section-subtitle">BRAND INTRODUCTION</p>
-                    <h2 class="section-title">品牌介绍</h2>
-                    <div class="section-line"></div>
-                </div>
-
-                <div class="brand-intro-content">
-                    <div class="brand-desc">
-                        <p id="brand-description">卡斐乐是一家专注于高品质产品研发与制造的企业。自成立以来，始终秉承"匠心品质、创新无限"的理念，致力于为客户提供最优秀的产品和服务。</p>
-                        <p>经过多年的发展，我们已经成为行业内的知名品牌，产品远销海内外，赢得了广大客户的信赖和好评。</p>
-                    </div>
-
-                    <div class="brand-stats">
-                        <div class="stat-item">
-                            <span class="stat-number" id="stat-years">3</span>
-                            <span class="stat-label">年行业经验</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number" id="stat-products">120</span>
-                            <span class="stat-label">产品款式</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number" id="stat-customers">5000</span>
-                            <span class="stat-label">服务客户</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -309,30 +275,6 @@
             }
         }
 
-        // 加载品牌信息
-        function loadBrandInfo() {
-            const brand = API.brand.get();
-            const contact = API.contact.get();
-
-            if (brand.description) {
-                document.getElementById('brand-description').textContent = brand.description;
-            }
-            if (brand.stats) {
-                document.getElementById('stat-years').textContent = brand.stats.years;
-                document.getElementById('stat-products').textContent = brand.stats.products;
-                document.getElementById('stat-customers').textContent = brand.stats.customers;
-            }
-            if (contact.address) {
-                document.getElementById('contact-address').textContent = contact.address;
-            }
-            if (contact.phone) {
-                document.getElementById('contact-phone').textContent = contact.phone;
-            }
-            if (contact.email) {
-                document.getElementById('contact-email').textContent = contact.email;
-            }
-        }
-
         // 表单提交
         document.getElementById('contact-form')?.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -357,7 +299,6 @@
         // 页面加载初始化
         document.addEventListener('DOMContentLoaded', function() {
             checkWechatBrowser();
-            loadBrandInfo();
         });
     </script>
 </body>
