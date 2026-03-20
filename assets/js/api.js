@@ -14,7 +14,7 @@ const SupabaseClient = {
         if (typeof supabase === 'undefined') {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+                script.src = 'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js';
                 script.onload = () => {
                     this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
                     console.log('Supabase SDK 已加载');
