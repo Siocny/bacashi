@@ -924,9 +924,9 @@ section {
 .footer-links a {
     color: rgba(255,255,255,0.9);
     text-decoration: none;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
     transition: color 0.3s ease;
 }
 
@@ -1173,6 +1173,89 @@ section {
         flex-wrap: wrap;
         justify-content: center;
         gap: 20px;
+    }
+}
+
+/* 产品页面移动端优化 */
+@media (max-width: 768px) {
+    /* 页面页头 */
+    .page-header {
+        padding: 80px 15px 40px;
+        margin-top: 50px;
+    }
+
+    .page-header h1 {
+        font-size: 28px;
+    }
+
+    .page-header p {
+        font-size: 14px;
+    }
+
+    /* 品牌切换标签 */
+    .brand-tabs {
+        gap: 15px;
+        margin: 25px 0 20px;
+    }
+
+    .brand-tab {
+        padding: 12px 25px;
+        min-width: 120px;
+    }
+
+    .brand-tab .brand-name {
+        font-size: 16px;
+    }
+
+    .brand-tab .brand-cn {
+        font-size: 11px;
+    }
+
+    /* 分类筛选按钮 */
+    .category-filter {
+        gap: 8px;
+        margin-bottom: 25px;
+    }
+
+    .category-btn {
+        padding: 8px 18px;
+        font-size: 13px;
+        border-radius: 20px;
+    }
+
+    /* 产品网格 */
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .product-card {
+        border-radius: 12px;
+    }
+
+    .product-image-wrap {
+        height: 200px;
+    }
+
+    .product-info {
+        padding: 15px;
+    }
+
+    .product-category {
+        padding: 3px 10px;
+        font-size: 11px;
+        border-radius: 12px;
+    }
+
+    .product-name {
+        font-size: 16px;
+        margin: 8px 0;
+    }
+
+    .product-desc {
+        font-size: 13px;
+        line-height: 1.6;
     }
 }
 
@@ -2266,10 +2349,10 @@ section {
 
 .brand-team {
     color: #c9a962 !important;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 1px;
-    margin-top: 10px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 2px;
+    margin-top: 15px;
 }
 
 /* 品牌图片 */
