@@ -168,28 +168,70 @@ const API = {
         await this.loadData();
     },
 
+    // 强制从云端同步数据（用于页面加载时确保数据最新）
+    async forceSync() {
+        if (!this.isOnline || !this.supabaseReady) {
+            console.warn('无法强制同步：网络离线或 Supabase 未就绪');
+            // 即使无法同步，也确保有本地数据
+            await this.loadData();
+            return false;
+        }
+
+        try {
+            const brandData = await SupabaseClient.getData('brand_data', 'main');
+            const bacashiData = await SupabaseClient.getData('bacashi_data', 'main');
+
+            if (brandData) {
+                localStorage.setItem('brandData', JSON.stringify(brandData));
+                console.log('强制同步：已从云端同步 brandData');
+            }
+            if (bacashiData) {
+                localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
+                console.log('强制同步：已从云端同步 bacashiData');
+            }
+
+            return true;
+        } catch (err) {
+            console.error('强制同步失败:', err);
+            // 同步失败时回退到本地数据
+            await this.loadData();
+            return false;
+        }
+    },
+
     // 加载数据（优先从云端，失败则从本地）
     async loadData() {
-        // 加载 brandData
-        let brandData = null;
+        console.log('=== API.loadData 开始加载数据 ===');
+
+        // 尝试从 Supabase 加载品牌数据
+        let brandDataFromSupabase = null;
         if (this.isOnline && this.supabaseReady) {
-            brandData = await SupabaseClient.getData('brand_data', 'main');
-            if (brandData) {
-                console.log('从 Supabase 加载 brandData');
-                localStorage.setItem('brandData', JSON.stringify(brandData));
+            try {
+                brandDataFromSupabase = await SupabaseClient.getData('brand_data', 'main');
+                if (brandDataFromSupabase) {
+                    console.log('✅ 从 Supabase 加载 brandData');
+                    localStorage.setItem('brandData', JSON.stringify(brandDataFromSupabase));
+                }
+            } catch (err) {
+                console.warn('从 Supabase 加载 brandData 失败:', err);
             }
         }
 
-        if (!brandData) {
-            brandData = localStorage.getItem('brandData');
-            if (brandData) {
-                brandData = JSON.parse(brandData);
+        // 如果云端没有数据，从 localStorage 加载
+        let brandData = null;
+        if (!brandDataFromSupabase) {
+            const localData = localStorage.getItem('brandData');
+            if (localData) {
+                brandData = JSON.parse(localData);
                 console.log('从 localStorage 加载 brandData');
-            } else {
-                brandData = { ...defaultData };
-                console.log('使用默认 brandData');
             }
-            localStorage.setItem('brandData', JSON.stringify(brandData));
+        } else {
+            brandData = brandDataFromSupabase;
+        }
+
+        if (!brandData) {
+            brandData = { ...defaultData };
+            console.log('使用默认 brandData（缓存已清空或未配置）');
         }
 
         // 确保数据完整
@@ -203,45 +245,73 @@ const API = {
             brandData.brand = defaultData.brand;
         }
 
-        // 加载 bacashiData
-        let bacashiData = null;
+        localStorage.setItem('brandData', JSON.stringify(brandData));
+
+        // 尝试从 Supabase 加载 bacashi 数据
+        let bacashiDataFromSupabase = null;
         if (this.isOnline && this.supabaseReady) {
-            bacashiData = await SupabaseClient.getData('bacashi_data', 'main');
-            if (bacashiData) {
-                console.log('从 Supabase 加载 bacashiData');
-                localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
+            try {
+                bacashiDataFromSupabase = await SupabaseClient.getData('bacashi_data', 'main');
+                if (bacashiDataFromSupabase) {
+                    console.log('✅ 从 Supabase 加载 bacashiData');
+                    localStorage.setItem('bacashiData', JSON.stringify(bacashiDataFromSupabase));
+                }
+            } catch (err) {
+                console.warn('从 Supabase 加载 bacashiData 失败:', err);
             }
         }
 
-        if (!bacashiData) {
-            bacashiData = localStorage.getItem('bacashiData');
-            if (bacashiData) {
-                bacashiData = JSON.parse(bacashiData);
+        // 如果云端没有数据，从 localStorage 加载
+        let bacashiData = null;
+        if (!bacashiDataFromSupabase) {
+            const localData = localStorage.getItem('bacashiData');
+            if (localData) {
+                bacashiData = JSON.parse(localData);
                 console.log('从 localStorage 加载 bacashiData');
-            } else {
-                bacashiData = { ...defaultDataBacashi };
-                console.log('使用默认 bacashiData');
             }
-            localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
+        } else {
+            bacashiData = bacashiDataFromSupabase;
+        }
+
+        if (!bacashiData) {
+            bacashiData = { ...defaultDataBacashi };
+            console.log('使用默认 bacashiData（缓存已清空或未配置）');
         }
 
         // 确保 bacashi 数据完整
         if (!bacashiData.brand || !bacashiData.brand.description) {
             bacashiData.brand = defaultDataBacashi.brand;
-            localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
         }
+
+        localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
+
+        console.log('=== API.loadData 数据加载完成 ===');
     },
 
     // 保存数据到云端和本地
     async saveData(key, data, table = 'brand_data') {
         // 总是先保存到本地
         localStorage.setItem(key, JSON.stringify(data));
+        console.log(`数据已保存到本地：${key}`);
 
         // 如果在线且 Supabase 可用，同步到云端
         if (this.isOnline && this.supabaseReady) {
-            const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
-            if (success) {
-                console.log(`数据已同步到云端：${key}`);
+            try {
+                const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
+                if (success) {
+                    console.log(`✅ 数据已同步到云端：${key}`);
+                } else {
+                    console.warn('⚠️ 云端同步失败，数据仅保存在本地');
+                }
+            } catch (err) {
+                console.error('❌ 云端同步错误:', err);
+            }
+        } else {
+            if (!this.isOnline) {
+                console.warn('⚠️ 网络离线，数据仅保存在本地');
+            }
+            if (!this.supabaseReady) {
+                console.warn('⚠️ Supabase 未就绪，数据仅保存在本地');
             }
         }
     },

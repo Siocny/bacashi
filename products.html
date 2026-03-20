@@ -117,8 +117,8 @@
                 </div>
                 <div class="footer-section">
                     <h4>联系方式</h4>
-                    <p>邮箱：info@cafele.com</p>
-                    <p>电话：400-888-8888</p>
+                    <p id="footer-email">邮箱：info@cafele.com</p>
+                    <p id="footer-phone">电话：400-888-8888</p>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -127,10 +127,37 @@
         </div>
     </footer>
 
-    <script src="assets/js/api.js?v=20260319001"></script>
+    <script src="assets/js/api.js?v=20260320004"></script>
     <script>
         let currentBrand = 'cafele';
         let currentCategory = 'all';
+        let apiInitialized = false;
+
+        // 加载联系方式
+        function loadFooterContact() {
+            const contact = API.contact.get();
+            if (contact) {
+                const emailEl = document.getElementById('footer-email');
+                const phoneEl = document.getElementById('footer-phone');
+                if (emailEl && contact.email) {
+                    emailEl.textContent = '邮箱：' + contact.email;
+                }
+                if (phoneEl && contact.phone) {
+                    phoneEl.textContent = '电话：' + contact.phone;
+                }
+            }
+        }
+
+        // 初始化 API 并加载数据
+        async function initApp() {
+            if (!apiInitialized) {
+                await API.init();
+                // 尝试从云端强制同步数据
+                await API.forceSync();
+                apiInitialized = true;
+            }
+            loadProducts();
+        }
 
         // 检测微信浏览器
         function checkWechatBrowser() {
@@ -244,7 +271,8 @@
         // 页面加载初始化
         document.addEventListener('DOMContentLoaded', function() {
             checkWechatBrowser();
-            loadProducts();
+            initApp();
+            loadFooterContact();
         });
     </script>
 </body>
