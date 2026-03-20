@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数据同步工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .btn { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        .btn-primary { background: #1a3a5c; color: white; border: none; }
+        .btn-success { background: #28a745; color: white; border: none; }
+        #log { background: #f5f5f5; padding: 15px; margin-top: 20px; border-radius: 5px; max-height: 400px; overflow: auto; }
+        .log-item { margin: 5px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>数据同步工具</h1>
+    <p>用于将本地数据上传到 Supabase 云端</p>
+
+    <button class="btn btn-primary" onclick="uploadToCloud()">上传所有数据到云端</button>
+    <button class="btn btn-success" onclick="downloadFromCloud()">从云端下载数据</button>
+
+    <h3>日志：</h3>
+    <div id="log"></div>
+
+    <script src="assets/js/api.js"></script>
+    <script>
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = 'log-item ' + type;
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+            document.getElementById('log').appendChild(div);
+        }
+
+        async function uploadToCloud() {
+            log('开始上传数据到云端...');
+
+            // 等待 Supabase 初始化
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            if (!API.supabaseReady) {
+                log('Supabase 未就绪，无法上传', 'error');
+                return;
+            }
+
+            // 上传 brandData
+            const brandData = API.getData('brandData');
+            if (brandData) {
+                log('正在上传 brandData，产品数量：' + (brandData.products?.length || 0));
+                const result = await SupabaseClient.saveData('brand_data', 'main', brandData);
+                log(result ? '✅ brandData 上传成功' : '❌ brandData 上传失败', result ? 'success' : 'error');
+            }
+
+            // 上传 bacashiData
+            const bacashiData = API.getData('bacashiData');
+            if (bacashiData) {
+                log('正在上传 bacashiData，产品数量：' + (bacashiData.products?.length || 0));
+                const result = await SupabaseClient.saveData('bacashi_data', 'main', bacashiData);
+                log(result ? '✅ bacashiData 上传成功' : '❌ bacashiData 上传失败', result ? 'success' : 'error');
+            }
+
+            log('数据上传完成！', 'success');
+        }
+
+        async function downloadFromCloud() {
+            log('开始从云端下载数据...');
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            if (!API.supabaseReady) {
+                log('Supabase 未就绪，无法下载', 'error');
+                return;
+            }
+
+            // 下载 brandData
+            const brandData = await SupabaseClient.getData('brand_data', 'main');
+            if (brandData) {
+                localStorage.setItem('brandData', JSON.stringify(brandData));
+                log('✅ brandData 下载成功，产品数量：' + (brandData.products?.length || 0), 'success');
+            } else {
+                log('⚠️ 云端没有 brandData', 'warning');
+            }
+
+            // 下载 bacashiData
+            const bacashiData = await SupabaseClient.getData('bacashi_data', 'main');
+            if (bacashiData) {
+                localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
+                log('✅ bacashiData 下载成功，产品数量：' + (bacashiData.products?.length || 0), 'success');
+            } else {
+                log('⚠️ 云端没有 bacashiData', 'warning');
+            }
+
+            log('数据下载完成！刷新页面生效', 'success');
+        }
+    </script>
+</body>
+</html>
