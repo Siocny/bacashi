@@ -189,8 +189,8 @@
                 </div>
                 <div class="footer-section">
                     <h4>联系方式</h4>
-                    <p>邮箱：info@cafele.com</p>
-                    <p>电话：400-888-8888</p>
+                    <p id="footer-email">邮箱：info@cafele.com</p>
+                    <p id="footer-phone">电话：400-888-8888</p>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -199,8 +199,23 @@
         </div>
     </footer>
 
-    <script src="assets/js/api.js?v=20260319001"></script>
+    <script src="assets/js/api.js?v=20260320004"></script>
     <script>
+        // 加载联系方式
+        function loadFooterContact() {
+            const contact = API.contact.get();
+            if (contact) {
+                const emailEl = document.getElementById('footer-email');
+                const phoneEl = document.getElementById('footer-phone');
+                if (emailEl && contact.email) {
+                    emailEl.textContent = '邮箱：' + contact.email;
+                }
+                if (phoneEl && contact.phone) {
+                    phoneEl.textContent = '电话：' + contact.phone;
+                }
+            }
+        }
+
         // 检测微信浏览器
         function checkWechatBrowser() {
             const userAgent = navigator.userAgent;
@@ -291,6 +306,7 @@
             checkWechatBrowser();
             loadTimeline();
             loadContactInfo();
+            loadFooterContact();
         });
     </script>
 </body>
