@@ -342,8 +342,7 @@ const API = {
                 console.log('已从云端同步 bacashiData');
             }
 
-            // 重新加载页面
-            location.reload();
+            // 不再刷新页面，直接返回成功
             return true;
         } catch (err) {
             console.error('同步失败:', err);

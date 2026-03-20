@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase 连接测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #3ecf8e; }
+        .test-item { background: #2d2d44; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .test-item h3 { margin: 0 0 10px 0; color: #fff; }
+        .status { padding: 5px 10px; border-radius: 4px; display: inline-block; }
+        .success { background: #3ecf8e; color: #000; }
+        .error { background: #e74c3c; color: #fff; }
+        .loading { background: #f39c12; color: #000; }
+        .log { background: #1a1a1a; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+        .btn { background: #3ecf8e; color: #000; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; margin: 5px; }
+        .btn:hover { background: #2ecc71; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Supabase 连接测试</h1>
+
+        <div class="test-item">
+            <h3>测试 1: SDK 加载状态</h3>
+            <p id="sdk-status">检测中...</p>
+        </div>
+
+        <div class="test-item">
+            <h3>测试 2: 客户端初始化</h3>
+            <p id="client-status">等待中...</p>
+        </div>
+
+        <div class="test-item">
+            <h3>测试 3: 数据库表检查</h3>
+            <p id="table-status">等待中...</p>
+        </div>
+
+        <div class="test-item">
+            <h3>测试 4: 数据读写测试</h3>
+            <p id="rw-status">等待中...</p>
+        </div>
+
+        <div class="test-item">
+            <h3>操作</h3>
+            <button class="btn" onclick="runAllTests()">🔄 重新运行所有测试</button>
+            <button class="btn" onclick="createTables()">📊 创建数据表</button>
+            <button class="btn" onclick="clearData()">🗑️ 清除测试数据</button>
+        </div>
+
+        <div class="test-item">
+            <h3>📋 控制台日志</h3>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_CONFIG = {
+            url: 'https://twwxiucjojfujxqfaddy.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3d3hpdWNqb2pmdWp4cWZhZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTE0NDgsImV4cCI6MjA4OTQ2NzQ0OH0.AXYrS6BgvJqEkXBp-pN613FSXetm4iB_2O_SHSxTRFc'
+        };
+
+        let client = null;
+        const logEl = document.getElementById('log');
+
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#e74c3c' : type === 'success' ? '#3ecf8e' : '#3498db';
+            logEl.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+
+        function updateStatus(id, status, message) {
+            const el = document.getElementById(id);
+            el.className = 'status ' + status;
+            el.textContent = message;
+        }
+
+        async function runAllTests() {
+            logEl.innerHTML = '';
+            log('=== 开始运行测试 ===');
+
+            // 测试 1: SDK 加载
+            updateStatus('sdk-status', 'loading', '检测中...');
+            if (typeof supabase !== 'undefined') {
+                updateStatus('sdk-status', 'success', '✅ Supabase SDK 已加载');
+                log('SDK 加载成功', 'success');
+            } else {
+                updateStatus('sdk-status', 'error', '❌ Supabase SDK 未加载');
+                log('SDK 加载失败', 'error');
+                return;
+            }
+
+            // 测试 2: 客户端初始化
+            updateStatus('client-status', 'loading', '初始化中...');
+            try {
+                client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                updateStatus('client-status', 'success', '✅ 客户端初始化成功');
+                log('客户端初始化成功', 'success');
+            } catch (err) {
+                updateStatus('client-status', 'error', '❌ ' + err.message);
+                log('客户端初始化失败：' + err.message, 'error');
+                return;
+            }
+
+            // 测试 3: 数据库表检查
+            updateStatus('table-status', 'loading', '检查表结构...');
+            try {
+                const { data: brandData, error: brandError } = await client
+                    .from('brand_data')
+                    .select('key')
+                    .limit(1);
+
+                if (brandError) {
+                    if (brandError.message.includes('does not exist') || brandError.message.includes('relation')) {
+                        updateStatus('table-status', 'error', '❌ 表不存在');
+                        log('表不存在：' + brandError.message, 'error');
+                    } else {
+                        updateStatus('table-status', 'error', '❌ ' + brandError.message);
+                        log('表检查失败：' + brandError.message, 'error');
+                    }
+                } else {
+                    updateStatus('table-status', 'success', '✅ 表结构正常');
+                    log('表结构检查成功', 'success');
+                }
+
+                // 同时检查 bacashi_data 表
+                const { data: bacashiData, error: bacashiError } = await client
+                    .from('bacashi_data')
+                    .select('key')
+                    .limit(1);
+
+                if (bacashiError) {
+                    log('bacashi_data 表检查：' + bacashiError.message, 'error');
+                } else {
+                    log('bacashi_data 表结构正常', 'success');
+                }
+            } catch (err) {
+                updateStatus('table-status', 'error', '❌ ' + err.message);
+                log('表检查异常：' + err.message, 'error');
+            }
+
+            // 测试 4: 数据读写
+            updateStatus('rw-status', 'loading', '测试读写...');
+            try {
+                // 写入测试数据
+                const testData = { test: 'hello', timestamp: new Date().toISOString() };
+                const { error: insertError } = await client
+                    .from('brand_data')
+                    .upsert({ key: 'test_connection', data: testData }, { onConflict: 'key' });
+
+                if (insertError) {
+                    updateStatus('rw-status', 'error', '❌ 写入失败：' + insertError.message);
+                    log('写入测试失败：' + insertError.message, 'error');
+                } else {
+                    log('写入测试成功', 'success');
+
+                    // 读取测试数据
+                    const { data: readData, error: readError } = await client
+                        .from('brand_data')
+                        .select('data')
+                        .eq('key', 'test_connection')
+                        .single();
+
+                    if (readError) {
+                        updateStatus('rw-status', 'error', '❌ 读取失败：' + readError.message);
+                        log('读取测试失败：' + readError.message, 'error');
+                    } else {
+                        updateStatus('rw-status', 'success', '✅ 读写测试成功');
+                        log('读取测试成功，数据：' + JSON.stringify(readData.data), 'success');
+                    }
+                }
+            } catch (err) {
+                updateStatus('rw-status', 'error', '❌ ' + err.message);
+                log('读写测试异常：' + err.message, 'error');
+            }
+
+            log('=== 测试完成 ===');
+        }
+
+        async function createTables() {
+            log('=== 开始创建数据表 ===');
+
+            const sql = `
+                -- 创建品牌数据表
+                CREATE TABLE IF NOT EXISTS brand_data (
+                    id BIGSERIAL PRIMARY KEY,
+                    key TEXT UNIQUE NOT NULL,
+                    data JSONB DEFAULT '{}'::jsonb,
+                    updated_at TIMESTAMPTZ DEFAULT NOW()
+                );
+
+                -- 创建倍卡西数据表
+                CREATE TABLE IF NOT EXISTS bacashi_data (
+                    id BIGSERIAL PRIMARY KEY,
+                    key TEXT UNIQUE NOT NULL,
+                    data JSONB DEFAULT '{}'::jsonb,
+                    updated_at TIMESTAMPTZ DEFAULT NOW()
+                );
+
+                -- 创建索引
+                CREATE INDEX IF NOT EXISTS idx_brand_data_key ON brand_data(key);
+                CREATE INDEX IF NOT EXISTS idx_bacashi_data_key ON bacashi_data(key);
+
+                -- 启用行级安全策略（允许匿名访问）
+                ALTER TABLE brand_data ENABLE ROW LEVEL SECURITY;
+                ALTER TABLE bacashi_data ENABLE ROW LEVEL SECURITY;
+
+                -- 创建策略允许所有操作
+                DROP POLICY IF EXISTS "Allow all operations" ON brand_data;
+                DROP POLICY IF EXISTS "Allow all operations" ON bacashi_data;
+
+                CREATE POLICY "Allow all operations" ON brand_data
+                    FOR ALL USING (true) WITH CHECK (true);
+
+                CREATE POLICY "Allow all operations" ON bacashi_data
+                    FOR ALL USING (true) WITH CHECK (true);
+            `;
+
+            try {
+                const { error } = await client.rpc('exec_sql', { sql: sql });
+                if (error) {
+                    // 如果 rpc 不可用，提示用户手动创建
+                    log('无法通过 API 执行 SQL，请在 Supabase 后台手动执行以下 SQL:', 'error');
+                    log(sql);
+                    alert('请在 Supabase SQL Editor 中执行建表语句。\n\n已输出 SQL 到日志区域。');
+                } else {
+                    log('数据表创建成功！', 'success');
+                    alert('数据表创建成功！');
+                    runAllTests();
+                }
+            } catch (err) {
+                log('创建失败：' + err.message, 'error');
+                alert('无法自动创建表，请手动在 Supabase 后台创建。\n\n错误：' + err.message);
+            }
+        }
+
+        async function clearData() {
+            if (!confirm('确定要清除测试数据吗？')) return;
+
+            try {
+                const { error } = await client
+                    .from('brand_data')
+                    .delete()
+                    .eq('key', 'test_connection');
+
+                if (error) {
+                    log('清除失败：' + error.message, 'error');
+                } else {
+                    log('测试数据已清除', 'success');
+                    runAllTests();
+                }
+            } catch (err) {
+                log('清除异常：' + err.message, 'error');
+            }
+        }
+
+        // 页面加载后自动运行测试
+        window.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+</html>

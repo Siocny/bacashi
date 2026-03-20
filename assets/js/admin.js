@@ -344,7 +344,7 @@ function loadBrand() {
     document.getElementById('stat-customers').value = brand.stats.customers;
 }
 
-document.getElementById('brand-form').addEventListener('submit', function(e) {
+document.getElementById('brand-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const brandData = {
@@ -356,7 +356,7 @@ document.getElementById('brand-form').addEventListener('submit', function(e) {
         }
     };
 
-    API.brand.save(brandData);
+    await API.brand.save(brandData);
     showToast('品牌信息已保存！', 'success');
     addActivity('更新品牌信息', 'success');
 });
@@ -370,7 +370,7 @@ function loadContact() {
     document.getElementById('contact-email').value = contact.email;
 }
 
-document.getElementById('contact-form').addEventListener('submit', function(e) {
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const contactData = {
@@ -379,7 +379,7 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
         email: document.getElementById('contact-email').value
     };
 
-    API.contact.save(contactData);
+    await API.contact.save(contactData);
     showToast('联系信息已保存！', 'success');
     addActivity('更新联系信息', 'success');
 });
@@ -550,18 +550,21 @@ document.getElementById('add-product-btn').addEventListener('click', function() 
 });
 
 // 批量删除按钮
-document.getElementById('batch-delete-btn').addEventListener('click', function() {
+document.getElementById('batch-delete-btn').addEventListener('click', async function() {
     if (selectedProducts.length === 0) {
         showToast('请先选择要删除的产品', 'warning');
         return;
     }
 
     if (confirm(`确定要删除选中的 ${selectedProducts.length} 个产品吗？`)) {
-        selectedProducts.forEach(id => API.products.delete(id));
+        const count = selectedProducts.length;
+        for (const id of selectedProducts) {
+            await API.products.delete(id);
+        }
         selectedProducts = [];
         loadProductsTable();
         showToast('批量删除成功！', 'success');
-        addActivity(`批量删除 ${selectedProducts.length} 个产品`, 'warning');
+        addActivity(`批量删除 ${count} 个产品`, 'warning');
     }
 });
 
@@ -669,29 +672,29 @@ function editProduct(id) {
 }
 
 // 删除产品
-function deleteProduct(id) {
+async function deleteProduct(id) {
     if (confirm('确定要删除这个产品吗？')) {
-        API.products.delete(id);
-        renumberProducts();
+        await API.products.delete(id);
+        await renumberProducts();
         showToast('产品已删除', 'success');
         addActivity('删除产品 ID:' + id, 'warning');
     }
 }
 
 // 更新产品排序
-function updateProductSort(id, value) {
+async function updateProductSort(id, value) {
     const products = API.products.getAll();
     const product = products.find(p => p.id === id);
     if (product) {
         product.sort = parseInt(value) || 0;
-        API.products.update(id, product);
+        await API.products.update(id, product);
         showToast('排序已更新', 'success');
-        renumberProducts();
+        await renumberProducts();
     }
 }
 
 // 改变排序（上下移动）
-window.changeSort = function(id, delta) {
+window.changeSort = async function(id, delta) {
     console.log('changeSort called with id:', id, 'delta:', delta);
 
     const products = API.products.getAll();
@@ -717,26 +720,26 @@ window.changeSort = function(id, delta) {
 
     console.log('Swapping:', products[index].name, '<->', products[newIndex].name);
 
-    API.products.update(products[index].id, products[index]);
-    API.products.update(products[newIndex].id, products[newIndex]);
+    await API.products.update(products[index].id, products[index]);
+    await API.products.update(products[newIndex].id, products[newIndex]);
 
     showToast('排序已更新', 'success');
     loadProductsTable();
 };
 
 // 重新排序产品（自动连续排序）
-function renumberProducts() {
+async function renumberProducts() {
     const products = API.products.getAll();
     products.sort((a, b) => a.sort - b.sort);
-    products.forEach((product, index) => {
-        product.sort = index + 1;
-        API.products.update(product.id, product);
-    });
+    for (const product of products) {
+        product.sort = products.indexOf(product) + 1;
+        await API.products.update(product.id, product);
+    }
     loadProductsTable();
 }
 
 // 保存产品
-document.getElementById('product-form').addEventListener('submit', function(e) {
+document.getElementById('product-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const id = document.getElementById('product-id').value;
@@ -761,11 +764,11 @@ document.getElementById('product-form').addEventListener('submit', function(e) {
     };
 
     if (id) {
-        API.products.update(parseInt(id), productData);
+        await API.products.update(parseInt(id), productData);
         showToast('产品已更新！', 'success');
         addActivity('更新产品：' + productData.name, 'success');
     } else {
-        API.products.add(productData);
+        await API.products.add(productData);
         showToast('产品已添加！', 'success');
         addActivity('添加产品：' + productData.name, 'success');
     }
@@ -909,9 +912,9 @@ function editTimeline(id) {
 }
 
 // 删除时间轴
-function deleteTimeline(id) {
+async function deleteTimeline(id) {
     if (confirm('确定要删除这个事件吗？')) {
-        API.timeline.delete(id);
+        await API.timeline.delete(id);
         loadTimelineTable();
         showToast('事件已删除', 'success');
         addActivity('删除时间轴事件 ID:' + id, 'warning');
@@ -919,7 +922,7 @@ function deleteTimeline(id) {
 }
 
 // 保存时间轴
-document.getElementById('timeline-form').addEventListener('submit', function(e) {
+document.getElementById('timeline-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const id = document.getElementById('timeline-id').value;
@@ -930,11 +933,11 @@ document.getElementById('timeline-form').addEventListener('submit', function(e) 
     };
 
     if (id) {
-        API.timeline.update(parseInt(id), itemData);
+        await API.timeline.update(parseInt(id), itemData);
         showToast('事件已更新！', 'success');
         addActivity('更新时间轴：' + itemData.title, 'success');
     } else {
-        API.timeline.add(itemData);
+        await API.timeline.add(itemData);
         showToast('事件已添加！', 'success');
         addActivity('添加时间轴：' + itemData.title, 'success');
     }
