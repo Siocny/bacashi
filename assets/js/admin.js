@@ -1266,15 +1266,27 @@ async function syncFromCloud() {
     }
 
     try {
+        // 先检查 Supabase 是否就绪
+        if (!API.supabaseReady) {
+            throw new Error('Supabase 未就绪，请检查网络连接');
+        }
+
         const success = await API.syncFromCloud();
         if (success) {
             showToast('数据已从云端同步！', 'success');
             addActivity('从云端同步数据', 'success');
         } else {
-            showToast('同步失败，请检查网络', 'error');
+            showToast('同步失败：无法连接到云端数据库', 'error');
+            addActivity('云端同步失败', 'error');
         }
     } catch (err) {
-        showToast('同步失败：' + err.message, 'error');
+        console.error('同步错误:', err);
+        let errorMsg = err.message || '未知错误';
+        if (errorMsg.includes('table') || errorMsg.includes('relation')) {
+            errorMsg = '数据库表不存在，请先在 Supabase 后台创建表';
+        }
+        showToast('同步失败：' + errorMsg, 'error');
+        addActivity('同步失败：' + errorMsg, 'error');
     } finally {
         if (btn) {
             btn.disabled = false;

@@ -66,35 +66,22 @@ const SupabaseClient = {
     // 初始化数据库表
     async initTables() {
         try {
-            // 尝试创建 brand_data 表
-            await this.client.rpc('create_table_if_not_exists', {
-                table_name: 'brand_data',
-                table_def: JSON.stringify([
-                    { name: 'id', type: 'int8', primary: true },
-                    { name: 'key', type: 'text', unique: true },
-                    { name: 'data', type: 'jsonb' },
-                    { name: 'updated_at', type: 'timestamptz', default: 'now()' }
-                ])
-            }).then(({ error }) => {
-                if (error) console.log('表已存在或无法自动创建:', error.message);
-            });
+            // 测试连接
+            const { data, error } = await this.client
+                .from('brand_data')
+                .select('key')
+                .limit(1);
 
-            // 尝试创建 bacashi_data 表
-            await this.client.rpc('create_table_if_not_exists', {
-                table_name: 'bacashi_data',
-                table_def: JSON.stringify([
-                    { name: 'id', type: 'int8', primary: true },
-                    { name: 'key', type: 'text', unique: true },
-                    { name: 'data', type: 'jsonb' },
-                    { name: 'updated_at', type: 'timestamptz', default: 'now()' }
-                ])
-            }).then(({ error }) => {
-                if (error) console.log('表已存在或无法自动创建:', error.message);
-            });
+            if (error) {
+                console.error('Supabase 表未创建或无权限:', error.message);
+                console.warn('请在 Supabase 后台创建 brand_data 和 bacashi_data 表');
+                throw new Error('数据库表不存在，请先运行初始化脚本');
+            }
 
-            console.log('Supabase 表初始化完成');
+            console.log('Supabase 表已存在');
         } catch (err) {
-            console.log('Supabase 表初始化跳过（需手动创建）:', err.message);
+            console.warn('Supabase 表检查失败:', err.message);
+            throw err;
         }
     }
 };
