@@ -2631,15 +2631,64 @@ section {
     .brand-stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .stat-item {
+        padding: 20px 10px;
+    }
+
+    .stat-item .stat-icon {
+        font-size: 32px;
+    }
+
+    .stat-item .stat-number {
+        font-size: 28px;
+    }
+
+    .stat-item .stat-label {
+        font-size: 11px;
+    }
 }
 
 @media (max-width: 768px) {
     .page-header {
-        padding: 100px 0 40px;
+        padding: 80px 0 40px;
     }
 
     .page-header h1 {
-        font-size: 32px;
+        font-size: 28px;
+    }
+
+    .brand-intro-content,
+    .company-intro-content {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .intro-image {
+        order: 0;
+    }
+
+    .brand-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .stat-item {
+        padding: 15px 10px;
+    }
+
+    .stat-item .stat-icon {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .stat-item .stat-number {
+        font-size: 24px;
+    }
+
+    .stat-item .stat-label {
+        font-size: 10px;
     }
 
     .brand-tabs {
