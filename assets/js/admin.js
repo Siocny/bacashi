@@ -1269,9 +1269,13 @@ async function syncFromCloud() {
     }
 
     try {
-        // 先检查 Supabase 是否就绪
+        // 如果 Supabase 未就绪，先尝试重连
         if (!API.supabaseReady) {
-            throw new Error('Supabase 未就绪，请检查网络连接');
+            showToast('正在连接 Supabase...', 'info');
+            const reconnected = await API.retrySupabaseConnection();
+            if (!reconnected) {
+                throw new Error('Supabase 连接失败，请检查网络连接或稍后重试');
+            }
         }
 
         const success = await API.syncFromCloud();

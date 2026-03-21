@@ -9,19 +9,46 @@ const SUPABASE_CONFIG = {
 
 // 简单的 Supabase 客户端（无需额外库）
 const SupabaseClient = {
+    retryCount: 0,
+    maxRetries: 3,
+
     async init() {
         // 动态加载 Supabase SDK
         if (typeof supabase === 'undefined') {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = 'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js';
-                script.onload = () => {
-                    this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-                    console.log('Supabase SDK 已加载');
-                    resolve();
+                // 使用多个 CDN 源，提高加载成功率
+                const cdnSources = [
+                    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+                    'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js',
+                    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+                ];
+
+                const loadFromSource = (index) => {
+                    if (index >= cdnSources.length) {
+                        reject(new Error('所有 CDN 源均加载失败'));
+                        return;
+                    }
+
+                    script.src = cdnSources[index];
+                    console.log(`尝试从 ${cdnSources[index]} 加载 Supabase SDK...`);
+
+                    script.onload = () => {
+                        this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                        console.log('✅ Supabase SDK 已加载 from:', cdnSources[index]);
+                        resolve();
+                    };
+
+                    script.onerror = () => {
+                        console.warn(`CDN 源失败：${cdnSources[index]}`);
+                        this.retryCount++;
+                        loadFromSource(index + 1);
+                    };
+
+                    document.head.appendChild(script);
                 };
-                script.onerror = () => reject(new Error('Supabase SDK 加载失败'));
-                document.head.appendChild(script);
+
+                loadFromSource(0);
             });
         } else {
             this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
@@ -158,14 +185,32 @@ const API = {
             await SupabaseClient.init();
             await SupabaseClient.initTables();
             this.supabaseReady = true;
-            console.log('Supabase 已初始化');
+            console.log('✅ Supabase 已初始化');
         } catch (err) {
-            console.warn('Supabase 初始化失败，使用本地存储:', err);
+            console.warn('⚠️ Supabase 初始化失败:', err.message);
+            console.warn('将使用本地存储，云端同步功能不可用');
             this.supabaseReady = false;
         }
 
         // 从云端或本地加载数据
         await this.loadData();
+    },
+
+    // 手动重试连接 Supabase
+    async retrySupabaseConnection() {
+        console.log('尝试重新连接 Supabase...');
+        try {
+            SupabaseClient.retryCount = 0;
+            await SupabaseClient.init();
+            await SupabaseClient.initTables();
+            this.supabaseReady = true;
+            console.log('✅ Supabase 连接成功');
+            return true;
+        } catch (err) {
+            console.warn('⚠️ Supabase 重连失败:', err.message);
+            this.supabaseReady = false;
+            return false;
+        }
     },
 
     // 强制从云端同步数据（用于页面加载时确保数据最新）
