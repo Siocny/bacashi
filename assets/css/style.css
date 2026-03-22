@@ -3260,27 +3260,66 @@ section {
         margin-bottom: 12px;
     }
 
-    /* 时间轴 */
+    /* 时间轴 - 移动端垂直布局 */
     .timeline-container {
-        padding-left: 10px;
+        padding-left: 25px;
     }
 
     .timeline-container::before {
-        left: 23px;
+        left: 8px;
+        top: 20px;
     }
 
     .timeline-item {
         flex-direction: column;
-        gap: 12px;
+        align-items: flex-start;
+        gap: 10px;
         margin-bottom: 35px;
+        position: relative;
+    }
+
+    /* 移动端圆点移到左侧线上 */
+    .timeline-dot {
+        left: -17px;
+        top: -5px;
+        transform: none;
+    }
+
+    .timeline-item:hover .timeline-dot {
+        transform: scale(1.2);
+    }
+
+    /* 移动端隐藏横向连接线 */
+    .timeline-year::after {
+        display: none;
     }
 
     .timeline-year {
-        text-align: center;
-        font-size: 16px;
-        padding: 8px 16px;
-        width: auto;
-        display: inline-block;
+        text-align: left;
+        font-size: 15px;
+        padding: 6px 14px;
+        align-self: flex-start;
+    }
+
+    .timeline-content {
+        padding: 18px;
+        border-radius: 12px;
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .timeline-content:hover {
+        transform: translateY(-3px);
+    }
+
+    .timeline-title {
+        font-size: 15px;
+    }
+
+    .timeline-description {
+        font-size: 13px;
+        line-height: 1.7;
+        padding-left: 0;
     }
 
     .timeline-content {
