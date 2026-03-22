@@ -3375,17 +3375,72 @@ section {
         font-size: 14px;
     }
 
-    /* 页脚 */
+    /* 页脚 - 移动端优化 */
+    .footer {
+        padding: 35px 0 20px;
+    }
+
     .footer-content {
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
         text-align: center;
+    }
+
+    .footer-brand {
+        padding: 0 10px;
+    }
+
+    .footer-brand h3 {
+        font-size: 18px;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+    }
+
+    .footer-brand p {
+        font-size: 12px;
+        color: rgba(255,255,255,0.6);
+        letter-spacing: 1.5px;
+    }
+
+    .footer-section h4 {
+        font-size: 14px;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .footer-section p {
+        font-size: 12px;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.8;
     }
 
     .footer-links {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 12px;
+        gap: 15px;
+    }
+
+    .footer-links a {
+        font-size: 13px;
+    }
+
+    /* 联系方式 - 移动端横向排列 */
+    .footer-contact {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-size: 12px;
+        flex-wrap: wrap;
+    }
+
+    .footer-contact p {
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    /* 移动端隐藏联系方式中间的竖线 */
+    .contact-divider {
+        display: none;
     }
 
     /* 手机端隐藏页脚竖线分隔符 */
@@ -3393,9 +3448,10 @@ section {
         display: none;
     }
 
-    .footer-brand h3 {
-        font-size: 24px;
-        letter-spacing: 3px;
+    .footer-bottom {
+        margin-top: 15px;
+        padding-top: 15px;
+        font-size: 11px;
     }
 
     /* 关于页面 */
