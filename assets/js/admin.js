@@ -142,6 +142,9 @@ window.deleteProductTypeOption = function() {
 
 // 检查登录状态
 function checkAuth() {
+    // 添加 loaded 类，移除初始隐藏状态
+    document.body.classList.add('loaded');
+
     if (API.auth.isLoggedIn()) {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'flex';

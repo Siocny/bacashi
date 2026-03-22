@@ -6,6 +6,13 @@
     <title>后台管理 - CAFELE 卡斐乐</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=20260322015">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 页面加载时隐藏内容，避免闪烁 */
+        body:not(.loaded) #login-page,
+        body:not(.loaded) #admin-panel {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
     <!-- 登录页面 -->
