@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>品牌产品 - CAFELE & BACASHI</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=20260322013">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260322014">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -116,7 +116,6 @@
     </footer>
 
     <script src="assets/js/api.js?v=20260320005"></script>
-    <script src="assets/js/api.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
         let currentBrand = 'cafele';
@@ -143,8 +142,12 @@
         async function initApp() {
             if (!apiInitialized) {
                 await API.init();
-                // 尝试从云端强制同步数据
-                await API.forceSync();
+                // 只在 localStorage 为空时从云端同步，避免每次都请求
+                const cafeleProducts = API.products.getAll();
+                const bacashiProducts = API.bacashi.products.getAll();
+                if (cafeleProducts.length === 0 && bacashiProducts.length === 0) {
+                    await API.forceSync();
+                }
                 apiInitialized = true;
             }
             loadProducts();
