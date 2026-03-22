@@ -1278,7 +1278,7 @@ section {
 
     /* 下拉菜单容器（移动端展开菜单） */
     .nav-links {
-        display: none !important;
+        display: none;
         position: fixed;
         top: 60px;
         left: 0;
