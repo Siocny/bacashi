@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>品牌产品 - CAFELE & BACASHI</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=20260322015">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260322016">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -81,8 +81,8 @@
 
             <!-- 子分类筛选（仅当选择车用电子时显示） -->
             <div id="subcategory-filter" class="subcategory-filter" style="display: none;">
-                <button class="subcategory-btn active" data-subcategory="all" onclick="filterSubCategory('all')">全部</button>
-                <button class="subcategory-btn" data-subcategory="车载充气泵" onclick="filterSubCategory('车载充气泵')">车载充气泵</button>
+                <span class="subcategory-label"><i class="fas fa-filter"></i> 细分类型：</span>
+                <button class="subcategory-btn active" data-subcategory="车载充气泵" onclick="filterSubCategory('车载充气泵')">车载充气泵</button>
                 <button class="subcategory-btn" data-subcategory="车载吸尘器" onclick="filterSubCategory('车载吸尘器')">车载吸尘器</button>
                 <button class="subcategory-btn" data-subcategory="一体机电源" onclick="filterSubCategory('一体机电源')">一体机电源</button>
                 <button class="subcategory-btn" data-subcategory="纯应急电源" onclick="filterSubCategory('纯应急电源')">纯应急电源</button>
@@ -171,12 +171,13 @@
             const subcategoryFilter = document.getElementById('subcategory-filter');
             if (category === '车用电子') {
                 subcategoryFilter.style.display = 'flex';
-                // 重置子分类为"全部"
-                currentSubCategory = 'all';
+                // 默认选中第一个子分类（车载充气泵）
+                currentSubCategory = '车载充气泵';
                 document.querySelectorAll('.subcategory-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector('.subcategory-btn[data-subcategory="all"]').classList.add('active');
+                document.querySelector('.subcategory-btn[data-subcategory="车载充气泵"]').classList.add('active');
             } else {
                 subcategoryFilter.style.display = 'none';
+                currentSubCategory = null;
             }
 
             loadProducts();
@@ -206,7 +207,7 @@
                 products = products.filter(p => p.category === currentCategory);
 
                 // 如果是车用电子且选择了子分类，应用子分类筛选
-                if (currentCategory === '车用电子' && currentSubCategory !== 'all') {
+                if (currentCategory === '车用电子' && currentSubCategory) {
                     products = products.filter(p => p.productType === currentSubCategory);
                 }
             }
