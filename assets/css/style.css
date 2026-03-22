@@ -94,10 +94,10 @@ body {
 .btn-buy {
     background: #1a1a1a;
     color: white;
-    padding: 12px 30px;
-    border-radius: 25px;
+    padding: 8px 18px;
+    border-radius: 20px;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     transition: all 0.3s ease;
 }

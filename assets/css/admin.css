@@ -1006,12 +1006,15 @@ body {
 .data-table {
     background: var(--bg-light);
     border-radius: var(--border-radius);
-    overflow: hidden;
+    overflow-x: auto;
+    width: 100%;
+    max-width: 900px;
 }
 
 .table-header {
     display: grid;
-    grid-template-columns: 40px 50px 250px 90px 110px 130px 110px;
+    grid-template-columns: 40px 50px 200px 80px 100px 120px 100px;
+    min-width: 700px;
     padding: 14px 16px;
     background: var(--bg-color);
     font-weight: 600;
@@ -1024,7 +1027,8 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 40px 50px 250px 90px 110px 130px 110px;
+    grid-template-columns: 40px 50px 200px 80px 100px 120px 100px;
+    min-width: 700px;
     padding: 14px 16px;
     align-items: center;
     border-bottom: 1px solid var(--border-light);
@@ -1034,6 +1038,9 @@ body {
 
 .table-row > span {
     text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .table-header > span:nth-child(4),
