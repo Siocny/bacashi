@@ -261,6 +261,7 @@ function switchTab(tabName) {
         'brand': '品牌管理',
         'products': '产品管理',
         'contact': '联系信息管理',
+        'messages': '留言管理',
         'timeline': '发展历程管理',
         'manuals': '产品说明书管理',
         'settings': '系统设置'
@@ -280,6 +281,9 @@ function switchTab(tabName) {
             break;
         case 'contact':
             loadContact();
+            break;
+        case 'messages':
+            loadMessages();
             break;
         case 'timeline':
             loadTimelineTable();
@@ -534,6 +538,42 @@ function updatePagination(totalItems, totalPages) {
 function changePage(page) {
     currentPage = page;
     loadProductsTable();
+}
+
+function messageChangePage(page) {
+    messageCurrentPage = page;
+    loadMessages();
+}
+
+function generatePagination(current, total, prefix) {
+    const startIndex = (current - 1) * (prefix === 'message' ? messagesPerPage : itemsPerPage) + 1;
+    const endIndex = Math.min(current * (prefix === 'message' ? messagesPerPage : itemsPerPage), total * (prefix === 'message' ? messagesPerPage : itemsPerPage) / (prefix === 'message' ? messagesPerPage : itemsPerPage) * (prefix === 'message' ? messagesPerPage : itemsPerPage));
+
+    let html = `<span class="table-info">显示 ${startIndex}-${Math.min(current * (prefix === 'message' ? messagesPerPage : itemsPerPage), total * (prefix === 'message' ? messagesPerPage : itemsPerPage))} 条，共 ${total} 条</span>`;
+    html += `<div class="pagination">`;
+
+    if (current > 1) {
+        html += `<button onclick="${prefix}ChangePage(${current - 1})"><i class="fas fa-chevron-left"></i></button>`;
+    }
+
+    const maxButtons = 5;
+    let startPage = Math.max(1, current - Math.floor(maxButtons / 2));
+    let endPage = Math.min(total, startPage + maxButtons - 1);
+
+    if (endPage - startPage + 1 < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="${i === current ? 'active' : ''}" onclick="${prefix}ChangePage(${i})">${i}</button>`;
+    }
+
+    if (current < total) {
+        html += `<button onclick="${prefix}ChangePage(${current + 1})"><i class="fas fa-chevron-right"></i></button>`;
+    }
+
+    html += `</div>`;
+    return html;
 }
 
 function toggleSelectAll() {
@@ -1506,6 +1546,22 @@ document.getElementById('export-timeline-btn')?.addEventListener('click', functi
     showToast('时间轴数据导出成功！', 'success');
 });
 
+// 导出留言数据
+document.getElementById('export-messages-btn')?.addEventListener('click', function() {
+    exportMessages();
+});
+
+// 刷新留言列表
+document.getElementById('refresh-messages-btn')?.addEventListener('click', function() {
+    loadMessages();
+    showToast('列表已刷新', 'success');
+});
+
+// 批量删除留言
+document.getElementById('batch-delete-messages-btn')?.addEventListener('click', function() {
+    batchDeleteMessages();
+});
+
 // ==================== 页面加载初始化 ====================
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1542,6 +1598,7 @@ window.updateProductSort = updateProductSort;
 window.editTimeline = editTimeline;
 window.deleteTimeline = deleteTimeline;
 window.changePage = changePage;
+window.messageChangePage = messageChangePage;
 window.toggleSelectAll = toggleSelectAll;
 window.toggleProductSelection = toggleProductSelection;
 window.exportData = exportData;
@@ -1556,4 +1613,192 @@ window.addCategoryOption = addCategoryOption;
 window.deleteCategoryOption = deleteCategoryOption;
 window.addProductTypeOption = addProductTypeOption;
 window.deleteProductTypeOption = deleteProductTypeOption;
+window.loadMessages = loadMessages;
+window.deleteMessage = deleteMessage;
+window.toggleMessageSelection = toggleMessageSelection;
+window.toggleMessageSelectAll = toggleMessageSelectAll;
+window.batchDeleteMessages = batchDeleteMessages;
+window.exportMessages = exportMessages;
+
+// ==================== 留言管理功能 ====================
+
+let messageCurrentPage = 1;
+const messagesPerPage = 10;
+
+// 加载留言列表
+function loadMessages() {
+    const messagesTable = document.getElementById('messages-table');
+    const messagesPagination = document.getElementById('messages-pagination');
+
+    if (!messagesTable) return;
+
+    // 从 localStorage 读取留言
+    const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+
+    // 按时间倒序排序
+    messages.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+    const totalPages = Math.ceil(messages.length / messagesPerPage);
+    const startIndex = (messageCurrentPage - 1) * messagesPerPage;
+    const endIndex = startIndex + messagesPerPage;
+    const pageMessages = messages.slice(startIndex, endIndex);
+
+    if (messages.length === 0) {
+        messagesTable.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>暂无留言</p>
+            </div>
+        `;
+        if (messagesPagination) messagesPagination.innerHTML = '';
+        return;
+    }
+
+    messagesTable.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40px;">
+                        <input type="checkbox" id="message-select-all" onchange="toggleMessageSelectAll(this)">
+                    </th>
+                    <th style="width: 100px;">姓名</th>
+                    <th style="width: 150px;">联系电话</th>
+                    <th style="width: 200px;">邮箱</th>
+                    <th>留言内容</th>
+                    <th style="width: 180px;">留言时间</th>
+                    <th style="width: 100px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${pageMessages.map(msg => `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="message-checkbox" data-time="${msg.time}" onchange="toggleMessageSelection(this)">
+                        </td>
+                        <td>${escapeHtml(msg.name || '-')}</td>
+                        <td>${escapeHtml(msg.phone || '-')}</td>
+                        <td>${escapeHtml(msg.email || '-')}</td>
+                        <td class="message-content">${escapeHtml(msg.message || '')}</td>
+                        <td>${formatMessageTime(msg.time)}</td>
+                        <td>
+                            <button class="btn-icon" onclick="deleteMessage('${msg.time}')" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+
+    // 更新批量删除按钮状态
+    updateBatchDeleteButton();
+
+    // 生成分页
+    if (messagesPagination) {
+        messagesPagination.innerHTML = generatePagination(messageCurrentPage, totalPages, 'message');
+    }
+}
+
+// 删除单条留言
+function deleteMessage(time) {
+    if (!confirm('确定要删除这条留言吗？')) return;
+
+    let messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+    messages = messages.filter(m => m.time !== time);
+    localStorage.setItem('contactMessages', JSON.stringify(messages));
+
+    loadMessages();
+    showToast('留言已删除', 'success');
+}
+
+// 切换留言全选
+function toggleMessageSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.message-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateBatchDeleteButton();
+}
+
+// 切换单条留言选中
+function toggleMessageSelection(checkbox) {
+    updateBatchDeleteButton();
+}
+
+// 更新批量删除按钮状态
+function updateBatchDeleteButton() {
+    const batchDeleteBtn = document.getElementById('batch-delete-messages-btn');
+    if (!batchDeleteBtn) return;
+
+    const selectedCount = document.querySelectorAll('.message-checkbox:checked').length;
+    batchDeleteBtn.style.display = selectedCount > 0 ? 'inline-flex' : 'none';
+}
+
+// 批量删除留言
+function batchDeleteMessages() {
+    const selectedCheckboxes = document.querySelectorAll('.message-checkbox:checked');
+    if (selectedCheckboxes.length === 0) {
+        showToast('请先选择要删除的留言', 'warning');
+        return;
+    }
+
+    if (!confirm(`确定要删除选中的 ${selectedCheckboxes.length} 条留言吗？`)) return;
+
+    let messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+    const selectedTimes = Array.from(selectedCheckboxes).map(cb => cb.dataset.time);
+    messages = messages.filter(m => !selectedTimes.includes(m.time));
+    localStorage.setItem('contactMessages', JSON.stringify(messages));
+
+    loadMessages();
+    showToast(`已删除 ${selectedCheckboxes.length} 条留言`, 'success');
+}
+
+// 导出留言
+function exportMessages() {
+    const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+    if (messages.length === 0) {
+        showToast('暂无留言可导出', 'warning');
+        return;
+    }
+
+    const dataStr = JSON.stringify(messages, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `留言数据_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showToast('留言已导出', 'success');
+}
+
+// 留言时间格式化
+function formatMessageTime(isoString) {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '刚刚';
+    if (minutes < 60) return `${minutes}分钟前`;
+    if (hours < 24) return `${hours}小时前`;
+    if (days < 7) return `${days}天前`;
+
+    return date.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// HTML 转义
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 

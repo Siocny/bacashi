@@ -80,6 +80,10 @@
                     <i class="fas fa-address-book"></i>
                     <span>联系信息</span>
                 </a>
+                <a href="#" class="nav-item" data-tab="messages">
+                    <i class="fas fa-comments"></i>
+                    <span>留言管理</span>
+                </a>
                 <a href="#" class="nav-item" data-tab="timeline">
                     <i class="fas fa-history"></i>
                     <span>发展历程</span>
@@ -339,6 +343,33 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- 留言管理 -->
+            <div id="tab-messages" class="tab-content">
+                <div class="content-card">
+                    <div class="toolbar">
+                        <div class="toolbar-left">
+                            <button class="btn btn-danger" id="batch-delete-messages-btn" style="display: none;">
+                                <i class="fas fa-trash"></i> 批量删除
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="icon-btn" id="export-messages-btn" title="导出留言数据">
+                                <i class="fas fa-file-export"></i>
+                            </button>
+                            <button class="icon-btn" id="refresh-messages-btn" title="刷新列表">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="messages-table" class="data-table">
+                        <!-- 留言列表由 JS 生成 -->
+                    </div>
+                    <div class="table-footer" id="messages-pagination">
+                        <!-- 分页由 JS 生成 -->
+                    </div>
                 </div>
             </div>
 

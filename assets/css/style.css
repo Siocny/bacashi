@@ -963,42 +963,41 @@ section {
 }
 
 .footer-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
     padding-bottom: 30px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.footer-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .footer-section h4 {
     font-size: 16px;
     font-weight: 600;
-    margin-bottom: 15px;
     letter-spacing: 2px;
     color: white;
+    white-space: nowrap;
+    margin: 0;
 }
 
 .footer-section p {
     font-size: 14px;
     color: rgba(255,255,255,0.7);
-    line-height: 2;
-}
-
-.footer-section {
-    text-align: center;
-}
-
-.footer-contact {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-}
-
-.footer-contact p {
+    line-height: 1.6;
     margin: 0;
+    white-space: nowrap;
+}
+
+.contact-divider {
+    color: rgba(255,255,255,0.4);
     font-size: 14px;
-    color: rgba(255,255,255,0.8);
+    margin: 0 5px;
 }
 
 .contact-divider {
@@ -2817,7 +2816,7 @@ section {
     position: relative;
     max-width: 1000px;
     margin: 50px auto 0;
-    padding-left: 100px;
+    padding-left: 60px;
 }
 
 /* 时间轴线 - 左侧垂直线 */
@@ -2834,7 +2833,7 @@ section {
 
 .timeline-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 40px;
     position: relative;
 }
@@ -2859,40 +2858,12 @@ section {
     flex-shrink: 0;
 }
 
-.timeline-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 40px;
-    position: relative;
-}
-
-.timeline-item:last-child {
-    margin-bottom: 0;
-}
-
-/* 左侧圆点 */
-.timeline-dot {
-    width: 16px;
-    height: 16px;
-    background: white;
-    border: 4px solid var(--primary-color);
-    border-radius: 50%;
-    position: absolute;
-    left: 22px;
-    top: 50%;
-    transform: translateY(-50%);
-    box-shadow: 0 0 0 4px rgba(26, 58, 92, 0.1);
-    transition: all 0.3s ease;
-    z-index: 2;
-    flex-shrink: 0;
-}
-
 .timeline-item:hover .timeline-dot {
     transform: translateY(-50%) scale(1.2);
     box-shadow: 0 0 0 6px rgba(26, 58, 92, 0.15);
 }
 
-/* 年份标签 - 放在圆点位置 */
+/* 年份标签 */
 .timeline-year {
     min-width: 70px;
     text-align: center;
@@ -2905,19 +2876,28 @@ section {
     box-shadow: 0 4px 15px rgba(26, 58, 92, 0.25);
     position: relative;
     z-index: 2;
-    margin-right: 15px;
+    margin-bottom: 10px;
 }
 
-/* 连接线 - 从年份标签向右到内容卡片 */
+/* 连接线 - 从年份标签向下到内容卡片 */
 .timeline-year::after {
     content: '';
     position: absolute;
-    right: -15px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 15px;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary-color) 0%, rgba(26, 58, 92, 0.3) 100%);
+    left: 50%;
+    bottom: -20px;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 20px;
+    background: linear-gradient(180deg, var(--primary-color) 0%, rgba(26, 58, 92, 0.3) 100%);
+}
+
+/* 时间轴包装器 - 包含年份和内容 */
+.timeline-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 10px;
 }
 
 /* 内容卡片 */
@@ -2929,7 +2909,7 @@ section {
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     transition: all 0.3s ease;
     border: 1px solid rgba(26, 58, 92, 0.06);
-    margin-left: 10px;
+    width: 100%;
 }
 
 .timeline-content:hover {
@@ -3303,8 +3283,8 @@ section {
 
     /* 移动端圆点移到左侧线上 */
     .timeline-dot {
-        left: 2px;
-        top: 15px;
+        left: -18px;
+        top: 8px;
         transform: none;
     }
 
@@ -3312,18 +3292,22 @@ section {
         transform: scale(1.2);
     }
 
-    /* 移动端隐藏横向连接线 */
+    /* 移动端隐藏向下连接线 */
     .timeline-year::after {
         display: none;
     }
 
     .timeline-year {
-        text-align: left;
+        text-align: center;
         font-size: 15px;
         padding: 6px 14px;
-        align-self: flex-start;
-        margin-right: 0;
-        margin-left: 20px;
+        align-self: center;
+        margin-left: 30px;
+    }
+
+    .timeline-wrapper {
+        flex: 1;
+        width: 100%;
     }
 
     .timeline-content {
