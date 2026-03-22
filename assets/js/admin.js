@@ -603,6 +603,7 @@ function openProductModal(product = null) {
         currentEditId = product.id;
         document.getElementById('modal-title').textContent = '编辑产品';
         document.getElementById('product-id').value = product.id;
+        document.getElementById('product-brand').value = product.brand || 'cafele';
         document.getElementById('product-name').value = product.name;
         document.getElementById('product-image').value = product.image || '';
         document.getElementById('product-sort').value = product.sort;
@@ -622,6 +623,7 @@ function openProductModal(product = null) {
         document.getElementById('product-sort').value = '1';
         document.getElementById('product-manual-content').innerHTML = '';
         document.getElementById('product-video').value = '';
+        document.getElementById('product-brand').value = 'cafele';
         updateImagePreview(null);
         updateProductVideoPreview('');
         // 重新设置下拉框值（因为 reset() 会清空）
@@ -743,16 +745,19 @@ document.getElementById('product-form').addEventListener('submit', async functio
     e.preventDefault();
 
     const id = document.getElementById('product-id').value;
+    const brand = document.getElementById('product-brand').value || 'cafele';
 
     // 如果是新增产品，自动设置排序值为最大排序 +1
     let sortValue = parseInt(document.getElementById('product-sort').value) || 1;
     if (!id) {
-        const products = API.products.getAll();
+        const products = brand === 'bacashi' ? API.bacashi.products.getAll() : API.products.getAll();
         const maxSort = products.length > 0 ? Math.max(...products.map(p => p.sort)) : 0;
         sortValue = maxSort + 1;
     }
 
     const productData = {
+        id: id ? parseInt(id) : undefined,
+        brand: brand,
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
         productType: document.getElementById('product-type').value,
@@ -764,13 +769,37 @@ document.getElementById('product-form').addEventListener('submit', async functio
     };
 
     if (id) {
-        await API.products.update(parseInt(id), productData);
+        // 编辑产品 - 如果品牌改变了需要移动数据存储
+        const oldProducts = brand === 'bacashi' ? API.products.getAll() : API.bacashi.products.getAll();
+        const oldProduct = oldProducts.find(p => p.id == id);
+
+        if (oldProduct) {
+            // 先从旧品牌删除
+            if (brand === 'bacashi') {
+                await API.products.delete(parseInt(id));
+            } else {
+                await API.bacashi.products.delete(parseInt(id));
+            }
+        }
+
+        // 保存到对应品牌
+        if (brand === 'bacashi') {
+            await API.bacashi.products.add(productData);
+        } else {
+            await API.products.update(parseInt(id), productData);
+        }
+
         showToast('产品已更新！', 'success');
-        addActivity('更新产品：' + productData.name, 'success');
+        addActivity('更新产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
     } else {
-        await API.products.add(productData);
+        // 添加新产品
+        if (brand === 'bacashi') {
+            await API.bacashi.products.add(productData);
+        } else {
+            await API.products.add(productData);
+        }
         showToast('产品已添加！', 'success');
-        addActivity('添加产品：' + productData.name, 'success');
+        addActivity('添加产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
     }
 
     document.getElementById('product-modal').classList.remove('show');
