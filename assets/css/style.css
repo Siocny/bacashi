@@ -2056,6 +2056,34 @@ section {
 
 /* 响应式 */
 @media (max-width: 768px) {
+    /* 产品详情页头 - 降低高度确保返回按钮可点击 */
+    .product-detail-page {
+        padding-top: 60px;
+    }
+
+    .product-detail-header {
+        margin-bottom: 15px;
+        padding: 0 15px;
+    }
+
+    .product-detail-header .back-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px 12px;
+        font-size: 14px;
+        background: rgba(26, 58, 92, 0.08);
+        border-radius: 8px;
+        gap: 6px;
+    }
+
+    .product-detail-header .back-link i {
+        font-size: 16px;
+    }
+
+    /* 产品详情主区域 */
     .product-detail-main {
         grid-template-columns: 1fr;
     }
