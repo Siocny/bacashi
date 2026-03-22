@@ -37,6 +37,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 导航链接点击关闭移动菜单
     document.querySelectorAll('.nav-links a').forEach(link => {
         link.addEventListener('click', function() {
+            // 如果有子菜单，不关闭
+            if (this.parentElement.classList.contains('has-dropdown')) {
+                return;
+            }
             navLinks?.classList.remove('active');
             mobileMenuBtn?.classList.remove('active');
             document.body.style.overflow = '';
@@ -45,11 +49,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 下拉菜单点击展开/收起
     document.querySelectorAll('.has-dropdown').forEach(dropdown => {
-        const toggle = dropdown.querySelector('.dropdown-toggle');
-        toggle?.addEventListener('click', function(e) {
+        dropdown.addEventListener('click', function(e) {
             e.preventDefault();
-            const menu = dropdown.querySelector('.dropdown-menu');
-            menu?.classList.toggle('show');
+            // 关闭其他打开的下拉菜单
+            document.querySelectorAll('.has-dropdown.active').forEach(item => {
+                if (item !== this) {
+                    item.classList.remove('active');
+                }
+            });
+            this.classList.toggle('active');
         });
     });
 
@@ -58,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!navLinks?.contains(e.target) && !mobileMenuBtn?.contains(e.target)) {
             navLinks?.classList.remove('active');
             mobileMenuBtn?.classList.remove('active');
+            document.querySelectorAll('.has-dropdown.active').forEach(item => {
+                item.classList.remove('active');
+            });
             document.body.style.overflow = '';
         }
     });
