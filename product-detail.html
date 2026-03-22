@@ -47,15 +47,6 @@
         </div>
     </nav>
 
-    <!-- WeChat 提示横幅 -->
-    <div id="wechat-tip" class="wechat-tip" style="display: none;">
-        <div class="wechat-tip-content">
-            <span class="wechat-tip-icon">💬</span>
-            <span class="wechat-tip-text">检测到您在微信中访问，请点击右上角 <strong>...</strong> 选择 <strong>在浏览器打开</strong> 以获得最佳体验</span>
-            <button class="wechat-tip-close" onclick="closeWechatTip()">×</button>
-        </div>
-    </div>
-
     <!-- 产品详情 -->
     <main class="product-detail-page">
         <div class="container">
@@ -90,10 +81,6 @@
                     <p>专注于高品质车用电子产品的研发与销售</p>
                 </div>
                 <div class="footer-section">
-                    <h4>关于 BACASHI</h4>
-                    <p>提供优质的车用清洗与护理产品</p>
-                </div>
-                <div class="footer-section">
                     <h4>联系方式</h4>
                     <p id="footer-email">邮箱：info@cafele.com</p>
                     <p id="footer-phone">电话：+86-123-4567-8900</p>
@@ -123,32 +110,6 @@
             }
         }
 
-        // 检测微信浏览器
-        function checkWechatBrowser() {
-            const userAgent = navigator.userAgent;
-            const isWechat = /micromessenger|wechat|weixin/i.test(userAgent);
-
-            if (isWechat) {
-                const wechatTip = document.getElementById('wechat-tip');
-                if (wechatTip) {
-                    const hasClosed = sessionStorage.getItem('wechatTipClosed');
-                    if (!hasClosed) {
-                        wechatTip.style.display = 'block';
-                        document.querySelector('.navbar').style.top = '48px';
-                    }
-                }
-            }
-        }
-
-        function closeWechatTip() {
-            const wechatTip = document.getElementById('wechat-tip');
-            if (wechatTip) {
-                wechatTip.style.display = 'none';
-                document.querySelector('.navbar').style.top = '0';
-                sessionStorage.setItem('wechatTipClosed', 'true');
-            }
-        }
-
         // 搜索产品
         function searchProducts() {
             const keyword = document.getElementById('search-input').value.trim().toLowerCase();
@@ -170,7 +131,6 @@
 
         // 页面加载时检测微信浏览器
         document.addEventListener('DOMContentLoaded', function() {
-            checkWechatBrowser();
             loadFooterContact();
         });
 

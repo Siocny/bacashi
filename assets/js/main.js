@@ -1,15 +1,5 @@
 // 前端主页面 JavaScript
 
-// 关闭微信提示
-function closeWechatTip() {
-    const wechatTip = document.getElementById('wechat-tip');
-    if (wechatTip) {
-        wechatTip.style.display = 'none';
-        document.querySelector('.navbar').style.top = '0';
-        sessionStorage.setItem('wechatTipClosed', 'true');
-    }
-}
-
 // 搜索产品函数 - 跳转到产品页面
 function searchProducts() {
     const keyword = document.getElementById('search-input').value.trim().toLowerCase();
@@ -85,23 +75,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// 检测微信浏览器
-function checkWechatBrowser() {
-    const userAgent = navigator.userAgent;
-    const isWechat = /micromessenger|wechat|weixin/i.test(userAgent);
-
-    if (isWechat) {
-        const wechatTip = document.getElementById('wechat-tip');
-        if (wechatTip) {
-            const hasClosed = sessionStorage.getItem('wechatTipClosed');
-            if (!hasClosed) {
-                wechatTip.style.display = 'block';
-                document.querySelector('.navbar').style.top = '48px';
-            }
-        }
-    }
-}
-
-// 页面加载时检测微信浏览器
-checkWechatBrowser();
