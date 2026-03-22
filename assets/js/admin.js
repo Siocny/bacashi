@@ -25,7 +25,7 @@ function getStoredProductTypes() {
     if (types) {
         return JSON.parse(types);
     }
-    return ['充气泵', '一体机', '应急电源', '其他'];
+    return ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源', '手持风扇', '其他'];
 }
 
 function saveCategories(categories) {
@@ -389,6 +389,22 @@ document.getElementById('contact-form').addEventListener('submit', async functio
 let selectedProducts = [];
 let currentBrandFilter = 'all'; // 品牌筛选：all, cafele, bacashi
 
+// 品牌筛选函数
+window.filterByBrand = function(brand) {
+    currentBrandFilter = brand;
+
+    // 更新按钮状态
+    document.querySelectorAll('.brand-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.brand === brand) {
+            btn.classList.add('active');
+        }
+    });
+
+    currentPage = 1;
+    loadProductsTable();
+};
+
 function loadProductsTable() {
     // 根据品牌筛选加载产品
     let cafeleProducts = API.products.getAll();
@@ -577,7 +593,16 @@ document.getElementById('batch-delete-btn').addEventListener('click', async func
     if (confirm(`确定要删除选中的 ${selectedProducts.length} 个产品吗？`)) {
         const count = selectedProducts.length;
         for (const id of selectedProducts) {
-            await API.products.delete(id);
+            // 尝试从两个品牌中删除
+            let cafeleProducts = API.products.getAll();
+            if (cafeleProducts.find(p => p.id === id)) {
+                await API.products.delete(id);
+            } else {
+                let bacashiProducts = API.bacashi.products.getAll();
+                if (bacashiProducts.find(p => p.id === id)) {
+                    await API.bacashi.products.delete(id);
+                }
+            }
         }
         selectedProducts = [];
         loadProductsTable();
@@ -684,9 +709,23 @@ document.getElementById('product-image')?.addEventListener('input', function() {
 
 // 编辑产品
 function editProduct(id) {
-    const products = API.products.getAll();
-    const product = products.find(p => p.id === id);
+    // 先在 CAFELE 产品中查找
+    let products = API.products.getAll();
+    let product = products.find(p => p.id === id);
+    let brand = 'cafele';
+
+    // 如果没找到，再在 BACASHI 产品中查找
+    if (!product) {
+        products = API.bacashi.products.getAll();
+        product = products.find(p => p.id === id);
+        brand = 'bacashi';
+    }
+
     if (product) {
+        // 设置品牌选择器的值
+        setTimeout(() => {
+            document.getElementById('product-brand').value = brand;
+        }, 0);
         openProductModal(product);
     }
 }
@@ -694,10 +733,35 @@ function editProduct(id) {
 // 删除产品
 async function deleteProduct(id) {
     if (confirm('确定要删除这个产品吗？')) {
-        await API.products.delete(id);
-        await renumberProducts();
-        showToast('产品已删除', 'success');
-        addActivity('删除产品 ID:' + id, 'warning');
+        // 尝试从两个品牌中删除
+        let deleted = false;
+
+        // 先尝试从 CAFELE 删除
+        let products = API.products.getAll();
+        if (products.find(p => p.id === id)) {
+            await API.products.delete(id);
+            deleted = true;
+            await renumberProducts('cafele');
+        }
+
+        // 如果没有，尝试从 BACASHI 删除
+        if (!deleted) {
+            products = API.bacashi.products.getAll();
+            if (products.find(p => p.id === id)) {
+                await API.bacashi.products.delete(id);
+                deleted = true;
+                await renumberProducts('bacashi');
+            }
+        }
+
+        if (deleted) {
+            showToast('产品已删除', 'success');
+            addActivity('删除产品 ID:' + id, 'warning');
+        } else {
+            showToast('未找到产品', 'error');
+        }
+
+        loadProductsTable();
     }
 }
 
@@ -748,12 +812,36 @@ window.changeSort = async function(id, delta) {
 };
 
 // 重新排序产品（自动连续排序）
-async function renumberProducts() {
-    const products = API.products.getAll();
-    products.sort((a, b) => a.sort - b.sort);
-    for (const product of products) {
-        product.sort = products.indexOf(product) + 1;
-        await API.products.update(product.id, product);
+async function renumberProducts(brand = 'all') {
+    if (brand === 'all') {
+        // 分别对每个品牌排序
+        let cafeleProducts = API.products.getAll();
+        cafeleProducts.sort((a, b) => a.sort - b.sort);
+        for (const product of cafeleProducts) {
+            product.sort = cafeleProducts.indexOf(product) + 1;
+            await API.products.update(product.id, product);
+        }
+
+        let bacashiProducts = API.bacashi.products.getAll();
+        bacashiProducts.sort((a, b) => a.sort - b.sort);
+        for (const product of bacashiProducts) {
+            product.sort = bacashiProducts.indexOf(product) + 1;
+            await API.bacashi.products.update(product.id, product);
+        }
+    } else if (brand === 'bacashi') {
+        let products = API.bacashi.products.getAll();
+        products.sort((a, b) => a.sort - b.sort);
+        for (const product of products) {
+            product.sort = products.indexOf(product) + 1;
+            await API.bacashi.products.update(product.id, product);
+        }
+    } else {
+        let products = API.products.getAll();
+        products.sort((a, b) => a.sort - b.sort);
+        for (const product of products) {
+            product.sort = products.indexOf(product) + 1;
+            await API.products.update(product.id, product);
+        }
     }
     loadProductsTable();
 }
