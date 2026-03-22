@@ -263,6 +263,11 @@
                             </button>
                         </div>
                         <div class="toolbar-right">
+                            <div class="brand-filter" style="display: flex; gap: 8px; margin-right: 12px;">
+                                <button class="btn btn-sm brand-filter-btn active" data-brand="all" onclick="filterByBrand('all')">全部</button>
+                                <button class="btn btn-sm brand-filter-btn" data-brand="cafele" onclick="filterByBrand('cafele')">CAFELE</button>
+                                <button class="btn btn-sm brand-filter-btn" data-brand="bacashi" onclick="filterByBrand('bacashi')">BACASHI</button>
+                            </div>
                             <div class="search-box">
                                 <input type="text" id="product-search" placeholder="搜索产品...">
                                 <button class="search-btn"><i class="fas fa-search"></i></button>

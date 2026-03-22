@@ -387,9 +387,25 @@ document.getElementById('contact-form').addEventListener('submit', async functio
 // ==================== 产品管理 ====================
 
 let selectedProducts = [];
+let currentBrandFilter = 'all'; // 品牌筛选：all, cafele, bacashi
 
 function loadProductsTable() {
-    let products = API.products.getAll();
+    // 根据品牌筛选加载产品
+    let cafeleProducts = API.products.getAll();
+    let bacashiProducts = API.bacashi.products.getAll();
+
+    // 给每个产品添加 brand 标记
+    cafeleProducts = cafeleProducts.map(p => ({ ...p, brand: 'cafele' }));
+    bacashiProducts = bacashiProducts.map(p => ({ ...p, brand: 'bacashi' }));
+
+    let products = [];
+    if (currentBrandFilter === 'all') {
+        products = [...cafeleProducts, ...bacashiProducts];
+    } else if (currentBrandFilter === 'cafele') {
+        products = cafeleProducts;
+    } else if (currentBrandFilter === 'bacashi') {
+        products = bacashiProducts;
+    }
 
     // 应用搜索和筛选
     const searchTerm = document.getElementById('product-search')?.value.toLowerCase() || '';
@@ -428,6 +444,7 @@ function loadProductsTable() {
             <span class="checkbox-cell"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></span>
             <span>ID</span>
             <span>产品名称</span>
+            <span>品牌</span>
             <span>类别</span>
             <span>产品类型</span>
             <span class="table-actions-header">操作</span>
@@ -442,6 +459,7 @@ function loadProductsTable() {
                     <span>${product.name}</span>
                 </div>
             </span>
+            <span><span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: ${product.brand === 'bacashi' ? '#fef3c7' : '#dbeafe'}; color: ${product.brand === 'bacashi' ? '#92400e' : '#1e3a8a'};">${product.brand === 'bacashi' ? 'BACASHI' : 'CAFELE'}</span></span>
             <span>${product.category}</span>
             <span class="product-type">${getProductTypeName(product.productType)}</span>
             <span class="table-actions">
