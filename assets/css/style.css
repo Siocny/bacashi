@@ -982,6 +982,23 @@ section {
     letter-spacing: 3px;
 }
 
+.footer-contact {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-contact p {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+}
+
+.contact-divider {
+    color: rgba(255,255,255,0.3);
+    font-size: 14px;
+}
+
 .footer-links {
     display: flex;
     gap: 40px;
@@ -3371,10 +3388,18 @@ section {
         gap: 12px;
     }
 
+    /* 手机端隐藏页脚竖线分隔符 */
+    .footer-divider {
+        display: none;
+    }
+
+    .footer-brand h3 {
+        font-size: 24px;
+        letter-spacing: 3px;
+    }
+
     /* 关于页面 */
     .about-hero h1 {
         font-size: 28px;
     }
 }
-/* Force refresh: 20260319-007 */
-/* Mobile fix: 20260320-004 - brand-stats 2 columns */
