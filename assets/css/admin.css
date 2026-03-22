@@ -1012,7 +1012,7 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 40px 50px 180px 90px 90px 90px 90px;
+    grid-template-columns: 40px 50px 1fr 100px 120px 120px 100px;
     padding: 14px 16px;
     background: var(--bg-color);
     font-weight: 600;
@@ -1025,7 +1025,7 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 40px 50px 180px 90px 90px 90px 90px;
+    grid-template-columns: 40px 50px 1fr 100px 120px 120px 100px;
     padding: 14px 16px;
     align-items: center;
     border-bottom: 1px solid var(--border-light);
