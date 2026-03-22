@@ -906,7 +906,7 @@ body {
 }
 
 .btn-sm {
-    padding: 6px 10px;
+    padding: 8px 14px;
     font-size: 13px;
 }
 
@@ -1011,8 +1011,8 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 40px 50px 180px 70px 80px 80px 90px;
-    padding: 12px 8px;
+    grid-template-columns: 40px 60px 1.2fr 100px 110px 110px 120px;
+    padding: 14px 16px;
     background: var(--bg-color);
     font-weight: 600;
     color: var(--text-color);
@@ -1024,8 +1024,8 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 40px 50px 180px 70px 80px 80px 90px;
-    padding: 12px 8px;
+    grid-template-columns: 40px 60px 1.2fr 100px 110px 110px 120px;
+    padding: 14px 16px;
     align-items: center;
     border-bottom: 1px solid var(--border-light);
     font-size: 14px;
