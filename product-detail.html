@@ -7,7 +7,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>产品详情 - CAFELE & BACASHI</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=20260320002">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260322008">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- 顶部导航栏 -->
@@ -27,18 +28,22 @@
 
             <!-- 主导航 -->
             <ul class="nav-links">
-                <li><a href="index.html">首页</a></li>
-                <li><a href="products.html">品牌产品</a></li>
-                <li><a href="service.html">服务与支持</a></li>
-                <li><a href="about.html">关于我们</a></li>
+                <li><a href="index.html"><i class="fas fa-home nav-icon"></i>首页</a></li>
+                <li><a href="products.html"><i class="fas fa-box nav-icon"></i>品牌产品</a></li>
+                <li><a href="service.html"><i class="fas fa-headset nav-icon"></i>服务与支持</a></li>
+                <li><a href="about.html"><i class="fas fa-users nav-icon"></i>关于我们</a></li>
             </ul>
 
             <!-- 右侧按钮 -->
-            <div class="nav-actions">
-                <a href="admin/index.html" class="btn btn-primary">
-                    <i class="fas fa-cog"></i> 管理后台
-                </a>
+            <div class="nav-right">
+                <a href="service.html#contact" class="btn-buy">购买</a>
+                <div class="search-box">
+                    <input type="text" placeholder="请输入关键字" id="search-input">
+                    <button class="search-btn" onclick="searchProducts()">🔍</button>
+                </div>
             </div>
+
+            <button class="mobile-menu-btn"><span></span><span></span><span></span></button>
         </div>
     </nav>
 
@@ -101,8 +106,7 @@
     </footer>
 
     <script src="assets/js/api.js?v=20260320004"></script>
-    <script src="assets/js/storage.js?v=20260320004"></script>
-    <script src="assets/js/utils.js?v=20260320004"></script>
+    <script src="assets/js/main.js"></script>
     <script>
         // 加载联系方式
         function loadFooterContact() {
@@ -127,24 +131,40 @@
             if (isWechat) {
                 const wechatTip = document.getElementById('wechat-tip');
                 if (wechatTip) {
-                    // 检查用户是否已关闭过提示
                     const hasClosed = sessionStorage.getItem('wechatTipClosed');
                     if (!hasClosed) {
                         wechatTip.style.display = 'block';
-                        // 为导航栏添加下边距
                         document.querySelector('.navbar').style.top = '48px';
                     }
                 }
             }
         }
 
-        // 关闭微信提示
         function closeWechatTip() {
             const wechatTip = document.getElementById('wechat-tip');
             if (wechatTip) {
                 wechatTip.style.display = 'none';
                 document.querySelector('.navbar').style.top = '0';
                 sessionStorage.setItem('wechatTipClosed', 'true');
+            }
+        }
+
+        // 搜索产品
+        function searchProducts() {
+            const keyword = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!keyword) return;
+
+            const products = API.products.getAll();
+            const filtered = products.filter(p =>
+                p.name.toLowerCase().includes(keyword) ||
+                p.description.toLowerCase().includes(keyword) ||
+                p.category.toLowerCase().includes(keyword)
+            );
+
+            if (filtered.length === 0) {
+                alert('未找到相关产品');
+            } else {
+                window.location.href = 'products.html';
             }
         }
 
