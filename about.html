@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>关于我们 - CAFELE & BACASHI</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=20260322022">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260322023">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -194,6 +194,11 @@
     <script>
         // 加载联系方式
         function loadFooterContact() {
+            // 确保 API 已经初始化
+            if (typeof API === 'undefined' || !API.contact) {
+                console.log('API 未初始化，使用默认联系方式');
+                return;
+            }
             const contact = API.contact.get();
             if (contact) {
                 const emailEl = document.getElementById('footer-email');
