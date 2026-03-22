@@ -959,31 +959,38 @@ section {
 .footer {
     background: var(--primary-dark);
     color: white;
-    padding: 50px 0 30px;
+    padding: 60px 0 30px;
 }
 
 .footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
     padding-bottom: 30px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-.footer-brand h3 {
-    font-size: 32px;
-    letter-spacing: 5px;
-    margin-bottom: 8px;
+.footer-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+    color: white;
 }
 
-.footer-brand p {
-    font-size: 15px;
-    color: rgba(255,255,255,0.6);
-    letter-spacing: 3px;
+.footer-section p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    line-height: 2;
+}
+
+.footer-section {
+    text-align: center;
 }
 
 .footer-contact {
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 20px;
 }
@@ -995,36 +1002,8 @@ section {
 }
 
 .contact-divider {
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.4);
     font-size: 14px;
-}
-
-.footer-links {
-    display: flex;
-    gap: 40px;
-}
-
-.footer-links a {
-    color: rgba(255,255,255,0.9);
-    text-decoration: none;
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    transition: color 0.3s ease;
-}
-
-.footer-links a:hover {
-    color: white;
-}
-
-.footer-admin a {
-    color: rgba(255,255,255,0.5);
-    text-decoration: none;
-    font-size: 13px;
-}
-
-.footer-admin a:hover {
-    color: white;
 }
 
 .footer-bottom {
@@ -2838,7 +2817,7 @@ section {
     position: relative;
     max-width: 1000px;
     margin: 50px auto 0;
-    padding-left: 60px;
+    padding-left: 100px;
 }
 
 /* 时间轴线 - 左侧垂直线 */
@@ -2873,6 +2852,33 @@ section {
     border-radius: 50%;
     position: absolute;
     left: -52px;
+    top: 20px;
+    box-shadow: 0 0 0 4px rgba(26, 58, 92, 0.1);
+    transition: all 0.3s ease;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 左侧圆点 */
+.timeline-dot {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border: 4px solid var(--primary-color);
+    border-radius: 50%;
+    position: absolute;
+    left: 22px;
     top: 50%;
     transform: translateY(-50%);
     box-shadow: 0 0 0 4px rgba(26, 58, 92, 0.1);
@@ -2886,7 +2892,7 @@ section {
     box-shadow: 0 0 0 6px rgba(26, 58, 92, 0.15);
 }
 
-/* 年份标签 */
+/* 年份标签 - 放在圆点位置 */
 .timeline-year {
     min-width: 70px;
     text-align: center;
@@ -2899,17 +2905,17 @@ section {
     box-shadow: 0 4px 15px rgba(26, 58, 92, 0.25);
     position: relative;
     z-index: 2;
-    margin-right: 0;
+    margin-right: 15px;
 }
 
-/* 连接线 - 从年份到内容 */
+/* 连接线 - 从年份标签向右到内容卡片 */
 .timeline-year::after {
     content: '';
     position: absolute;
-    right: -30px;
+    right: -15px;
     top: 50%;
     transform: translateY(-50%);
-    width: 30px;
+    width: 15px;
     height: 3px;
     background: linear-gradient(90deg, var(--primary-color) 0%, rgba(26, 58, 92, 0.3) 100%);
 }
@@ -3279,7 +3285,7 @@ section {
 
     /* 时间轴 - 移动端垂直布局 */
     .timeline-container {
-        padding-left: 25px;
+        padding-left: 30px;
     }
 
     .timeline-container::before {
@@ -3297,8 +3303,8 @@ section {
 
     /* 移动端圆点移到左侧线上 */
     .timeline-dot {
-        left: -17px;
-        top: -5px;
+        left: 2px;
+        top: 15px;
         transform: none;
     }
 
@@ -3316,6 +3322,8 @@ section {
         font-size: 15px;
         padding: 6px 14px;
         align-self: flex-start;
+        margin-right: 0;
+        margin-left: 20px;
     }
 
     .timeline-content {
@@ -3381,25 +3389,12 @@ section {
     }
 
     .footer-content {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 20px;
-        text-align: center;
     }
 
-    .footer-brand {
+    .footer-section {
         padding: 0 10px;
-    }
-
-    .footer-brand h3 {
-        font-size: 18px;
-        letter-spacing: 2px;
-        margin-bottom: 6px;
-    }
-
-    .footer-brand p {
-        font-size: 12px;
-        color: rgba(255,255,255,0.6);
-        letter-spacing: 1.5px;
     }
 
     .footer-section h4 {
@@ -3412,16 +3407,6 @@ section {
         font-size: 12px;
         color: rgba(255,255,255,0.7);
         line-height: 1.8;
-    }
-
-    .footer-links {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 15px;
-    }
-
-    .footer-links a {
-        font-size: 13px;
     }
 
     /* 联系方式 - 移动端横向排列 */
