@@ -235,9 +235,9 @@
         </div>
     </footer>
 
-    <script src="assets/js/api.js?v=20260320004"></script>
+    <script src="assets/js/api.js?v=20260320006"></script>
     <script>
-        // 加载联系方式
+        // 加载联系方式（页脚）
         function loadFooterContact() {
             const contact = API.contact.get();
             if (contact) {
@@ -248,6 +248,25 @@
                 }
                 if (phoneEl && contact.phone) {
                     phoneEl.textContent = '电话：' + contact.phone;
+                }
+            }
+        }
+
+        // 加载联系方式（服务页面）
+        function loadContactInfo() {
+            const contact = API.contact.get();
+            if (contact) {
+                const addressEl = document.getElementById('contact-address');
+                const phoneEl = document.getElementById('contact-phone');
+                const emailEl = document.getElementById('contact-email');
+                if (addressEl && contact.address) {
+                    addressEl.textContent = contact.address;
+                }
+                if (phoneEl && contact.phone) {
+                    phoneEl.textContent = contact.phone;
+                }
+                if (emailEl && contact.email) {
+                    emailEl.textContent = contact.email;
                 }
             }
         }
@@ -316,6 +335,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             checkWechatBrowser();
             loadFooterContact();
+            loadContactInfo();
         });
     </script>
 </body>
