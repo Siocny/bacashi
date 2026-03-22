@@ -1097,15 +1097,18 @@ section {
 @media (max-width: 768px) {
     /* 移动端导航栏优化 */
     .navbar .container {
-        padding: 10px 15px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
     }
 
     .logo-text {
-        font-size: 18px;
+        font-size: 16px;
+        font-weight: 700;
     }
 
     .logo-cn {
-        font-size: 8px;
+        font-size: 7px;
+        letter-spacing: 2px;
     }
 
     .logo-divider {
@@ -1117,58 +1120,150 @@ section {
     }
 
     .btn-buy {
-        padding: 8px 16px;
-        font-size: 13px;
+        padding: 8px 14px;
+        font-size: 12px;
+        border-radius: 20px;
     }
 
     .search-box {
         display: none;
     }
 
+    /* 汉堡菜单按钮动画 */
     .mobile-menu-btn {
         display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         padding: 8px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        z-index: 1001;
+        transition: transform 0.3s ease;
+    }
+
+    .mobile-menu-btn:active {
+        transform: scale(0.9);
     }
 
     .mobile-menu-btn span {
-        width: 20px;
-        height: 2px;
+        width: 22px;
+        height: 2.5px;
+        background: var(--primary-color);
+        border-radius: 2px;
+        transition: all 0.3s ease;
     }
 
+    .mobile-menu-btn span:nth-child(1) {
+        transform: translateY(-6px);
+    }
+
+    .mobile-menu-btn span:nth-child(3) {
+        transform: translateY(4px);
+    }
+
+    /* 菜单激活状态 */
+    .mobile-menu-btn.active span:nth-child(1) {
+        transform: rotate(45deg);
+    }
+
+    .mobile-menu-btn.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .mobile-menu-btn.active span:nth-child(3) {
+        transform: translateY(-4px) rotate(-45deg);
+    }
+
+    /* 下拉菜单容器 */
     .nav-links {
         display: none;
         position: fixed;
-        top: 50px;
+        top: 52px;
         left: 0;
         right: 0;
-        background: white;
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         flex-direction: column;
-        padding: 15px;
-        gap: 10px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        padding: 20px 15px;
+        gap: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         z-index: 999;
-        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid rgba(26, 58, 92, 0.1);
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .nav-links.active {
         display: flex;
     }
 
+    /* 导航链接样式 */
     .nav-links a {
-        padding: 12px 15px;
-        font-size: 14px;
-        border-radius: 8px;
-        background: #f8f9fa;
+        padding: 14px 18px;
+        font-size: 15px;
+        font-weight: 500;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+        color: var(--text-color);
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.5px;
+    }
+
+    .nav-links a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        transition: left 0.3s ease;
+        z-index: -1;
+    }
+
+    .nav-links a:hover::before,
+    .nav-links a.active::before {
+        left: 0;
     }
 
     .nav-links a:hover,
     .nav-links a.active {
-        background: var(--primary-color);
         color: white;
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(26, 58, 92, 0.3);
     }
 
     .nav-links a::after {
         display: none;
+    }
+
+    /* 图标装饰 */
+    .nav-links a .nav-icon {
+        margin-right: 10px;
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+
+    /* 下拉菜单 */
+    .has-dropdown {
+        position: relative;
     }
 
     .dropdown-menu {
@@ -1178,13 +1273,52 @@ section {
         box-shadow: none;
         padding: 0;
         min-width: 100%;
-        margin-top: 10px;
+        margin-top: 8px;
+        background: transparent;
+        overflow: hidden;
+    }
+
+    .has-dropdown:hover .dropdown-menu,
+    .has-dropdown .dropdown-menu.show {
+        display: block !important;
+        animation: expandMenu 0.3s ease;
+    }
+
+    @keyframes expandMenu {
+        from {
+            opacity: 0;
+            transform: scaleY(0.8);
+            transform-origin: top;
+        }
+        to {
+            opacity: 1;
+            transform: scaleY(1);
+            transform-origin: bottom;
+        }
     }
 
     .dropdown-menu a {
-        background: #f0f0f0 !important;
+        background: linear-gradient(135deg, #e8e8e8 0%, #f0f0f0 100%) !important;
         font-size: 13px;
+        padding: 12px 18px;
+        margin-left: 15px;
+        border-left: 3px solid transparent;
     }
+
+    .dropdown-menu a:hover {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%) !important;
+        color: white !important;
+        border-left-color: var(--accent-color);
+        transform: translateX(8px);
+    }
+
+    /* 分割线 */
+    .nav-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(26, 58, 92, 0.15) 50%, transparent 100%);
+        margin: 10px 0;
+    }
+}
 
     .hero-title {
         font-size: 32px;

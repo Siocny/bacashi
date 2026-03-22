@@ -22,16 +22,44 @@ function searchProducts() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navLinks = document.querySelector('.nav-links');
+
     // 移动端菜单
-    document.querySelector('.mobile-menu-btn')?.addEventListener('click', function() {
-        document.querySelector('.nav-links')?.classList.toggle('active');
+    mobileMenuBtn?.addEventListener('click', function() {
+        navLinks?.classList.toggle('active');
+        this.classList.toggle('active');
+
+        // 阻止 body 滚动
+        document.body.style.overflow = navLinks?.classList.contains('active') ? 'hidden' : '';
     });
 
     // 导航链接点击关闭移动菜单
     document.querySelectorAll('.nav-links a').forEach(link => {
         link.addEventListener('click', function() {
-            document.querySelector('.nav-links')?.classList.remove('active');
+            navLinks?.classList.remove('active');
+            mobileMenuBtn?.classList.remove('active');
+            document.body.style.overflow = '';
         });
+    });
+
+    // 下拉菜单点击展开/收起
+    document.querySelectorAll('.has-dropdown').forEach(dropdown => {
+        const toggle = dropdown.querySelector('.dropdown-toggle');
+        toggle?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const menu = dropdown.querySelector('.dropdown-menu');
+            menu?.classList.toggle('show');
+        });
+    });
+
+    // 点击外部关闭菜单
+    document.addEventListener('click', function(e) {
+        if (!navLinks?.contains(e.target) && !mobileMenuBtn?.contains(e.target)) {
+            navLinks?.classList.remove('active');
+            mobileMenuBtn?.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     });
 
     // 滚动时导航栏效果
@@ -39,8 +67,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const navbar = document.querySelector('.navbar');
         if (navbar && window.scrollY > 50) {
             navbar.style.boxShadow = '0 5px 30px rgba(0,0,0,0.1)';
+            navbar.style.background = 'rgba(255,255,255,0.98)';
         } else if (navbar) {
             navbar.style.boxShadow = '0 2px 20px rgba(0,0,0,0.06)';
+            navbar.style.background = 'rgba(255,255,255,0.98)';
         }
     });
 });
