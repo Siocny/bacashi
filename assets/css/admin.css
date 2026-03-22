@@ -906,7 +906,7 @@ body {
 }
 
 .btn-sm {
-    padding: 8px 16px;
+    padding: 6px 10px;
     font-size: 13px;
 }
 
@@ -935,15 +935,17 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 12px;
+    overflow-x: auto;
 }
 
 .toolbar-left, .toolbar-right {
     display: flex;
     align-items: center;
     gap: 12px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
 }
 
 .search-box {
@@ -1009,8 +1011,8 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 40px 50px 1fr 80px 100px 100px;
-    padding: 12px 16px;
+    grid-template-columns: 40px 50px 180px 70px 80px 80px 90px;
+    padding: 12px 8px;
     background: var(--bg-color);
     font-weight: 600;
     color: var(--text-color);
@@ -1022,8 +1024,8 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 40px 50px 1fr 80px 100px 100px;
-    padding: 12px 16px;
+    grid-template-columns: 40px 50px 180px 70px 80px 80px 90px;
+    padding: 12px 8px;
     align-items: center;
     border-bottom: 1px solid var(--border-light);
     font-size: 14px;
@@ -1089,8 +1091,9 @@ body {
 
 .table-actions {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     justify-content: flex-end;
+    flex-wrap: nowrap;
 }
 
 /* 排序按钮样式 */
