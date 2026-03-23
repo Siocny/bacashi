@@ -919,8 +919,21 @@ async function renumberProducts(brand = 'all') {
 document.getElementById('product-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    // 验证必填字段
+    const name = document.getElementById('product-name').value.trim();
+    const category = document.getElementById('product-category').value;
+    const brand = document.getElementById('product-brand').value;
+
+    if (!name) {
+        showToast('请输入产品名称', 'warning');
+        return;
+    }
+    if (!category) {
+        showToast('请选择产品类别', 'warning');
+        return;
+    }
+
     const id = document.getElementById('product-id').value;
-    const brand = document.getElementById('product-brand').value || 'cafele';
 
     // 如果是新增产品，自动设置排序值为最大排序 +1
     let sortValue = parseInt(document.getElementById('product-sort').value) || 1;
