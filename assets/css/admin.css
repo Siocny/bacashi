@@ -1012,32 +1012,36 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 40px 50px 1.5fr 100px 120px 130px 90px;
-    padding: 14px 16px;
+    grid-template-columns: 40px 60px 2fr 110px 130px 140px 90px;
+    padding: 12px 16px;
     background: var(--bg-color);
     font-weight: 600;
     color: var(--text-color);
     border-bottom: 2px solid var(--border-color);
     font-size: 12px;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.table-header span {
+.table-header > span {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 6px;
+    gap: 8px;
+}
+
+.table-header > span:nth-child(1),
+.table-header > span:nth-child(2) {
+    justify-content: center;
 }
 
 .table-header > span:nth-child(4),
 .table-header > span:nth-child(5),
-.table-header > span:nth-child(6) {
+.table-header > span:nth-child(6),
+.table-header > span:nth-child(7) {
     justify-content: center !important;
 }
 
 .header-filter {
-    padding: 4px 6px;
+    padding: 5px 8px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 11px;
@@ -1046,7 +1050,7 @@ body {
     cursor: pointer;
     outline: none;
     transition: all var(--transition-fast);
-    min-width: 70px;
+    min-width: 75px;
     font-weight: normal;
     text-transform: none;
     letter-spacing: normal;
@@ -1064,8 +1068,8 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 40px 50px 1.5fr 100px 120px 130px 90px;
-    padding: 14px 16px;
+    grid-template-columns: 40px 60px 2fr 110px 130px 140px 90px;
+    padding: 12px 16px;
     align-items: center;
     border-bottom: 1px solid var(--border-light);
     font-size: 14px;
