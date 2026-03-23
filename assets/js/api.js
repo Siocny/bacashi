@@ -811,7 +811,6 @@ const API = {
                 const exp = now + 3600;
                 const signTime = `${now};${exp}`;
 
-                // 按照腾讯云 COS 签名算法 v5
                 // FormatString = <Method>\n<URI>\n<Query>\n<Headers>\n
                 const method = 'put';
                 const uri = resource;
@@ -829,45 +828,37 @@ const API = {
                     const stringToSign = `sha1\n${signTime}\n${httpSha1}`;
                     console.log('StringToSign:', stringToSign);
 
-                    // 计算 SignKey = hmac_sha1(secretKey, signTime)
-                    return generateHmacSignature(signTime, COS_CONFIG.secretKey).then(signKey => {
-                        console.log('SignKey:', signKey);
+                    // 直接用 secretKey 签名 stringToSign（跳过 SignKey 步骤）
+                    // 注意：腾讯云的签名实际上是用 secretKey 直接签名 StringToSign
+                    return generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
+                        const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
-                        // 计算 Signature = hmac_sha1(SignKey, StringToSign) - 注意这里要用 SignKey 而不是 secretKey
-                        // 需要将 SignKey 从 hex 转回字节数组
-                        const signKeyBytes = new Uint8Array(signKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                        console.log('签名:', signature);
+                        console.log('Authorization:', authorization.substring(0, 80) + '...');
 
-                        // 使用原生 Web Crypto API 进行 HMAC-SHA1 签名
-                        return signWithKey(stringToSign, signKeyBytes).then(signature => {
-                            const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
+                        // 使用 fetch 上传
+                        fetch(url, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': authorization,
+                                'Content-Type': file.type || 'application/octet-stream'
+                            },
+                            body: file
+                        }).then(response => {
+                            console.log('响应状态:', response.status, response.statusText);
 
-                            console.log('签名:', signature);
-                            console.log('Authorization:', authorization.substring(0, 80) + '...');
-
-                            // 使用 fetch 上传
-                            fetch(url, {
-                                method: 'PUT',
-                                headers: {
-                                    'Authorization': authorization,
-                                    'Content-Type': file.type || 'application/octet-stream'
-                                },
-                                body: file
-                            }).then(response => {
-                                console.log('响应状态:', response.status, response.statusText);
-
-                                if (response.ok || response.status === 200) {
-                                    console.log('上传成功！');
-                                    resolve(url);
-                                } else {
-                                    return response.text().then(text => {
-                                        console.error('上传失败:', response.status, text);
-                                        throw new Error(`HTTP ${response.status}: ${text}`);
-                                    });
-                                }
-                            }).catch(fetchErr => {
-                                console.error('Fetch 错误详情:', fetchErr);
-                                reject(new Error('上传失败：' + fetchErr.message));
-                            });
+                            if (response.ok || response.status === 200) {
+                                console.log('上传成功！');
+                                resolve(url);
+                            } else {
+                                return response.text().then(text => {
+                                    console.error('上传失败:', response.status, text);
+                                    throw new Error(`HTTP ${response.status}: ${text}`);
+                                });
+                            }
+                        }).catch(fetchErr => {
+                            console.error('Fetch 错误详情:', fetchErr);
+                            reject(new Error('上传失败：' + fetchErr.message));
                         });
                     });
                 }).catch(err => {
