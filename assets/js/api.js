@@ -793,44 +793,43 @@ const API = {
                 const ext = file.name.split('.').pop() || 'jpg';
                 const filename = `products/${timestamp}_${randomStr}.${ext}`;
 
-                // 构造 COS URL（自动补全 appid）
-                let bucket = COS_CONFIG.bucket;
-                if (!bucket.includes('-') || bucket.split('-').length === 2) {
-                    // 如果 bucket 没有 appid 后缀，可能是简写，尝试使用已有配置
-                    console.log('使用配置的 bucket:', bucket);
-                }
-                const url = `https://${bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
+                const bucket = COS_CONFIG.bucket;
+                const region = COS_CONFIG.region;
+                const host = `${bucket}.cos.${region}.myqcloud.com`;
+                const url = `https://${host}/${filename}`;
 
                 console.log('=== COS 上传开始 ===');
                 console.log('Bucket:', bucket);
-                console.log('Region:', COS_CONFIG.region);
-                console.log('文件:', file.name, '大小:', file.size);
+                console.log('Region:', region);
+                console.log('Host:', host);
                 console.log('URL:', url);
+                console.log('文件:', file.name, '大小:', file.size);
 
-                // 使用简化的签名方式（腾讯云临时密钥格式）
+                // 生成签名时间
                 const now = Math.floor(Date.now() / 1000);
                 const exp = now + 3600;
 
-                // 构造签名字符串（格式：put/bucket/file\nhost\n...）
-                const host = `${bucket}.cos.${COS_CONFIG.region}.myqcloud.com`;
+                // 构造待签名字符串（COS v5 签名格式）
                 const signKey = `${COS_CONFIG.secretId}${now}${exp}`;
 
                 generateHmacSignature(signKey, COS_CONFIG.secretKey).then(signature => {
                     const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${now};${exp}&q-key-time=${now};${exp}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
-                    console.log('Authorization:', authorization.substring(0, 100) + '...');
+                    console.log('签名:', signature);
+                    console.log('Authorization:', authorization.substring(0, 80) + '...');
 
-                    // 使用 fetch 上传（比 XHR 更可靠）
+                    // 使用 fetch 上传（注意：不能设置 Host 头，浏览器会自动添加）
                     fetch(url, {
                         method: 'PUT',
                         headers: {
-                            'Host': host,
                             'Authorization': authorization,
                             'Content-Type': file.type || 'application/octet-stream'
                         },
                         body: file
                     }).then(response => {
-                        console.log('响应状态:', response.status);
+                        console.log('响应状态:', response.status, response.statusText);
+                        console.log('响应头:', Object.fromEntries(response.headers.entries()));
+
                         if (response.ok || response.status === 200) {
                             console.log('上传成功！');
                             resolve(url);
@@ -841,7 +840,7 @@ const API = {
                             });
                         }
                     }).catch(fetchErr => {
-                        console.error('Fetch 错误:', fetchErr);
+                        console.error('Fetch 错误详情:', fetchErr);
                         reject(new Error('上传失败：' + fetchErr.message));
                     });
                 }).catch(err => {
