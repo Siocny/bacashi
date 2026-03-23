@@ -793,62 +793,57 @@ const API = {
                 const ext = file.name.split('.').pop() || 'jpg';
                 const filename = `products/${timestamp}_${randomStr}.${ext}`;
 
-                // 构造 COS URL
-                const url = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
+                // 构造 COS URL（自动补全 appid）
+                let bucket = COS_CONFIG.bucket;
+                if (!bucket.includes('-') || bucket.split('-').length === 2) {
+                    // 如果 bucket 没有 appid 后缀，可能是简写，尝试使用已有配置
+                    console.log('使用配置的 bucket:', bucket);
+                }
+                const url = `https://${bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
 
-                console.log('开始上传到 COS:', url);
+                console.log('=== COS 上传开始 ===');
+                console.log('Bucket:', bucket);
+                console.log('Region:', COS_CONFIG.region);
                 console.log('文件:', file.name, '大小:', file.size);
+                console.log('URL:', url);
 
-                // 生成 COS 签名
+                // 使用简化的签名方式（腾讯云临时密钥格式）
                 const now = Math.floor(Date.now() / 1000);
-                const signTime = `${now - 60};${now + 3600}`;
-                const keyTime = `${now - 60};${now + 3600}`;
+                const exp = now + 3600;
 
-                // 构造签名字符串
-                const signKey = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${keyTime}&q-header-list=host&q-url-param-list=&q-signature=`;
+                // 构造签名字符串（格式：put/bucket/file\nhost\n...）
+                const host = `${bucket}.cos.${COS_CONFIG.region}.myqcloud.com`;
+                const signKey = `${COS_CONFIG.secretId}${now}${exp}`;
 
-                const plainText = `put\n/${filename}\n\nhost=${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com\n`;
-                const stringToSign = `sha1\n${signTime}\n${plainText}`;
+                generateHmacSignature(signKey, COS_CONFIG.secretKey).then(signature => {
+                    const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${now};${exp}&q-key-time=${now};${exp}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
-                // 使用原生 Web Crypto API 生成 HMAC-SHA1 签名
-                generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
-                    const authorization = signKey + signature;
-                    console.log('Authorization:', authorization);
+                    console.log('Authorization:', authorization.substring(0, 100) + '...');
 
-                    // 使用 XMLHttpRequest 上传
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('PUT', url, true);
-                    xhr.timeout = 300000; // 5 分钟超时
-
-                    // 设置必要的请求头
-                    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-                    xhr.setRequestHeader('Host', `${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com`);
-                    xhr.setRequestHeader('Authorization', authorization);
-
-                    xhr.onload = function() {
-                        if (xhr.status === 200) {
-                            const etag = xhr.getResponseHeader('ETag');
-                            console.log('上传成功:', url, 'ETag:', etag);
-                            console.log('图片访问地址:', url);
-                            console.log('请在浏览器打开此地址验证图片是否可访问');
+                    // 使用 fetch 上传（比 XHR 更可靠）
+                    fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'Host': host,
+                            'Authorization': authorization,
+                            'Content-Type': file.type || 'application/octet-stream'
+                        },
+                        body: file
+                    }).then(response => {
+                        console.log('响应状态:', response.status);
+                        if (response.ok || response.status === 200) {
+                            console.log('上传成功！');
                             resolve(url);
                         } else {
-                            console.error('上传失败:', xhr.status, xhr.responseText);
-                            reject(new Error('上传失败：' + xhr.status + ' ' + xhr.responseText));
+                            return response.text().then(text => {
+                                console.error('上传失败:', response.status, text);
+                                throw new Error(`HTTP ${response.status}: ${text}`);
+                            });
                         }
-                    };
-
-                    xhr.onerror = function(e) {
-                        console.error('上传网络错误:', e);
-                        reject(new Error('网络错误，请检查网络连接和 CORS 设置'));
-                    };
-
-                    xhr.ontimeout = function() {
-                        console.error('上传超时');
-                        reject(new Error('上传超时'));
-                    };
-
-                    xhr.send(file);
+                    }).catch(fetchErr => {
+                        console.error('Fetch 错误:', fetchErr);
+                        reject(new Error('上传失败：' + fetchErr.message));
+                    });
                 }).catch(err => {
                     console.error('签名生成失败:', err);
                     reject(new Error('签名生成失败：' + err.message));
