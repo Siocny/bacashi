@@ -18,13 +18,14 @@ const COS_CONFIG = {
     secretKey: localStorage.getItem('cos_secret_key') || ''
 };
 
-// 保存 COS 配置
-function saveCosConfig(config) {
+// 保存 COS 配置到 localStorage（内部函数，加下划线前缀避免命名冲突）
+function _saveCosConfigToLocal(config) {
     if (config.bucket) localStorage.setItem('cos_bucket', config.bucket);
     if (config.region) localStorage.setItem('cos_region', config.region);
     if (config.secretId) localStorage.setItem('cos_secret_id', config.secretId);
     if (config.secretKey) localStorage.setItem('cos_secret_key', config.secretKey);
     Object.assign(COS_CONFIG, config);
+    console.log('COS 配置已保存到 localStorage:', config);
 }
 
 // 转换图片路径为完整 URL
@@ -773,7 +774,7 @@ const API = {
             };
         },
         saveConfig(config) {
-            saveCosConfig(config);
+            _saveCosConfigToLocal(config);
         },
         // 上传图片到 COS
         async upload(file) {
