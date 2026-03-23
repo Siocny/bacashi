@@ -830,7 +830,7 @@ const API = {
     }
 };
 
-// 动态加载 COS SDK
+// 动态加载 COS SDK（使用本地文件）
 function loadCosSdk() {
     return new Promise((resolve, reject) => {
         if (typeof COS !== 'undefined') {
@@ -838,35 +838,15 @@ function loadCosSdk() {
             return;
         }
         const script = document.createElement('script');
-        // 使用多个 CDN 源，优先使用腾讯云官方源
-        const cdnSources = [
-            'https://cos1300000000.file.myqcloud.com/cos-js-sdk-v5/cos-js-sdk-v5.min.js',
-            'https://cos.sh.myqcloud.com/cos-js-sdk-v5/cos-js-sdk-v5.min.js',
-            'https://cdn.staticfile.org/cos-js-sdk-v5/1.5.1/cos-js-sdk-v5.min.js',
-            'https://cdn.bootcdn.net/ajax/libs/cos-js-sdk-v5/1.5.1/cos-js-sdk-v5.min.js'
-        ];
-
-        let currentIndex = 0;
-
-        const loadFromSource = (index) => {
-            if (index >= cdnSources.length) {
-                reject(new Error('所有 CDN 源均加载失败，请检查网络连接'));
-                return;
-            }
-            script.src = cdnSources[index];
-            console.log('尝试从', cdnSources[index], '加载 COS SDK...');
-            script.onload = () => {
-                console.log('✅ COS SDK 已加载 from:', cdnSources[index]);
-                resolve(COS);
-            };
-            script.onerror = () => {
-                console.warn('COS CDN 失败:', cdnSources[index]);
-                loadFromSource(index + 1);
-            };
-            document.head.appendChild(script);
+        script.src = 'assets/js/cos-js-sdk-v5.min.js';
+        script.onload = () => {
+            console.log('✅ COS SDK 已从本地加载');
+            resolve(COS);
         };
-
-        loadFromSource(currentIndex);
+        script.onerror = () => {
+            reject(new Error('COS SDK 加载失败，请检查文件是否存在'));
+        };
+        document.head.appendChild(script);
     });
 }
 
