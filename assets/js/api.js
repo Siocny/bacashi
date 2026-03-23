@@ -811,51 +811,65 @@ const API = {
                 const exp = now + 3600;
                 const signTime = `${now};${exp}`;
 
-                // 构造待签名字符串（按照 COS v5 签名文档）
-                // Format: PUT\n/resource\n<query>\n<headers>\n
+                // 按照腾讯云 COS 签名算法 v5
+                // 1. 构造 StringToSign: sha1\n<signTime>\n<HttpSha1>
+                // 2. HttpSha1 = sha1(FormatString)
+                // 3. SignKey = hmac_sha1(secretKey, signTime)
+                // 4. Signature = hmac_sha1(SignKey, StringToSign)
+
+                // FormatString = <Method>\n<URI>\n<Query>\n<Headers>\n
                 const method = 'put';
                 const uri = resource;
                 const query = '';
                 const headers = `host=${host}\n`;
+                const formatString = `${method}\n${uri}\n${query}\n${headers}`;
 
-                // 计算请求体的 sha1 哈希（空请求体）
-                const sha1Hash = '';
+                console.log('FormatString:', formatString);
 
-                // 拼接签名字符串
-                const stringToSign = `${method}\n${uri}\n${query}\n${headers}${sha1Hash}`;
+                // 计算请求体的 SHA1 哈希
+                sha1Hex(formatString).then(httpSha1 => {
+                    console.log('HttpSha1:', httpSha1);
 
-                console.log('待签名字符串:', stringToSign);
+                    // 构造 StringToSign
+                    const stringToSign = `sha1\n${signTime}\n${httpSha1}`;
+                    console.log('StringToSign:', stringToSign);
 
-                // 使用 HMAC-SHA1 签名
-                generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
-                    const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
+                    // 计算 SignKey = hmac_sha1(secretKey, signTime)
+                    return generateHmacSignature(signTime, COS_CONFIG.secretKey).then(signKey => {
+                        console.log('SignKey:', signKey);
 
-                    console.log('签名:', signature);
-                    console.log('Authorization:', authorization.substring(0, 80) + '...');
+                        // 计算 Signature = hmac_sha1(SignKey, StringToSign)
+                        return generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
+                            const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
-                    // 使用 fetch 上传
-                    fetch(url, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': authorization,
-                            'Content-Type': file.type || 'application/octet-stream'
-                        },
-                        body: file
-                    }).then(response => {
-                        console.log('响应状态:', response.status, response.statusText);
+                            console.log('签名:', signature);
+                            console.log('Authorization:', authorization.substring(0, 80) + '...');
 
-                        if (response.ok || response.status === 200) {
-                            console.log('上传成功！');
-                            resolve(url);
-                        } else {
-                            return response.text().then(text => {
-                                console.error('上传失败:', response.status, text);
-                                throw new Error(`HTTP ${response.status}: ${text}`);
+                            // 使用 fetch 上传
+                            fetch(url, {
+                                method: 'PUT',
+                                headers: {
+                                    'Authorization': authorization,
+                                    'Content-Type': file.type || 'application/octet-stream'
+                                },
+                                body: file
+                            }).then(response => {
+                                console.log('响应状态:', response.status, response.statusText);
+
+                                if (response.ok || response.status === 200) {
+                                    console.log('上传成功！');
+                                    resolve(url);
+                                } else {
+                                    return response.text().then(text => {
+                                        console.error('上传失败:', response.status, text);
+                                        throw new Error(`HTTP ${response.status}: ${text}`);
+                                    });
+                                }
+                            }).catch(fetchErr => {
+                                console.error('Fetch 错误详情:', fetchErr);
+                                reject(new Error('上传失败：' + fetchErr.message));
                             });
-                        }
-                    }).catch(fetchErr => {
-                        console.error('Fetch 错误详情:', fetchErr);
-                        reject(new Error('上传失败：' + fetchErr.message));
+                        });
                     });
                 }).catch(err => {
                     console.error('签名生成失败:', err);
@@ -867,7 +881,7 @@ const API = {
 };
 
 // 生成 HMAC-SHA1 签名（腾讯云 COS 格式）
-function generateHmacSignature(plainText, secretKey) {
+function generateHmacSignature(stringToSign, secretKey) {
     return new Promise((resolve, reject) => {
         if (!window.crypto || !window.crypto.subtle) {
             reject(new Error('浏览器不支持 Web Crypto API'));
@@ -876,7 +890,7 @@ function generateHmacSignature(plainText, secretKey) {
 
         const encoder = new TextEncoder();
         const keyData = encoder.encode(secretKey);
-        const data = encoder.encode(plainText);
+        const data = encoder.encode(stringToSign);
 
         window.crypto.subtle.importKey(
             'raw',
@@ -894,6 +908,29 @@ function generateHmacSignature(plainText, secretKey) {
             resolve(hex);
         }).catch(err => {
             console.error('签名生成错误:', err);
+            reject(err);
+        });
+    });
+}
+
+// 计算字符串的 SHA1 哈希（用于 COS 签名）
+function sha1Hex(str) {
+    return new Promise((resolve, reject) => {
+        if (!window.crypto || !window.crypto.subtle) {
+            reject(new Error('浏览器不支持 Web Crypto API'));
+            return;
+        }
+
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str);
+
+        window.crypto.subtle.digest('SHA-1', data).then(hash => {
+            const hex = Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            resolve(hex);
+        }).catch(err => {
+            console.error('SHA1 计算错误:', err);
             reject(err);
         });
     });
