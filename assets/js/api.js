@@ -74,9 +74,16 @@ const SupabaseClient = {
 
                     script.onload = () => {
                         clearTimeout(timeout);
-                        this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-                        console.log('✅ Supabase SDK 已加载');
-                        resolve();
+                        console.log('supabase 对象:', typeof supabase);
+                        console.log('createClient:', typeof supabase.createClient);
+                        if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+                            this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                            console.log('✅ Supabase SDK 已加载，client:', this.client ? 'ok' : 'undefined');
+                            resolve();
+                        } else {
+                            console.error('❌ supabase.createClient 不存在');
+                            reject(new Error('supabase.createClient 不存在'));
+                        }
                     };
 
                     script.onerror = () => {
