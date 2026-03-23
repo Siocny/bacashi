@@ -758,17 +758,35 @@ function updateImagePreview(url) {
     }
 }
 
-// 图片上传
-document.getElementById('product-image-upload')?.addEventListener('change', function(e) {
+// 图片上传到 COS
+document.getElementById('product-image-upload')?.addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const base64 = event.target.result;
-            document.getElementById('product-image').value = base64;
-            updateImagePreview(base64);
-        };
-        reader.readAsDataURL(file);
+        // 检查 COS 配置
+        const cosConfig = API.cos.getConfig();
+        if (!cosConfig.bucket || !cosConfig.secretId || !cosConfig.secretKey) {
+            showToast('请先配置腾讯云 COS 参数', 'warning');
+            showCosConfigModal();
+            return;
+        }
+
+        // 显示上传中状态
+        const uploadBtn = document.getElementById('product-image-upload');
+        const originalText = uploadBtn.textContent;
+        uploadBtn.textContent = '上传中...';
+        uploadBtn.disabled = true;
+
+        try {
+            const imageUrl = await API.cos.upload(file);
+            document.getElementById('product-image').value = imageUrl;
+            updateImagePreview(imageUrl);
+            showToast('图片上传成功', 'success');
+        } catch (err) {
+            showToast('上传失败：' + err.message, 'error');
+        } finally {
+            uploadBtn.textContent = originalText;
+            uploadBtn.disabled = false;
+        }
     }
 });
 
@@ -1936,4 +1954,57 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// ==================== 腾讯云 COS 配置 ====================
+
+// 显示 COS 配置弹窗
+function showCosConfigModal() {
+    const config = API.cos.getConfig();
+    document.getElementById('cos-bucket').value = config.bucket || '';
+    document.getElementById('cos-region').value = config.region || 'ap-guangzhou';
+    document.getElementById('cos-secret-id').value = config.secretId || '';
+    document.getElementById('cos-secret-key').value = config.secretKey || '';
+    document.getElementById('cos-config-modal').style.display = 'block';
+}
+
+// 关闭 COS 配置弹窗
+function closeCosConfigModal() {
+    document.getElementById('cos-config-modal').style.display = 'none';
+}
+
+// 保存 COS 配置
+function saveCosConfig() {
+    const bucket = document.getElementById('cos-bucket').value.trim();
+    const region = document.getElementById('cos-region').value;
+    const secretId = document.getElementById('cos-secret-id').value.trim();
+    const secretKey = document.getElementById('cos-secret-key').value.trim();
+
+    if (!bucket) {
+        showToast('请输入存储桶名称', 'warning');
+        return;
+    }
+
+    if (!secretId || !secretKey) {
+        showToast('请输入密钥 ID 和密钥 Key', 'warning');
+        return;
+    }
+
+    API.cos.saveConfig({
+        bucket,
+        region,
+        secretId,
+        secretKey
+    });
+
+    showToast('COS 配置保存成功！', 'success');
+    closeCosConfigModal();
+}
+
+// 点击弹窗外部关闭
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('cos-config-modal');
+    if (event.target === modal) {
+        closeCosConfigModal();
+    }
+});
 

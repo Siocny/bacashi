@@ -10,6 +10,23 @@ const SUPABASE_CONFIG = {
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3d3hpdWNqb2pmdWp4cWZhZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTE0NDgsImV4cCI6MjA4OTQ2NzQ0OH0.AXYrS6BgvJqEkXBp-pN613FSXetm4iB_2O_SHSxTRFc'
 };
 
+// 腾讯云 COS 配置
+const COS_CONFIG = {
+    bucket: localStorage.getItem('cos_bucket') || '',
+    region: localStorage.getItem('cos_region') || 'ap-guangzhou',
+    secretId: localStorage.getItem('cos_secret_id') || '',
+    secretKey: localStorage.getItem('cos_secret_key') || ''
+};
+
+// 保存 COS 配置
+function saveCosConfig(config) {
+    if (config.bucket) localStorage.setItem('cos_bucket', config.bucket);
+    if (config.region) localStorage.setItem('cos_region', config.region);
+    if (config.secretId) localStorage.setItem('cos_secret_id', config.secretId);
+    if (config.secretKey) localStorage.setItem('cos_secret_key', config.secretKey);
+    Object.assign(COS_CONFIG, config);
+}
+
 // 转换图片路径为完整 URL
 function normalizeImagePath(imagePath) {
     if (!imagePath) return 'https://via.placeholder.com/400x300?text=NO+IMAGE';
@@ -735,7 +752,85 @@ const API = {
                 await this.save(filtered);
             }
         }
+    },
+
+    // 腾讯云 COS 图片上传
+    cos: {
+        getConfig() {
+            return {
+                bucket: COS_CONFIG.bucket,
+                region: COS_CONFIG.region,
+                secretId: COS_CONFIG.secretId,
+                secretKey: COS_CONFIG.secretKey
+            };
+        },
+        saveConfig(config) {
+            saveCosConfig(config);
+        },
+        // 上传图片到 COS
+        async upload(file) {
+            return new Promise((resolve, reject) => {
+                if (!COS_CONFIG.bucket || !COS_CONFIG.region || !COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
+                    reject(new Error('请先配置 COS 参数'));
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const base64 = e.target.result;
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    // 生成文件名
+                    const timestamp = Date.now();
+                    const randomStr = Math.random().toString(36).substring(2, 8);
+                    const ext = file.name.split('.').pop() || 'jpg';
+                    const filename = `products/${timestamp}_${randomStr}.${ext}`;
+
+                    // 使用 COS SDK 上传
+                    try {
+                        const COS = await loadCosSdk();
+                        const cos = new COS({
+                            SecretId: COS_CONFIG.secretId,
+                            SecretKey: COS_CONFIG.secretKey
+                        });
+
+                        cos.putObject({
+                            Bucket: COS_CONFIG.bucket,
+                            Region: COS_CONFIG.region,
+                            Key: filename,
+                            Body: file
+                        }, (err, data) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                const imageUrl = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
+                                resolve(imageUrl);
+                            }
+                        });
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.onerror = () => reject(new Error('文件读取失败'));
+            });
+        }
     }
 };
+
+// 动态加载 COS SDK
+function loadCosSdk() {
+    return new Promise((resolve, reject) => {
+        if (typeof COS !== 'undefined') {
+            resolve(COS);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@1.5.1/dist/cos-js-sdk-v5.min.js';
+        script.onload = () => resolve(COS);
+        script.onerror = () => reject(new Error('COS SDK 加载失败'));
+        document.head.appendChild(script);
+    });
+}
 
 // API 初始化在调用时自动执行（由 admin.js 或其他入口文件负责）
