@@ -766,7 +766,7 @@ const API = {
         }
     },
 
-    // 腾讯云 COS 图片上传
+    // 腾讯云 COS 图片上传（使用原生 XMLHttpRequest，无需 SDK）
     cos: {
         getConfig() {
             return {
@@ -779,7 +779,18 @@ const API = {
         saveConfig(config) {
             _saveCosConfigToLocal(config);
         },
-        // 上传图片到 COS
+        // 生成 COS 签名（前端简单签名，仅用于临时上传）
+        generateSignature(key, method = 'put') {
+            const now = Math.floor(Date.now() / 1000);
+            const exp = now + 3600; // 1 小时过期
+            const plainText = `a=${COS_CONFIG.secretId}&k=${now}&e=${exp}&b=${COS_CONFIG.bucket}&f=${key}`;
+
+            // 使用 HMAC-SHA1 签名
+            const hmac = CryptoJS.HMAC(CryptoJS.SHA1, plainText, COS_CONFIG.secretKey);
+            const signature = CryptoJS.enc.Base64.stringify(hmac);
+            return signature;
+        },
+        // 上传图片到 COS（使用 PUT 请求）
         async upload(file) {
             return new Promise((resolve, reject) => {
                 if (!COS_CONFIG.bucket || !COS_CONFIG.region || !COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
@@ -787,102 +798,97 @@ const API = {
                     return;
                 }
 
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    const base64 = e.target.result;
-                    const formData = new FormData();
-                    formData.append('file', file);
+                // 生成文件名
+                const timestamp = Date.now();
+                const randomStr = Math.random().toString(36).substring(2, 8);
+                const ext = file.name.split('.').pop() || 'jpg';
+                const filename = `products/${timestamp}_${randomStr}.${ext}`;
 
-                    // 生成文件名
-                    const timestamp = Date.now();
-                    const randomStr = Math.random().toString(36).substring(2, 8);
-                    const ext = file.name.split('.').pop() || 'jpg';
-                    const filename = `products/${timestamp}_${randomStr}.${ext}`;
+                // 构造 COS URL
+                const url = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
 
-                    // 使用 COS SDK 上传
-                    try {
-                        const COS = await loadCosSdk();
-                        const cos = new COS({
-                            SecretId: COS_CONFIG.secretId,
-                            SecretKey: COS_CONFIG.secretKey
-                        });
+                console.log('开始上传到 COS:', url);
+                console.log('文件:', file.name, '大小:', file.size);
 
-                        cos.putObject({
-                            Bucket: COS_CONFIG.bucket,
-                            Region: COS_CONFIG.region,
-                            Key: filename,
-                            Body: file
-                        }, (err, data) => {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                const imageUrl = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
-                                resolve(imageUrl);
-                            }
-                        });
-                    } catch (err) {
-                        reject(err);
-                    }
-                };
-                reader.onerror = () => reject(new Error('文件读取失败'));
+                // 使用 XMLHttpRequest 上传
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', url, true);
+
+                // 设置必要的请求头
+                xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+                // 添加 COS 签名（使用临时密钥方式）
+                const now = Math.floor(Date.now() / 1000);
+                const exp = now + 3600;
+                const plainText = `a=${COS_CONFIG.secretId}&k=${now}&e=${exp}&b=${COS_CONFIG.bucket}&f=${filename}`;
+
+                // 使用 CryptoJS 或原生 crypto 进行签名
+                const signPromise = CryptoJS ?
+                    Promise.resolve(CryptoJS.HMAC(CryptoJS.SHA1, plainText, COS_CONFIG.secretKey).toString(CryptoJS.enc.Base64)) :
+                    generateHmacSignature(plainText, COS_CONFIG.secretKey);
+
+                signPromise.then(signature => {
+                    xhr.setRequestHeader('Authorization', signature);
+
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            const etag = xhr.getResponseHeader('ETag');
+                            console.log('上传成功:', url, 'ETag:', etag);
+                            resolve(url);
+                        } else {
+                            console.error('上传失败:', xhr.status, xhr.responseText);
+                            reject(new Error('上传失败：' + xhr.status + ' ' + xhr.responseText));
+                        }
+                    };
+
+                    xhr.onerror = function() {
+                        console.error('上传网络错误');
+                        reject(new Error('网络错误，请检查网络连接'));
+                    };
+
+                    xhr.ontimeout = function() {
+                        console.error('上传超时');
+                        reject(new Error('上传超时'));
+                    };
+
+                    xhr.send(file);
+                }).catch(err => {
+                    reject(new Error('签名生成失败：' + err.message));
+                });
+
+                // 设置超时（5 分钟）
+                xhr.timeout = 300000;
             });
         }
     }
 };
 
-// 动态加载 COS SDK（使用本地文件）
-function loadCosSdk() {
+// 生成 HMAC-SHA1 签名（当 CryptoJS 不可用时）
+function generateHmacSignature(plainText, secretKey) {
     return new Promise((resolve, reject) => {
-        // 检查是否已经加载
-        if (typeof COS !== 'undefined') {
-            resolve(COS);
-            return;
-        }
-        // 获取当前 api.js 的路径，在同一目录下查找 cos-js-sdk-v5.min.js
-        const scripts = document.getElementsByTagName('script');
-        let apiJsPath = '';
-        for (let i = 0; i < scripts.length; i++) {
-            if (scripts[i].src && scripts[i].src.includes('api.js')) {
-                apiJsPath = scripts[i].src.substring(0, scripts[i].src.lastIndexOf('/') + 1);
-                break;
-            }
-        }
+        // 尝试使用 Web Crypto API
+        if (window.crypto && window.crypto.subtle) {
+            const encoder = new TextEncoder();
+            const keyData = encoder.encode(secretKey);
+            const data = encoder.encode(plainText);
 
-        const script = document.createElement('script');
-        script.src = apiJsPath + 'cos-js-sdk-v5.min.js';
-        console.log('加载 COS SDK from:', script.src);
-        script.onload = () => {
-            console.log('COS SDK 加载完成，检查全局变量...');
-            console.log('typeof COS:', typeof COS);
-            console.log('window COS:', window.COS);
-            console.log('window 对象 keys:', Object.keys(window).filter(k => k.toLowerCase().includes('cos')));
-
-            // 检查各种可能的全局变量
-            if (typeof COS !== 'undefined') {
-                console.log('✅ COS SDK 已从本地加载');
-                resolve(COS);
-            } else if (window.COS) {
-                console.log('✅ window.COS 存在');
-                resolve(window.COS);
-            } else {
-                // 尝试查找可能的变量名
-                const possibleNames = ['CosJS', 'COSJS', 'Cos', 'TencentCOS', 'QCloudCOS'];
-                for (const name of possibleNames) {
-                    if (window[name]) {
-                        console.log('✅ 找到 SDK:', name);
-                        resolve(window[name]);
-                        return;
-                    }
-                }
-                console.error('❌ 未找到 COS 全局变量');
-                reject(new Error('COS SDK 加载成功但未找到全局变量'));
-            }
-        };
-        script.onerror = (err) => {
-            console.error('❌ COS SDK 加载失败:', script.src, err);
-            reject(new Error('COS SDK 加载失败，请检查文件是否存在'));
-        };
-        document.head.appendChild(script);
+            window.crypto.subtle.importKey(
+                'raw',
+                keyData,
+                { name: 'HMAC', hash: 'SHA-1' },
+                false,
+                ['sign']
+            ).then(key => {
+                return window.crypto.subtle.sign('HMAC', key, data);
+            }).then(signature => {
+                const base64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+                resolve(base64);
+            }).catch(err => {
+                reject(err);
+            });
+        } else {
+            reject(new Error('不支持的加密 API'));
+        }
     });
 }
 
