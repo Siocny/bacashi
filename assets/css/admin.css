@@ -1023,6 +1023,37 @@ body {
     letter-spacing: 0.5px;
 }
 
+.table-header span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.table-header > span:nth-child(4),
+.table-header > span:nth-child(5),
+.table-header > span:nth-child(6) {
+    justify-content: center !important;
+}
+
+.filter-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: var(--text-light);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-icon:hover {
+    background: rgba(26, 58, 92, 0.1);
+    color: var(--primary-color);
+}
+
 .table-row {
     display: grid;
     grid-template-columns: 40px 50px 1fr 100px 120px 120px 100px;

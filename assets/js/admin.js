@@ -466,10 +466,30 @@ function loadProductsTable() {
         <div class="table-header">
             <span class="checkbox-cell"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></span>
             <span>ID</span>
-            <span>产品名称</span>
-            <span>品牌</span>
-            <span>类别</span>
-            <span>产品类型</span>
+            <span>
+                产品名称
+                <button class="filter-icon" onclick="filterByName()" title="筛选名称">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </span>
+            <span>
+                品牌
+                <button class="filter-icon" onclick="filterByBrandHeader()" title="筛选品牌">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </span>
+            <span>
+                类别
+                <button class="filter-icon" onclick="filterByCategoryHeader()" title="筛选类别">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </span>
+            <span>
+                产品类型
+                <button class="filter-icon" onclick="filterByProductType()" title="筛选类型">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </span>
             <span class="table-actions-header">操作</span>
         </div>
     ` + paginatedProducts.sort((a, b) => a.sort - b.sort).map(product => `
@@ -1619,6 +1639,135 @@ window.toggleMessageSelection = toggleMessageSelection;
 window.toggleMessageSelectAll = toggleMessageSelectAll;
 window.batchDeleteMessages = batchDeleteMessages;
 window.exportMessages = exportMessages;
+window.filterByName = filterByName;
+window.filterByBrandHeader = filterByBrandHeader;
+window.filterByCategoryHeader = filterByCategoryHeader;
+window.filterByProductType = filterByProductType;
+
+// ==================== 表头筛选功能 ====================
+
+// 按名称筛选
+function filterByName() {
+    const name = prompt('请输入产品名称关键词：');
+    if (name === null) return; // 用户取消
+
+    if (name && name.trim()) {
+        document.getElementById('product-search').value = name.trim();
+        currentPage = 1;
+        loadProductsTable();
+    } else {
+        document.getElementById('product-search').value = '';
+        currentPage = 1;
+        loadProductsTable();
+    }
+}
+
+// 按品牌筛选
+window.filterByBrandHeader = function() {
+    const brands = ['全部', 'CAFELE', 'BACASHI'];
+    const brandMap = { '全部': 'all', 'CAFELE': 'cafele', 'BACASHI': 'bacashi' };
+
+    const brandButtons = document.querySelectorAll('.brand-filter-btn');
+    let currentBrandText = '全部';
+    brandButtons.forEach(btn => {
+        if (btn.classList.contains('active')) {
+            currentBrandText = btn.textContent.trim();
+        }
+    });
+
+    const currentIndex = brands.indexOf(currentBrandText);
+
+    // 循环切换到下一个品牌
+    const nextIndex = (currentIndex + 1) % brands.length;
+    const nextBrand = brands[nextIndex];
+
+    // 点击对应的品牌按钮
+    const targetBtn = document.querySelector(`.brand-filter-btn[data-brand="${brandMap[nextBrand]}"]`);
+    if (targetBtn) {
+        targetBtn.click();
+    }
+
+    showToast(`已筛选：${nextBrand}`, 'info');
+}
+
+// 按类别筛选
+function filterByCategoryHeader() {
+    const categories = getStoredCategories();
+    const currentCategory = document.getElementById('product-filter').value;
+
+    let currentIndex = -1;
+    if (currentCategory === 'all') {
+        currentIndex = -1;
+    } else {
+        currentIndex = categories.indexOf(currentCategory);
+    }
+
+    // 循环切换到下一个类别
+    const nextIndex = (currentIndex + 1) % categories.length;
+    const nextCategory = nextIndex === -1 ? categories[0] : categories[nextIndex];
+
+    const filter = document.getElementById('product-filter');
+    filter.value = nextCategory;
+    filter.dispatchEvent(new Event('change'));
+
+    // 触发类别按钮的点击事件
+    const categoryBtn = document.querySelector(`.category-btn[data-category="${nextCategory}"]`);
+    if (categoryBtn) {
+        categoryBtn.click();
+    }
+
+    currentPage = 1;
+    loadProductsTable();
+    showToast(`已筛选：${nextCategory}`, 'info');
+}
+
+// 按产品类型筛选
+function filterByProductType() {
+    const productTypes = getStoredProductTypes();
+
+    // 创建一个简单的选择提示
+    const typeOptions = productTypes.join('、');
+    const selectedType = prompt(`请输入产品类型筛选：\n可选类型：${typeOptions}`);
+
+    if (selectedType === null) return; // 用户取消
+
+    if (selectedType && selectedType.trim()) {
+        // 查找匹配的产品类型
+        const matchedType = productTypes.find(t => t.includes(selectedType.trim()));
+        if (matchedType) {
+            // 先切换到车用电子类别
+            const categoryBtn = document.querySelector('.category-btn[data-category="车用电子"]');
+            if (categoryBtn) {
+                categoryBtn.click();
+            }
+
+            // 再切换子类型
+            const subtypeBtn = document.querySelector(`.subcategory-btn[data-subcategory="${matchedType}"]`);
+            if (subtypeBtn) {
+                subtypeBtn.click();
+                showToast(`已筛选：${matchedType}`, 'success');
+            } else {
+                // 如果没有子类型按钮，使用搜索
+                document.getElementById('product-search').value = matchedType;
+                currentPage = 1;
+                loadProductsTable();
+                showToast(`已搜索：${matchedType}`, 'success');
+            }
+        } else {
+            showToast('未找到匹配的产品类型', 'warning');
+        }
+    } else {
+        // 清空筛选
+        document.getElementById('product-search').value = '';
+        const allCategoryBtn = document.querySelector('.category-btn[data-category="all"]');
+        if (allCategoryBtn) {
+            allCategoryBtn.click();
+        }
+        currentPage = 1;
+        loadProductsTable();
+        showToast('已清空筛选', 'info');
+    }
+}
 
 // ==================== 留言管理功能 ====================
 

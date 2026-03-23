@@ -959,57 +959,49 @@ section {
 .footer {
     background: var(--primary-dark);
     color: white;
-    padding: 60px 0 30px;
+    padding: 40px 0;
 }
 
 .footer-content {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 40px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    gap: 60px;
 }
 
 .footer-section {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .footer-section h4 {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     color: white;
     white-space: nowrap;
     margin: 0;
 }
 
 .footer-section p {
-    font-size: 14px;
-    color: rgba(255,255,255,0.7);
-    line-height: 1.6;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
     margin: 0;
     white-space: nowrap;
 }
 
 .contact-divider {
-    color: rgba(255,255,255,0.4);
-    font-size: 14px;
-    margin: 0 5px;
-}
-
-.contact-divider {
-    color: rgba(255,255,255,0.4);
-    font-size: 14px;
+    color: rgba(255,255,255,0.3);
+    font-size: 13px;
+    margin: 0 3px;
 }
 
 .footer-bottom {
     text-align: center;
-    padding-top: 30px;
-    color: rgba(255,255,255,0.4);
-    font-size: 13px;
+    padding-top: 20px;
+    color: rgba(255,255,255,0.3);
+    font-size: 12px;
 }
 
 /* 模态框 */
@@ -1431,6 +1423,18 @@ section {
         background: linear-gradient(90deg, transparent 0%, rgba(26, 58, 92, 0.15) 50%, transparent 100%);
         margin: 10px 0;
     }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 25px;
+        text-align: center;
+    }
+
+    .footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
 }
 
     .hero-title {
@@ -1478,18 +1482,6 @@ section {
 
     .form-row {
         grid-template-columns: 1fr;
-    }
-
-    .footer-content {
-        flex-direction: column;
-        gap: 25px;
-        text-align: center;
-    }
-
-    .footer-links {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
     }
 }
 
