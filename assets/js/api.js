@@ -801,11 +801,20 @@ const API = {
 
                 // 生成 COS 签名
                 const now = Math.floor(Date.now() / 1000);
-                const exp = now + 3600;
-                const plainText = `a=${COS_CONFIG.secretId}&k=${now}&e=${exp}&b=${COS_CONFIG.bucket}&f=${filename}`;
+                const signTime = `${now - 60};${now + 3600}`;
+                const keyTime = `${now - 60};${now + 3600}`;
+
+                // 构造签名字符串
+                const signKey = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${keyTime}&q-header-list=host&q-url-param-list=&q-signature=`;
+
+                const plainText = `put\n/${filename}\n\nhost=${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com\n`;
+                const stringToSign = `sha1\n${signTime}\n${plainText}`;
 
                 // 使用原生 Web Crypto API 生成 HMAC-SHA1 签名
-                generateHmacSignature(plainText, COS_CONFIG.secretKey).then(signature => {
+                generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
+                    const authorization = signKey + signature;
+                    console.log('Authorization:', authorization);
+
                     // 使用 XMLHttpRequest 上传
                     const xhr = new XMLHttpRequest();
                     xhr.open('PUT', url, true);
@@ -813,7 +822,8 @@ const API = {
 
                     // 设置必要的请求头
                     xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-                    xhr.setRequestHeader('Authorization', signature);
+                    xhr.setRequestHeader('Host', `${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com`);
+                    xhr.setRequestHeader('Authorization', authorization);
 
                     xhr.onload = function() {
                         if (xhr.status === 200) {
@@ -826,9 +836,9 @@ const API = {
                         }
                     };
 
-                    xhr.onerror = function() {
-                        console.error('上传网络错误');
-                        reject(new Error('网络错误，请检查网络连接'));
+                    xhr.onerror = function(e) {
+                        console.error('上传网络错误:', e);
+                        reject(new Error('网络错误，请检查网络连接和 CORS 设置'));
                     };
 
                     xhr.ontimeout = function() {
@@ -838,6 +848,7 @@ const API = {
 
                     xhr.send(file);
                 }).catch(err => {
+                    console.error('签名生成失败:', err);
                     reject(new Error('签名生成失败：' + err.message));
                 });
             });
