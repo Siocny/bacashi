@@ -766,7 +766,7 @@ const API = {
         }
     },
 
-    // 腾讯云 COS 图片上传（使用原生 XMLHttpRequest，无需 SDK）
+    // 腾讯云 COS 图片上传（使用官方 SDK）
     cos: {
         getConfig() {
             return {
@@ -779,7 +779,7 @@ const API = {
         saveConfig(config) {
             _saveCosConfigToLocal(config);
         },
-        // 上传图片到 COS（使用 POST 表单上传）
+        // 上传图片到 COS
         async upload(file) {
             return new Promise((resolve, reject) => {
                 if (!COS_CONFIG.bucket || !COS_CONFIG.region || !COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
@@ -787,95 +787,53 @@ const API = {
                     return;
                 }
 
-                // 生成文件名
-                const timestamp = Date.now();
-                const randomStr = Math.random().toString(36).substring(2, 8);
-                const ext = file.name.split('.').pop() || 'jpg';
-                const filename = `products/${timestamp}_${randomStr}.${ext}`;
-
-                const bucket = COS_CONFIG.bucket;
-                const region = COS_CONFIG.region;
-                const host = `${bucket}.cos.${region}.myqcloud.com`;
-                const url = `https://${host}/`;
-
                 console.log('=== COS 上传开始 ===');
-                console.log('Bucket:', bucket);
-                console.log('Region:', region);
-                console.log('URL:', url);
+                console.log('Bucket:', COS_CONFIG.bucket);
+                console.log('Region:', COS_CONFIG.region);
                 console.log('文件:', file.name, '大小:', file.size);
-                console.log('文件名:', filename);
 
-                // 生成签名时间
-                const now = Math.floor(Date.now() / 1000);
-                const exp = now + 3600;
-                const signTime = `${now};${exp}`;
+                // 动态加载 COS SDK
+                if (typeof COS === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.bootcdn.net/ajax/libs/cos-js-sdk-v5/1.1.0/cos-js-sdk-v5.min.js';
+                    script.onload = () => initUpload();
+                    script.onerror = () => reject(new Error('COS SDK 加载失败'));
+                    document.head.appendChild(script);
+                    return;
+                }
 
-                // 确保 secretKey 没有空格
-                const secretKey = COS_CONFIG.secretKey.trim();
-                const secretId = COS_CONFIG.secretId.trim();
+                initUpload();
 
-                // 构造 policy
-                const policy = {
-                    expiration: new Date(exp * 1000).toISOString(),
-                    conditions: [
-                        {'bucket': bucket},
-                        ['eq', '$key', filename],
-                        ['eq', '$Content-Type', file.type || 'application/octet-stream'],
-                        ['eq', '$q-ak', secretId],
-                        ['eq', '$q-sign-algorithm', 'sha1'],
-                        ['eq', '$q-sign-time', signTime],
-                        ['eq', '$q-key-time', signTime],
-                        ['eq', '$q-header-list', ''],
-                        ['eq', '$q-url-param-list', '']
-                    ]
-                };
+                function initUpload() {
+                    // 生成文件名
+                    const timestamp = Date.now();
+                    const randomStr = Math.random().toString(36).substring(2, 8);
+                    const ext = file.name.split('.').pop() || 'jpg';
+                    const filename = `products/${timestamp}_${randomStr}.${ext}`;
 
-                const policyBase64 = btoa(JSON.stringify(policy));
-                console.log('Policy:', policyBase64);
-
-                // 计算签名
-                generateHmacSignature(policyBase64, secretKey).then(signature => {
-                    console.log('签名:', signature);
-
-                    // 使用 FormData 上传
-                    const formData = new FormData();
-                    formData.append('key', filename);
-                    formData.append('Content-Type', file.type || 'application/octet-stream');
-                    formData.append('q-ak', secretId);
-                    formData.append('q-sign-algorithm', 'sha1');
-                    formData.append('q-sign-time', signTime);
-                    formData.append('q-key-time', signTime);
-                    formData.append('q-header-list', '');
-                    formData.append('q-url-param-list', '');
-                    formData.append('q-signature', signature);
-                    formData.append('policy', policyBase64);
-                    formData.append('file', file);
-
-                    // 使用 fetch 上传
-                    fetch(url, {
-                        method: 'POST',
-                        body: formData
-                    }).then(response => {
-                        console.log('响应状态:', response.status, response.statusText);
-
-                        if (response.ok || response.status === 200 || response.status === 204) {
-                            const imageUrl = `https://${host}/${filename}`;
-                            console.log('上传成功！', imageUrl);
-                            resolve(imageUrl);
-                        } else {
-                            return response.text().then(text => {
-                                console.error('上传失败:', response.status, text);
-                                throw new Error(`HTTP ${response.status}: ${text}`);
-                            });
-                        }
-                    }).catch(fetchErr => {
-                        console.error('Fetch 错误详情:', fetchErr);
-                        reject(new Error('上传失败：' + fetchErr.message));
+                    const cos = new COS({
+                        SecretId: COS_CONFIG.secretId,
+                        SecretKey: COS_CONFIG.secretKey
                     });
-                }).catch(err => {
-                    console.error('签名生成失败:', err);
-                    reject(new Error('签名生成失败：' + err.message));
-                });
+
+                    console.log('开始上传:', filename);
+
+                    cos.putObject({
+                        Bucket: COS_CONFIG.bucket,
+                        Region: COS_CONFIG.region,
+                        Key: filename,
+                        Body: file
+                    }, (err, data) => {
+                        if (err) {
+                            console.error('上传失败:', err);
+                            reject(new Error(err.message || '上传失败'));
+                        } else {
+                            const imageUrl = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
+                            console.log('上传成功:', imageUrl);
+                            resolve(imageUrl);
+                        }
+                    });
+                }
             });
         }
     }
