@@ -56,46 +56,30 @@ const SupabaseClient = {
         if (typeof supabase === 'undefined') {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                // 使用多个 CDN 源，提高加载成功率
-                const cdnSources = [
-                    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
-                    'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js',
-                    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
-                ];
+                // 使用单个 CDN 源（快速失败）
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+                console.log('加载 Supabase SDK...');
 
-                const loadFromSource = (index) => {
-                    if (index >= cdnSources.length) {
-                        reject(new Error('所有 CDN 源均加载失败'));
-                        return;
-                    }
+                // 设置超时（5 秒）
+                const timeout = setTimeout(() => {
+                    console.warn('Supabase SDK 加载超时，将仅使用本地存储');
+                    script.onerror && script.onerror();
+                }, 5000);
 
-                    script.src = cdnSources[index];
-                    console.log(`尝试从 ${cdnSources[index]} 加载 Supabase SDK...`);
-
-                    // 设置超时（15 秒）
-                    const timeout = setTimeout(() => {
-                        console.warn(`CDN 源超时：${cdnSources[index]}`);
-                        script.onerror && script.onerror();
-                    }, 15000);
-
-                    script.onload = () => {
-                        clearTimeout(timeout);
-                        this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-                        console.log('✅ Supabase SDK 已加载 from:', cdnSources[index]);
-                        resolve();
-                    };
-
-                    script.onerror = () => {
-                        clearTimeout(timeout);
-                        console.warn(`CDN 源失败：${cdnSources[index]}`);
-                        this.retryCount++;
-                        loadFromSource(index + 1);
-                    };
-
-                    document.head.appendChild(script);
+                script.onload = () => {
+                    clearTimeout(timeout);
+                    this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                    console.log('✅ Supabase SDK 已加载');
+                    resolve();
                 };
 
-                loadFromSource(0);
+                script.onerror = () => {
+                    clearTimeout(timeout);
+                    console.warn('⚠️ Supabase SDK 加载失败，将仅使用本地存储');
+                    reject(new Error('Supabase 不可用'));
+                };
+
+                document.head.appendChild(script);
             });
         } else {
             this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
