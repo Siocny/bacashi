@@ -1974,30 +1974,49 @@ function closeCosConfigModal() {
 
 // 保存 COS 配置
 function saveCosConfig() {
-    const bucket = document.getElementById('cos-bucket').value.trim();
-    const region = document.getElementById('cos-region').value;
-    const secretId = document.getElementById('cos-secret-id').value.trim();
-    const secretKey = document.getElementById('cos-secret-key').value.trim();
+    console.log('saveCosConfig 被调用');
+
+    const bucketInput = document.getElementById('cos-bucket');
+    const regionInput = document.getElementById('cos-region');
+    const secretIdInput = document.getElementById('cos-secret-id');
+    const secretKeyInput = document.getElementById('cos-secret-key');
+
+    const bucket = bucketInput.value.trim();
+    const region = regionInput.value;
+    const secretId = secretIdInput.value.trim();
+    const secretKey = secretKeyInput.value.trim();
+
+    console.log('输入值:', { bucket, region, secretId, secretKey: secretKey ? '***' : '' });
 
     if (!bucket) {
         showToast('请输入存储桶名称', 'warning');
+        bucketInput.focus();
         return;
     }
 
     if (!secretId || !secretKey) {
         showToast('请输入密钥 ID 和密钥 Key', 'warning');
+        if (!secretId) secretIdInput.focus();
+        else secretKeyInput.focus();
         return;
     }
 
-    API.cos.saveConfig({
-        bucket,
-        region,
-        secretId,
-        secretKey
-    });
+    try {
+        API.cos.saveConfig({
+            bucket,
+            region,
+            secretId,
+            secretKey
+        });
 
-    showToast('COS 配置保存成功！', 'success');
-    closeCosConfigModal();
+        showToast('COS 配置保存成功！', 'success');
+        closeCosConfigModal();
+
+        console.log('COS 配置已保存');
+    } catch (err) {
+        console.error('保存 COS 配置失败:', err);
+        showToast('保存失败：' + err.message, 'error');
+    }
 }
 
 // 点击弹窗外部关闭
