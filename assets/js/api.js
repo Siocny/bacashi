@@ -809,6 +809,7 @@ const API = {
                     // 使用 XMLHttpRequest 上传
                     const xhr = new XMLHttpRequest();
                     xhr.open('PUT', url, true);
+                    xhr.timeout = 300000; // 5 分钟超时
 
                     // 设置必要的请求头
                     xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
@@ -839,9 +840,6 @@ const API = {
                 }).catch(err => {
                     reject(new Error('签名生成失败：' + err.message));
                 });
-
-                // 设置超时（5 分钟）
-                xhr.timeout = 300000;
             });
         }
     }
