@@ -54,8 +54,8 @@ const SupabaseClient = {
                 const script = document.createElement('script');
                 // 使用多个 CDN 源，提高加载成功率
                 const cdnSources = [
-                    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
                     'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js',
+                    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
                     'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
                 ];
 
