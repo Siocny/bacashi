@@ -370,26 +370,32 @@ const API = {
         localStorage.setItem(key, JSON.stringify(data));
         console.log(`数据已保存到本地：${key}`);
 
-        // 如果在线且 Supabase 可用，同步到云端
+        // 如果在线且 Supabase 可用，异步同步到云端（不阻塞）
         if (this.isOnline && this.supabaseReady) {
-            try {
-                const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
-                if (success) {
-                    console.log(`✅ 数据已同步到云端：${key}`);
-                } else {
-                    console.warn('⚠️ 云端同步失败，数据仅保存在本地');
+            // 使用 setTimeout 异步执行，不阻塞主线程
+            setTimeout(async () => {
+                try {
+                    const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
+                    if (success) {
+                        console.log(`✅ 数据已同步到云端：${key}`);
+                    } else {
+                        console.warn(`⚠️ 云端同步失败，数据仅保存在本地：${key}`);
+                    }
+                } catch (err) {
+                    console.error(`❌ 云端同步错误：${key}`, err.message);
                 }
-            } catch (err) {
-                console.error('❌ 云端同步错误:', err);
-            }
+            }, 0);
         } else {
             if (!this.isOnline) {
-                console.warn('⚠️ 网络离线，数据仅保存在本地');
+                console.warn(`⚠️ 网络离线，数据仅保存在本地：${key}`);
             }
             if (!this.supabaseReady) {
-                console.warn('⚠️ Supabase 未就绪，数据仅保存在本地');
+                console.warn(`⚠️ Supabase 未就绪，数据仅保存在本地：${key}`);
             }
         }
+
+        // 立即返回，不等待云端同步
+        return Promise.resolve();
     },
 
     // 读取数据
