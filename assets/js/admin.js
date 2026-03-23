@@ -1623,7 +1623,20 @@ document.getElementById('batch-delete-messages-btn')?.addEventListener('click', 
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 初始化 API 数据（确保 timeline 等数据存在）
-    await API.init();
+    // 使用 Promise.race 添加超时，避免阻塞页面
+    const initPromise = API.init().catch(err => {
+        console.error('API 初始化失败:', err);
+    });
+
+    // 最多等待 5 秒，超时后继续执行
+    const timeoutPromise = new Promise(resolve =>
+        setTimeout(() => {
+            console.warn('API 初始化超时，继续加载页面');
+            resolve();
+        }, 5000)
+    );
+
+    await Promise.race([initPromise, timeoutPromise]);
 
     checkAuth();
     initRememberMe();

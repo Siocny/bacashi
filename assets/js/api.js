@@ -68,13 +68,21 @@ const SupabaseClient = {
                     script.src = cdnSources[index];
                     console.log(`尝试从 ${cdnSources[index]} 加载 Supabase SDK...`);
 
+                    // 设置超时（10 秒）
+                    const timeout = setTimeout(() => {
+                        console.warn(`CDN 源超时：${cdnSources[index]}`);
+                        script.onerror && script.onerror();
+                    }, 10000);
+
                     script.onload = () => {
+                        clearTimeout(timeout);
                         this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
                         console.log('✅ Supabase SDK 已加载 from:', cdnSources[index]);
                         resolve();
                     };
 
                     script.onerror = () => {
+                        clearTimeout(timeout);
                         console.warn(`CDN 源失败：${cdnSources[index]}`);
                         this.retryCount++;
                         loadFromSource(index + 1);
