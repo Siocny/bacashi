@@ -812,11 +812,6 @@ const API = {
                 const signTime = `${now};${exp}`;
 
                 // 按照腾讯云 COS 签名算法 v5
-                // 1. 构造 StringToSign: sha1\n<signTime>\n<HttpSha1>
-                // 2. HttpSha1 = sha1(FormatString)
-                // 3. SignKey = hmac_sha1(secretKey, signTime)
-                // 4. Signature = hmac_sha1(SignKey, StringToSign)
-
                 // FormatString = <Method>\n<URI>\n<Query>\n<Headers>\n
                 const method = 'put';
                 const uri = resource;
@@ -838,8 +833,12 @@ const API = {
                     return generateHmacSignature(signTime, COS_CONFIG.secretKey).then(signKey => {
                         console.log('SignKey:', signKey);
 
-                        // 计算 Signature = hmac_sha1(SignKey, StringToSign)
-                        return generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
+                        // 计算 Signature = hmac_sha1(SignKey, StringToSign) - 注意这里要用 SignKey 而不是 secretKey
+                        // 需要将 SignKey 从 hex 转回字节数组
+                        const signKeyBytes = new Uint8Array(signKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+
+                        // 使用原生 Web Crypto API 进行 HMAC-SHA1 签名
+                        return signWithKey(stringToSign, signKeyBytes).then(signature => {
                             const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
                             console.log('签名:', signature);
@@ -895,6 +894,37 @@ function generateHmacSignature(stringToSign, secretKey) {
         window.crypto.subtle.importKey(
             'raw',
             keyData,
+            { name: 'HMAC', hash: 'SHA-1' },
+            false,
+            ['sign']
+        ).then(key => {
+            return window.crypto.subtle.sign('HMAC', key, data);
+        }).then(signature => {
+            // 将签名转换为 hex 字符串
+            const hex = Array.from(new Uint8Array(signature))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            resolve(hex);
+        }).catch(err => {
+            console.error('签名生成错误:', err);
+            reject(err);
+        });
+    });
+}
+
+// 使用密钥字节数组进行 HMAC-SHA1 签名
+function signWithKey(stringToSign, keyBytes) {
+    return new Promise((resolve, reject) => {
+        if (!window.crypto || !window.crypto.subtle) {
+            reject(new Error('浏览器不支持 Web Crypto API'));
+            return;
+        }
+
+        const data = new TextEncoder().encode(stringToSign);
+
+        window.crypto.subtle.importKey(
+            'raw',
+            keyBytes,
             { name: 'HMAC', hash: 'SHA-1' },
             false,
             ['sign']
