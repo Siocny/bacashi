@@ -56,15 +56,15 @@ const SupabaseClient = {
         if (typeof supabase === 'undefined') {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                // 使用单个 CDN 源（快速失败）
+                // 使用单个 CDN 源
                 script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
                 console.log('加载 Supabase SDK...');
 
-                // 设置超时（5 秒）
+                // 设置超时（10 秒）
                 const timeout = setTimeout(() => {
                     console.warn('Supabase SDK 加载超时，将仅使用本地存储');
                     script.onerror && script.onerror();
-                }, 5000);
+                }, 10000);
 
                 script.onload = () => {
                     clearTimeout(timeout);
@@ -365,15 +365,14 @@ const API = {
     },
 
     // 保存数据到云端和本地
-    async saveData(key, data, table = 'brand_data') {
+    async saveData(key, data, table = 'brand_data', waitForSync = false) {
         // 总是先保存到本地
         localStorage.setItem(key, JSON.stringify(data));
         console.log(`数据已保存到本地：${key}`);
 
-        // 如果在线且 Supabase 可用，异步同步到云端（不阻塞）
+        // 如果在线且 Supabase 可用，同步到云端
         if (this.isOnline && this.supabaseReady) {
-            // 使用 setTimeout 异步执行，不阻塞主线程
-            setTimeout(async () => {
+            const syncPromise = (async () => {
                 try {
                     const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
                     if (success) {
@@ -381,10 +380,17 @@ const API = {
                     } else {
                         console.warn(`⚠️ 云端同步失败，数据仅保存在本地：${key}`);
                     }
+                    return success;
                 } catch (err) {
                     console.error(`❌ 云端同步错误：${key}`, err.message);
+                    return false;
                 }
-            }, 0);
+            })();
+
+            // 如果需要等待同步，则等待完成
+            if (waitForSync) {
+                await syncPromise;
+            }
         } else {
             if (!this.isOnline) {
                 console.warn(`⚠️ 网络离线，数据仅保存在本地：${key}`);
@@ -393,9 +399,35 @@ const API = {
                 console.warn(`⚠️ Supabase 未就绪，数据仅保存在本地：${key}`);
             }
         }
+    },
 
-        // 立即返回，不等待云端同步
-        return Promise.resolve();
+    // 强制同步所有数据到云端（用于保存后确保同步完成）
+    async forceSyncData() {
+        if (!this.isOnline || !this.supabaseReady) {
+            console.warn('无法同步：网络离线或 Supabase 未就绪');
+            return false;
+        }
+
+        try {
+            // 同步品牌数据
+            const brandData = this.getData('brandData');
+            if (brandData) {
+                await SupabaseClient.saveData('brand_data', 'main', brandData);
+                console.log('✅ 品牌数据已同步到云端');
+            }
+
+            // 同步 bacashi 数据
+            const bacashiData = this.getData('bacashiData');
+            if (bacashiData) {
+                await SupabaseClient.saveData('bacashi_data', 'main', bacashiData);
+                console.log('✅ BACASHI 数据已同步到云端');
+            }
+
+            return true;
+        } catch (err) {
+            console.error('❌ 同步失败:', err);
+            return false;
+        }
     },
 
     // 读取数据

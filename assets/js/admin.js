@@ -995,6 +995,10 @@ document.getElementById('product-form').addEventListener('submit', async functio
             await API.products.update(parseInt(id), productData);
         }
 
+        // 强制同步数据到云端，确保其他设备能看到
+        showToast('正在同步到云端...', 'info');
+        await API.forceSyncData();
+
         showToast('产品已更新！', 'success');
         addActivity('更新产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
     } else {
@@ -1004,6 +1008,9 @@ document.getElementById('product-form').addEventListener('submit', async functio
         } else {
             await API.products.add(productData);
         }
+        // 强制同步数据到云端，确保其他设备能看到
+        showToast('正在同步到云端...', 'info');
+        await API.forceSyncData();
         showToast('产品已添加！', 'success');
         addActivity('添加产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
     }
@@ -1758,6 +1765,9 @@ function filterByCategorySelect(value) {
 
 // 按产品类型筛选
 function filterByProductTypeSelect(value) {
+    // 设置全局产品类型筛选变量
+    window.currentProductTypeFilter = value || null;
+
     if (!value) {
         // 清空筛选
         const allCategoryBtn = document.querySelector('.category-btn[data-category="all"]');
@@ -1768,22 +1778,106 @@ function filterByProductTypeSelect(value) {
         return;
     }
 
-    // 先切换到车用电子类别
+    // 先切换到车用电子类别（如果当前不是）
     const categoryBtn = document.querySelector('.category-btn[data-category="车用电子"]');
     if (categoryBtn) {
         categoryBtn.click();
     }
 
-    // 再切换子类型
-    const subtypeBtn = document.querySelector(`.subcategory-btn[data-subcategory="${value}"]`);
-    if (subtypeBtn) {
-        subtypeBtn.click();
+    // 直接按产品类型过滤，不依赖子类型按钮
+    let allProducts = [...API.products.getAll(), ...API.bacashi.products.getAll()];
+    const filtered = allProducts.filter(p => p.productType === value);
+
+    if (filtered.length > 0) {
+        // 有匹配的产品，直接显示
+        displayFilteredProducts(filtered);
     } else {
-        // 如果没有子类型按钮，使用搜索
-        document.getElementById('product-search').value = value;
-        currentPage = 1;
-        loadProductsTable();
+        // 没有匹配的产品，显示空状态
+        document.getElementById('products-table').innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无产品数据</p></div>';
+        document.getElementById('products-pagination').innerHTML = '';
     }
+}
+
+// 显示筛选后的产品
+function displayFilteredProducts(products) {
+    const container = document.getElementById('products-table');
+    const pagination = document.getElementById('products-pagination');
+
+    if (!products || products.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无产品数据</p></div>';
+        if (pagination) pagination.innerHTML = '';
+        return;
+    }
+
+    // 分页
+    const totalPages = Math.ceil(products.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
+
+    container.innerHTML = `
+        <div class="table-header">
+            <span class="checkbox-cell"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></span>
+            <span>ID</span>
+            <span class="header-name">
+                产品名称
+                <select id="header-filter-name" class="header-filter" onchange="filterByNameSelect(this.value)">
+                    <option value="">全部</option>
+                </select>
+            </span>
+            <span class="header-brand">
+                品牌
+                <select id="header-filter-brand" class="header-filter" onchange="filterByBrandSelect(this.value)">
+                    <option value="">全部</option>
+                    <option value="cafele">CAFELE</option>
+                    <option value="bacashi">BACASHI</option>
+                </select>
+            </span>
+            <span class="header-category">
+                类别
+                <select id="header-filter-category" class="header-filter" onchange="filterByCategorySelect(this.value)">
+                    <option value="">全部</option>
+                </select>
+            </span>
+            <span class="header-type">
+                产品类型
+                <select id="header-filter-type" class="header-filter" onchange="filterByProductTypeSelect(this.value)">
+                    <option value="">全部</option>
+                </select>
+            </span>
+            <span class="table-actions-header">操作</span>
+        </div>
+    ` + paginatedProducts.sort((a, b) => a.sort - b.sort).map(product => `
+        <div class="table-row ${selectedProducts.includes(product.id) ? 'selected' : ''}" data-id="${product.id}">
+            <span class="checkbox-cell"><input type="checkbox" class="product-checkbox" value="${product.id}" onchange="toggleProductSelection(${product.id})"></span>
+            <span>${product.id}</span>
+            <span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    ${product.image ? `<img src="${product.image}" class="table-image" alt="${product.name}">` : ''}
+                    <span>${product.name}</span>
+                </div>
+            </span>
+            <span><span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: ${product.brand === 'bacashi' ? '#fef3c7' : '#dbeafe'}; color: ${product.brand === 'bacashi' ? '#92400e' : '#1e3a8a'};">${product.brand === 'bacashi' ? 'BACASHI' : 'CAFELE'}</span></span>
+            <span>${product.category}</span>
+            <span class="product-type">${getProductTypeName(product.productType)}</span>
+            <span class="table-actions">
+                <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </span>
+        </div>
+    `).join('');
+
+    // 更新分页
+    updatePagination(products.length, totalPages);
+
+    // 更新批量删除按钮状态
+    updateBatchDeleteButton();
+
+    // 更新表头筛选下拉框
+    updateHeaderFilters();
 }
 
 // ==================== 留言管理功能 ====================
