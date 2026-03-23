@@ -828,37 +828,46 @@ const API = {
                     const stringToSign = `sha1\n${signTime}\n${httpSha1}`;
                     console.log('StringToSign:', stringToSign);
 
-                    // 直接用 secretKey 签名 stringToSign（跳过 SignKey 步骤）
-                    // 注意：腾讯云的签名实际上是用 secretKey 直接签名 StringToSign
-                    return generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
-                        const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
+                    // 腾讯云签名算法：
+                    // 1. SignKey = hmac_sha1(secretKey, signTime)
+                    // 2. Signature = hmac_sha1(SignKey, StringToSign)
+                    return generateHmacSignature(signTime, COS_CONFIG.secretKey).then(signKeyHex => {
+                        console.log('SignKey(hex):', signKeyHex);
 
-                        console.log('签名:', signature);
-                        console.log('Authorization:', authorization.substring(0, 80) + '...');
+                        // 将 SignKey 从 hex 转换为字节数组
+                        const signKeyBytes = Uint8Array.from(signKeyHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
 
-                        // 使用 fetch 上传
-                        fetch(url, {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': authorization,
-                                'Content-Type': file.type || 'application/octet-stream'
-                            },
-                            body: file
-                        }).then(response => {
-                            console.log('响应状态:', response.status, response.statusText);
+                        // 使用 SignKey 进行签名
+                        return signWithKey(stringToSign, signKeyBytes).then(signature => {
+                            const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
-                            if (response.ok || response.status === 200) {
-                                console.log('上传成功！');
-                                resolve(url);
-                            } else {
-                                return response.text().then(text => {
-                                    console.error('上传失败:', response.status, text);
-                                    throw new Error(`HTTP ${response.status}: ${text}`);
-                                });
-                            }
-                        }).catch(fetchErr => {
-                            console.error('Fetch 错误详情:', fetchErr);
-                            reject(new Error('上传失败：' + fetchErr.message));
+                            console.log('签名:', signature);
+                            console.log('Authorization:', authorization.substring(0, 80) + '...');
+
+                            // 使用 fetch 上传
+                            fetch(url, {
+                                method: 'PUT',
+                                headers: {
+                                    'Authorization': authorization,
+                                    'Content-Type': file.type || 'application/octet-stream'
+                                },
+                                body: file
+                            }).then(response => {
+                                console.log('响应状态:', response.status, response.statusText);
+
+                                if (response.ok || response.status === 200) {
+                                    console.log('上传成功！');
+                                    resolve(url);
+                                } else {
+                                    return response.text().then(text => {
+                                        console.error('上传失败:', response.status, text);
+                                        throw new Error(`HTTP ${response.status}: ${text}`);
+                                    });
+                                }
+                            }).catch(fetchErr => {
+                                console.error('Fetch 错误详情:', fetchErr);
+                                reject(new Error('上传失败：' + fetchErr.message));
+                            });
                         });
                     });
                 }).catch(err => {
