@@ -1036,22 +1036,27 @@ body {
     justify-content: center !important;
 }
 
-.filter-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 6px;
+.header-filter {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    color: var(--text-light);
+    font-size: 11px;
+    background: var(--bg-light);
+    color: var(--text-color);
+    cursor: pointer;
+    outline: none;
     transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-width: 80px;
 }
 
-.filter-icon:hover {
-    background: rgba(26, 58, 92, 0.1);
-    color: var(--primary-color);
+.header-filter:hover {
+    border-color: var(--primary-color);
+    background: white;
+}
+
+.header-filter:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(26, 58, 92, 0.1);
 }
 
 .table-row {
