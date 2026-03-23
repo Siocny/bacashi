@@ -500,7 +500,7 @@ function loadProductsTable() {
             <span>${product.id}</span>
             <span>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    ${product.image ? `<img src="${product.image}" class="table-image" alt="${product.name}">` : ''}
+                    ${product.image ? `<img src="${normalizeImagePath(product.image)}" class="table-image" alt="${product.name}">` : ''}
                     <span>${product.name}</span>
                 </div>
             </span>
@@ -748,8 +748,9 @@ function openProductModal(product = null) {
 // 图片预览
 function updateImagePreview(url) {
     const preview = document.getElementById('image-preview');
-    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
-        preview.innerHTML = `<img src="${url}" alt="预览">`;
+    const normalizedUrl = normalizeImagePath(url);
+    if (url && (normalizedUrl.startsWith('http') || normalizedUrl.startsWith('data:'))) {
+        preview.innerHTML = `<img src="${normalizedUrl}" alt="预览">`;
         preview.classList.add('has-image');
     } else {
         preview.innerHTML = '<i class="fas fa-image"></i><span>暂无图片</span>';

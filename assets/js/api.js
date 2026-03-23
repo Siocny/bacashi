@@ -1,11 +1,29 @@
 // API 和数据管理模块 - 集成 Supabase 云同步
 // 使用 Supabase 作为后端存储，localStorage 作为本地缓存
 
+// 网站基础 URL（用于处理图片路径）
+const BASE_URL = window.location.protocol + '//' + window.location.host;
+
 // Supabase 配置
 const SUPABASE_CONFIG = {
     url: 'https://twwxiucjojfujxqfaddy.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3d3hpdWNqb2pmdWp4cWZhZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTE0NDgsImV4cCI6MjA4OTQ2NzQ0OH0.AXYrS6BgvJqEkXBp-pN613FSXetm4iB_2O_SHSxTRFc'
 };
+
+// 转换图片路径为完整 URL
+function normalizeImagePath(imagePath) {
+    if (!imagePath) return 'https://via.placeholder.com/400x300?text=NO+IMAGE';
+    // 如果已经是完整 URL，直接返回
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('//')) {
+        return imagePath;
+    }
+    // 相对路径转换为完整 URL
+    if (imagePath.startsWith('assets/')) {
+        return BASE_URL + '/' + imagePath;
+    }
+    // 其他情况，尝试添加当前域名
+    return BASE_URL + '/' + imagePath;
+}
 
 // 简单的 Supabase 客户端（无需额外库）
 const SupabaseClient = {
@@ -485,6 +503,14 @@ const API = {
         getAll() {
             return this.get();
         },
+        // 获取所有产品（带完整图片 URL）
+        getAllWithImageUrls() {
+            const products = this.get();
+            return products.map(p => ({
+                ...p,
+                image: normalizeImagePath(p.image)
+            }));
+        },
         getCategories() {
             const products = this.get();
             const categories = [...new Set(products.map(p => p.category))];
@@ -639,6 +665,14 @@ const API = {
             },
             getAll() {
                 return this.get();
+            },
+            // 获取所有产品（带完整图片 URL）
+            getAllWithImageUrls() {
+                const products = this.get();
+                return products.map(p => ({
+                    ...p,
+                    image: normalizeImagePath(p.image)
+                }));
             },
             getCategories() {
                 const products = this.get();

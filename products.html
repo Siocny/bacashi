@@ -198,9 +198,9 @@
             let products = [];
 
             if (currentBrand === 'cafele') {
-                products = API.products.getAll();
+                products = API.products.getAllWithImageUrls();
             } else {
-                products = API.bacashi.products.getAll();
+                products = API.bacashi.products.getAllWithImageUrls();
             }
 
             // 应用分类筛选
