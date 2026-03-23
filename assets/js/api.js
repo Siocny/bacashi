@@ -845,32 +845,36 @@ const API = {
     }
 };
 
-// 生成 HMAC-SHA1 签名（当 CryptoJS 不可用时）
+// 生成 HMAC-SHA1 签名（腾讯云 COS 格式）
 function generateHmacSignature(plainText, secretKey) {
     return new Promise((resolve, reject) => {
-        // 尝试使用 Web Crypto API
-        if (window.crypto && window.crypto.subtle) {
-            const encoder = new TextEncoder();
-            const keyData = encoder.encode(secretKey);
-            const data = encoder.encode(plainText);
-
-            window.crypto.subtle.importKey(
-                'raw',
-                keyData,
-                { name: 'HMAC', hash: 'SHA-1' },
-                false,
-                ['sign']
-            ).then(key => {
-                return window.crypto.subtle.sign('HMAC', key, data);
-            }).then(signature => {
-                const base64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
-                resolve(base64);
-            }).catch(err => {
-                reject(err);
-            });
-        } else {
-            reject(new Error('不支持的加密 API'));
+        if (!window.crypto || !window.crypto.subtle) {
+            reject(new Error('浏览器不支持 Web Crypto API'));
+            return;
         }
+
+        const encoder = new TextEncoder();
+        const keyData = encoder.encode(secretKey);
+        const data = encoder.encode(plainText);
+
+        window.crypto.subtle.importKey(
+            'raw',
+            keyData,
+            { name: 'HMAC', hash: 'SHA-1' },
+            false,
+            ['sign']
+        ).then(key => {
+            return window.crypto.subtle.sign('HMAC', key, data);
+        }).then(signature => {
+            // 将签名转换为 hex 字符串
+            const hex = Array.from(new Uint8Array(signature))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            resolve(hex);
+        }).catch(err => {
+            console.error('签名生成错误:', err);
+            reject(err);
+        });
     });
 }
 
