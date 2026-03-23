@@ -30,7 +30,7 @@ function _saveCosConfigToLocal(config) {
 
 // 转换图片路径为完整 URL
 function normalizeImagePath(imagePath) {
-    if (!imagePath) return 'https://via.placeholder.com/400x300?text=NO+IMAGE';
+    if (!imagePath) return 'https://img.alicdn.com/imgextra/i4/O1CN01Z7xOKx1MqQv3QZ8xZ_!!6000000001481-0-tps-400-300.jpg';
     // 如果已经是完整 URL 或 Base64 数据，直接返回
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('//') || imagePath.startsWith('data:')) {
         return imagePath;
