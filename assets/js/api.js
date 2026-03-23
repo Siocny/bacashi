@@ -779,7 +779,7 @@ const API = {
         saveConfig(config) {
             _saveCosConfigToLocal(config);
         },
-        // 上传图片到 COS（使用 PUT 请求）
+        // 上传图片到 COS（使用 POST 表单上传）
         async upload(file) {
             return new Promise((resolve, reject) => {
                 if (!COS_CONFIG.bucket || !COS_CONFIG.region || !COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
@@ -796,79 +796,75 @@ const API = {
                 const bucket = COS_CONFIG.bucket;
                 const region = COS_CONFIG.region;
                 const host = `${bucket}.cos.${region}.myqcloud.com`;
-                const url = `https://${host}/${filename}`;
-                const resource = `/${filename}`;
+                const url = `https://${host}/`;
 
                 console.log('=== COS 上传开始 ===');
                 console.log('Bucket:', bucket);
                 console.log('Region:', region);
-                console.log('Host:', host);
                 console.log('URL:', url);
                 console.log('文件:', file.name, '大小:', file.size);
+                console.log('文件名:', filename);
 
                 // 生成签名时间
                 const now = Math.floor(Date.now() / 1000);
                 const exp = now + 3600;
                 const signTime = `${now};${exp}`;
 
-                // FormatString = <Method>\n<URI>\n<Query>\n<Headers>\n
-                const method = 'put';
-                const uri = resource;
-                const query = '';
-                const headers = `host=${host}\n`;
-                const formatString = `${method}\n${uri}\n${query}\n${headers}`;
+                // 确保 secretKey 没有空格
+                const secretKey = COS_CONFIG.secretKey.trim();
+                const secretId = COS_CONFIG.secretId.trim();
 
-                console.log('FormatString:', formatString);
+                // 构造 policy
+                const policy = {
+                    expiration: new Date(exp * 1000).toISOString(),
+                    conditions: [
+                        {'bucket': bucket},
+                        ['eq', '$key', filename],
+                        ['eq', '$Content-Type', file.type || 'application/octet-stream']
+                    ]
+                };
 
-                // 计算请求体的 SHA1 哈希
-                sha1Hex(formatString).then(httpSha1 => {
-                    console.log('HttpSha1:', httpSha1);
+                const policyBase64 = btoa(JSON.stringify(policy));
+                console.log('Policy:', policyBase64);
 
-                    // 构造 StringToSign
-                    const stringToSign = `sha1\n${signTime}\n${httpSha1}`;
-                    console.log('StringToSign:', stringToSign);
+                // 计算签名
+                generateHmacSignature(policyBase64, secretKey).then(signature => {
+                    console.log('签名:', signature);
 
-                    // 腾讯云签名算法：
-                    // 1. SignKey = hmac_sha1(secretKey, signTime)
-                    // 2. Signature = hmac_sha1(SignKey, StringToSign)
-                    return generateHmacSignature(signTime, COS_CONFIG.secretKey).then(signKeyHex => {
-                        console.log('SignKey(hex):', signKeyHex);
+                    // 使用 FormData 上传
+                    const formData = new FormData();
+                    formData.append('key', filename);
+                    formData.append('Content-Type', file.type || 'application/octet-stream');
+                    formData.append('q-ak', secretId);
+                    formData.append('q-sign-algorithm', 'sha1');
+                    formData.append('q-sign-time', signTime);
+                    formData.append('q-key-time', signTime);
+                    formData.append('q-header-list', '');
+                    formData.append('q-url-param-list', '');
+                    formData.append('q-signature', signature);
+                    formData.append('policy', policyBase64);
+                    formData.append('file', file);
 
-                        // 将 SignKey 从 hex 转换为字节数组
-                        const signKeyBytes = Uint8Array.from(signKeyHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+                    // 使用 fetch 上传
+                    fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => {
+                        console.log('响应状态:', response.status, response.statusText);
 
-                        // 使用 SignKey 进行签名
-                        return signWithKey(stringToSign, signKeyBytes).then(signature => {
-                            const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
-
-                            console.log('签名:', signature);
-                            console.log('Authorization:', authorization.substring(0, 80) + '...');
-
-                            // 使用 fetch 上传
-                            fetch(url, {
-                                method: 'PUT',
-                                headers: {
-                                    'Authorization': authorization,
-                                    'Content-Type': file.type || 'application/octet-stream'
-                                },
-                                body: file
-                            }).then(response => {
-                                console.log('响应状态:', response.status, response.statusText);
-
-                                if (response.ok || response.status === 200) {
-                                    console.log('上传成功！');
-                                    resolve(url);
-                                } else {
-                                    return response.text().then(text => {
-                                        console.error('上传失败:', response.status, text);
-                                        throw new Error(`HTTP ${response.status}: ${text}`);
-                                    });
-                                }
-                            }).catch(fetchErr => {
-                                console.error('Fetch 错误详情:', fetchErr);
-                                reject(new Error('上传失败：' + fetchErr.message));
+                        if (response.ok || response.status === 200 || response.status === 204) {
+                            const imageUrl = `https://${host}/${filename}`;
+                            console.log('上传成功！', imageUrl);
+                            resolve(imageUrl);
+                        } else {
+                            return response.text().then(text => {
+                                console.error('上传失败:', response.status, text);
+                                throw new Error(`HTTP ${response.status}: ${text}`);
                             });
-                        });
+                        }
+                    }).catch(fetchErr => {
+                        console.error('Fetch 错误详情:', fetchErr);
+                        reject(new Error('上传失败：' + fetchErr.message));
                     });
                 }).catch(err => {
                     console.error('签名生成失败:', err);
