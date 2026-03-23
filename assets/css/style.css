@@ -3407,7 +3407,7 @@ section {
         display: flex;
         justify-content: flex-start;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 15px;
         font-size: 12px;
         align-items: baseline;
     }
@@ -3415,6 +3415,13 @@ section {
     .footer-contact p {
         margin: 0;
         white-space: nowrap;
+        display: flex;
+        align-items: baseline;
+    }
+
+    .footer-contact p:first-child::after {
+        content: '';
+        display: none;
     }
 
     /* 移动端隐藏联系方式中间的竖线 */
