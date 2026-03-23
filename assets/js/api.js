@@ -838,15 +838,35 @@ function loadCosSdk() {
             return;
         }
         const script = document.createElement('script');
-        script.src = 'assets/js/cos-js-sdk-v5.min.js';
-        script.onload = () => {
-            console.log('✅ COS SDK 已从本地加载');
-            resolve(COS);
+        // 尝试多个可能路径
+        const possiblePaths = [
+            'assets/js/cos-js-sdk-v5.min.js',
+            '../assets/js/cos-js-sdk-v5.min.js',
+            './assets/js/cos-js-sdk-v5.min.js'
+        ];
+
+        let currentIndex = 0;
+
+        const loadFromPath = (index) => {
+            if (index >= possiblePaths.length) {
+                reject(new Error('COS SDK 文件不存在，请检查路径'));
+                return;
+            }
+            const path = possiblePaths[index];
+            script.src = path;
+            console.log('尝试加载 COS SDK from:', path);
+            script.onload = () => {
+                console.log('✅ COS SDK 已从本地加载:', path);
+                resolve(COS);
+            };
+            script.onerror = () => {
+                console.warn('COS SDK 加载失败:', path);
+                loadFromPath(index + 1);
+            };
+            document.head.appendChild(script);
         };
-        script.onerror = () => {
-            reject(new Error('COS SDK 加载失败，请检查文件是否存在'));
-        };
-        document.head.appendChild(script);
+
+        loadFromPath(currentIndex);
     });
 }
 
