@@ -13,8 +13,8 @@ const SUPABASE_CONFIG = {
 // 转换图片路径为完整 URL
 function normalizeImagePath(imagePath) {
     if (!imagePath) return 'https://via.placeholder.com/400x300?text=NO+IMAGE';
-    // 如果已经是完整 URL，直接返回
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('//')) {
+    // 如果已经是完整 URL 或 Base64 数据，直接返回
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('//') || imagePath.startsWith('data:')) {
         return imagePath;
     }
     // 相对路径转换为完整 URL
