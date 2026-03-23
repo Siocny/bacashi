@@ -820,7 +820,13 @@ const API = {
                     conditions: [
                         {'bucket': bucket},
                         ['eq', '$key', filename],
-                        ['eq', '$Content-Type', file.type || 'application/octet-stream']
+                        ['eq', '$Content-Type', file.type || 'application/octet-stream'],
+                        ['eq', '$q-ak', secretId],
+                        ['eq', '$q-sign-algorithm', 'sha1'],
+                        ['eq', '$q-sign-time', signTime],
+                        ['eq', '$q-key-time', signTime],
+                        ['eq', '$q-header-list', ''],
+                        ['eq', '$q-url-param-list', '']
                     ]
                 };
 
