@@ -797,6 +797,7 @@ const API = {
                 const region = COS_CONFIG.region;
                 const host = `${bucket}.cos.${region}.myqcloud.com`;
                 const url = `https://${host}/${filename}`;
+                const resource = `/${filename}`;
 
                 console.log('=== COS 上传开始 ===');
                 console.log('Bucket:', bucket);
@@ -808,17 +809,31 @@ const API = {
                 // 生成签名时间
                 const now = Math.floor(Date.now() / 1000);
                 const exp = now + 3600;
+                const signTime = `${now};${exp}`;
 
-                // 构造待签名字符串（COS v5 签名格式）
-                const signKey = `${COS_CONFIG.secretId}${now}${exp}`;
+                // 构造待签名字符串（按照 COS v5 签名文档）
+                // Format: PUT\n/resource\n<query>\n<headers>\n
+                const method = 'put';
+                const uri = resource;
+                const query = '';
+                const headers = `host=${host}\n`;
 
-                generateHmacSignature(signKey, COS_CONFIG.secretKey).then(signature => {
-                    const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${now};${exp}&q-key-time=${now};${exp}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
+                // 计算请求体的 sha1 哈希（空请求体）
+                const sha1Hash = '';
+
+                // 拼接签名字符串
+                const stringToSign = `${method}\n${uri}\n${query}\n${headers}${sha1Hash}`;
+
+                console.log('待签名字符串:', stringToSign);
+
+                // 使用 HMAC-SHA1 签名
+                generateHmacSignature(stringToSign, COS_CONFIG.secretKey).then(signature => {
+                    const authorization = `q-sign-algorithm=sha1&q-ak=${COS_CONFIG.secretId}&q-sign-time=${signTime}&q-key-time=${signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature}`;
 
                     console.log('签名:', signature);
                     console.log('Authorization:', authorization.substring(0, 80) + '...');
 
-                    // 使用 fetch 上传（注意：不能设置 Host 头，浏览器会自动添加）
+                    // 使用 fetch 上传
                     fetch(url, {
                         method: 'PUT',
                         headers: {
@@ -828,7 +843,6 @@ const API = {
                         body: file
                     }).then(response => {
                         console.log('响应状态:', response.status, response.statusText);
-                        console.log('响应头:', Object.fromEntries(response.headers.entries()));
 
                         if (response.ok || response.status === 200) {
                             console.log('上传成功！');
