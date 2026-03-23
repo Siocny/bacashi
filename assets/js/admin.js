@@ -466,29 +466,29 @@ function loadProductsTable() {
         <div class="table-header">
             <span class="checkbox-cell"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></span>
             <span>ID</span>
-            <span>
+            <span class="header-name">
                 产品名称
-                <select class="header-filter" onchange="filterByNameSelect(this.value)">
+                <select id="header-filter-name" class="header-filter" onchange="filterByNameSelect(this.value)">
                     <option value="">全部</option>
                 </select>
             </span>
-            <span>
+            <span class="header-brand">
                 品牌
-                <select class="header-filter" onchange="filterByBrandSelect(this.value)">
+                <select id="header-filter-brand" class="header-filter" onchange="filterByBrandSelect(this.value)">
                     <option value="">全部</option>
                     <option value="cafele">CAFELE</option>
                     <option value="bacashi">BACASHI</option>
                 </select>
             </span>
-            <span>
+            <span class="header-category">
                 类别
-                <select class="header-filter" onchange="filterByCategorySelect(this.value)">
+                <select id="header-filter-category" class="header-filter" onchange="filterByCategorySelect(this.value)">
                     <option value="">全部</option>
                 </select>
             </span>
-            <span>
+            <span class="header-type">
                 产品类型
-                <select class="header-filter" onchange="filterByProductTypeSelect(this.value)">
+                <select id="header-filter-type" class="header-filter" onchange="filterByProductTypeSelect(this.value)">
                     <option value="">全部</option>
                 </select>
             </span>
@@ -1658,15 +1658,15 @@ function updateHeaderFilters() {
     let allProducts = [...API.products.getAll(), ...API.bacashi.products.getAll()];
 
     // 更新产品名称下拉框
-    const nameSelect = document.querySelector('.header-filter:nth-child(2)');
+    const nameSelect = document.getElementById('header-filter-name');
     if (nameSelect) {
-        const names = [...new Set(allProducts.map(p => p.name))];
+        const names = [...new Set(allProducts.map(p => p.name))].sort();
         nameSelect.innerHTML = '<option value="">全部</option>' +
-            names.map(n => `<option value="${n}">${n}</option>`).join('');
+            names.map(n => `<option value="${encodeURIComponent(n)}">${n}</option>`).join('');
     }
 
     // 更新类别下拉框
-    const categorySelect = document.querySelector('.header-filter:nth-child(5)');
+    const categorySelect = document.getElementById('header-filter-category');
     if (categorySelect) {
         const categories = getStoredCategories();
         categorySelect.innerHTML = '<option value="">全部</option>' +
@@ -1674,7 +1674,7 @@ function updateHeaderFilters() {
     }
 
     // 更新产品类型下拉框
-    const typeSelect = document.querySelector('.header-filter:nth-child(6)');
+    const typeSelect = document.getElementById('header-filter-type');
     if (typeSelect) {
         const types = getStoredProductTypes();
         typeSelect.innerHTML = '<option value="">全部</option>' +
@@ -1686,7 +1686,7 @@ function updateHeaderFilters() {
 function filterByNameSelect(value) {
     const searchInput = document.getElementById('product-search');
     if (searchInput) {
-        searchInput.value = value || '';
+        searchInput.value = value ? decodeURIComponent(value) : '';
         currentPage = 1;
         loadProductsTable();
     }
@@ -1694,10 +1694,7 @@ function filterByNameSelect(value) {
 
 // 按品牌筛选
 function filterByBrandSelect(value) {
-    if (!value) {
-        value = 'all';
-    }
-    const btn = document.querySelector(`.brand-filter-btn[data-brand="${value}"]`);
+    const btn = document.querySelector(`.brand-filter-btn[data-brand="${value || 'all'}"]`);
     if (btn) {
         btn.click();
     }
@@ -1708,6 +1705,7 @@ function filterByCategorySelect(value) {
     const filter = document.getElementById('product-filter');
     if (filter) {
         filter.value = value || 'all';
+        filter.dispatchEvent(new Event('change'));
         currentPage = 1;
         loadProductsTable();
     }
