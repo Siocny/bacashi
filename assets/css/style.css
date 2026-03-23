@@ -3374,36 +3374,42 @@ section {
 
     .footer-content {
         grid-template-columns: 1fr;
-        gap: 30px;
+        gap: 25px;
     }
 
     .footer-section {
-        padding: 10px 0;
-        text-align: center;
+        padding: 0;
+        text-align: left;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
     }
 
     .footer-section h4 {
         font-size: 13px;
-        margin-bottom: 12px;
         font-weight: 600;
-        letter-spacing: 1.5px;
+        letter-spacing: 0.5px;
         color: rgba(255,255,255,0.9);
+        white-space: nowrap;
     }
 
     .footer-section p {
         font-size: 12px;
         color: rgba(255,255,255,0.7);
         line-height: 1.8;
-        max-width: 100%;
+        flex: 1;
+        min-width: 200px;
     }
 
     /* 联系方式 - 移动端横向排列 */
     .footer-contact {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         flex-wrap: wrap;
         gap: 10px;
         font-size: 12px;
+        align-items: baseline;
     }
 
     .footer-contact p {
@@ -3425,6 +3431,7 @@ section {
         margin-top: 25px;
         padding-top: 25px;
         font-size: 11px;
+        text-align: center;
     }
 
     /* 关于页面 */
