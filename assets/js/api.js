@@ -58,8 +58,8 @@ const SupabaseClient = {
                 const script = document.createElement('script');
                 // 使用多个 CDN 源，提高加载成功率
                 const cdnSources = [
-                    'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js',
                     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+                    'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js',
                     'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
                 ];
 
@@ -72,11 +72,11 @@ const SupabaseClient = {
                     script.src = cdnSources[index];
                     console.log(`尝试从 ${cdnSources[index]} 加载 Supabase SDK...`);
 
-                    // 设置超时（10 秒）
+                    // 设置超时（15 秒）
                     const timeout = setTimeout(() => {
                         console.warn(`CDN 源超时：${cdnSources[index]}`);
                         script.onerror && script.onerror();
-                    }, 10000);
+                    }, 15000);
 
                     script.onload = () => {
                         clearTimeout(timeout);
@@ -829,6 +829,8 @@ const API = {
                         if (xhr.status === 200) {
                             const etag = xhr.getResponseHeader('ETag');
                             console.log('上传成功:', url, 'ETag:', etag);
+                            console.log('图片访问地址:', url);
+                            console.log('请在浏览器打开此地址验证图片是否可访问');
                             resolve(url);
                         } else {
                             console.error('上传失败:', xhr.status, xhr.responseText);

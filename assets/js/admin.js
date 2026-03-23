@@ -1628,12 +1628,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('API 初始化失败:', err);
     });
 
-    // 最多等待 5 秒，超时后继续执行
+    // 最多等待 15 秒，超时后继续执行（CDN 加载可能需要更长时间）
     const timeoutPromise = new Promise(resolve =>
         setTimeout(() => {
             console.warn('API 初始化超时，继续加载页面');
             resolve();
-        }, 5000)
+        }, 15000)
     );
 
     await Promise.race([initPromise, timeoutPromise]);
