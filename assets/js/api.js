@@ -795,9 +795,9 @@ const API = {
                 // 动态加载 COS SDK
                 if (typeof COS === 'undefined') {
                     const script = document.createElement('script');
-                    script.src = 'https://cdn.bootcdn.net/ajax/libs/cos-js-sdk-v5/1.1.0/cos-js-sdk-v5.min.js';
+                    script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@latest/dist/cos-js-sdk-v5.min.js';
                     script.onload = () => initUpload();
-                    script.onerror = () => reject(new Error('COS SDK 加载失败'));
+                    script.onerror = () => reject(new Error('COS SDK 加载失败，请检查网络连接'));
                     document.head.appendChild(script);
                     return;
                 }
