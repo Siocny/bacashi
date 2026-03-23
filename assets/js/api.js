@@ -837,36 +837,28 @@ function loadCosSdk() {
             resolve(COS);
             return;
         }
-        const script = document.createElement('script');
-        // 尝试多个可能路径
-        const possiblePaths = [
-            'assets/js/cos-js-sdk-v5.min.js',
-            '../assets/js/cos-js-sdk-v5.min.js',
-            './assets/js/cos-js-sdk-v5.min.js'
-        ];
-
-        let currentIndex = 0;
-
-        const loadFromPath = (index) => {
-            if (index >= possiblePaths.length) {
-                reject(new Error('COS SDK 文件不存在，请检查路径'));
-                return;
+        // 获取当前 api.js 的路径，在同一目录下查找 cos-js-sdk-v5.min.js
+        const scripts = document.getElementsByTagName('script');
+        let apiJsPath = '';
+        for (let i = 0; i < scripts.length; i++) {
+            if (scripts[i].src && scripts[i].src.includes('api.js')) {
+                apiJsPath = scripts[i].src.substring(0, scripts[i].src.lastIndexOf('/') + 1);
+                break;
             }
-            const path = possiblePaths[index];
-            script.src = path;
-            console.log('尝试加载 COS SDK from:', path);
-            script.onload = () => {
-                console.log('✅ COS SDK 已从本地加载:', path);
-                resolve(COS);
-            };
-            script.onerror = () => {
-                console.warn('COS SDK 加载失败:', path);
-                loadFromPath(index + 1);
-            };
-            document.head.appendChild(script);
-        };
+        }
 
-        loadFromPath(currentIndex);
+        const script = document.createElement('script');
+        script.src = apiJsPath + 'cos-js-sdk-v5.min.js';
+        console.log('加载 COS SDK from:', script.src);
+        script.onload = () => {
+            console.log('✅ COS SDK 已从本地加载');
+            resolve(COS);
+        };
+        script.onerror = () => {
+            console.error('❌ COS SDK 加载失败:', script.src);
+            reject(new Error('COS SDK 加载失败，请检查文件是否存在'));
+        };
+        document.head.appendChild(script);
     });
 }
 
