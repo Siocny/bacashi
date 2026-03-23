@@ -1765,11 +1765,9 @@ function filterByCategorySelect(value) {
 
 // 按产品类型筛选
 function filterByProductTypeSelect(value) {
-    // 设置全局产品类型筛选变量
-    window.currentProductTypeFilter = value || null;
-
     if (!value) {
         // 清空筛选
+        window.currentProductTypeFilter = null;
         const allCategoryBtn = document.querySelector('.category-btn[data-category="all"]');
         if (allCategoryBtn) allCategoryBtn.click();
         document.getElementById('product-search').value = '';
@@ -1778,24 +1776,18 @@ function filterByProductTypeSelect(value) {
         return;
     }
 
-    // 先切换到车用电子类别（如果当前不是）
-    const categoryBtn = document.querySelector('.category-btn[data-category="车用电子"]');
-    if (categoryBtn) {
-        categoryBtn.click();
-    }
+    // 设置全局产品类型筛选变量
+    window.currentProductTypeFilter = value;
 
-    // 直接按产品类型过滤，不依赖子类型按钮
-    let allProducts = [...API.products.getAll(), ...API.bacashi.products.getAll()];
+    // 直接按产品类型过滤产品
+    let cafeleProducts = API.products.getAll().map(p => ({ ...p, brand: 'cafele' }));
+    let bacashiProducts = API.bacashi.products.getAll().map(p => ({ ...p, brand: 'bacashi' }));
+    let allProducts = [...cafeleProducts, ...bacashiProducts];
+
     const filtered = allProducts.filter(p => p.productType === value);
 
-    if (filtered.length > 0) {
-        // 有匹配的产品，直接显示
-        displayFilteredProducts(filtered);
-    } else {
-        // 没有匹配的产品，显示空状态
-        document.getElementById('products-table').innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无产品数据</p></div>';
-        document.getElementById('products-pagination').innerHTML = '';
-    }
+    // 显示筛选结果
+    displayFilteredProducts(filtered);
 }
 
 // 显示筛选后的产品
