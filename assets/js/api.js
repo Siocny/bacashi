@@ -55,17 +55,20 @@ const SupabaseClient = {
         // 动态加载 Supabase SDK
         if (typeof supabase === 'undefined') {
             return new Promise((resolve, reject) => {
-                // 尝试多个 CDN 源（按优先级）
+                // 优先尝试本地文件
+                const localSrc = 'assets/js/supabase.min.js';
+                // 备用 CDN 源（按优先级）
                 const cdnSources = [
                     'https://cdn.staticfile.org/supabase/2.39.3/supabase.min.js',
                     'https://cdn.bootcdn.net/ajax/libs/supabase/2.39.3/supabase.min.js',
                     'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
                 ];
 
-                let currentSource = 0;
+                let currentSource = -1;
+                let script = null;
 
                 function loadScript(src) {
-                    const script = document.createElement('script');
+                    script = document.createElement('script');
                     script.src = src;
                     console.log(`尝试加载 Supabase SDK: ${src}`);
 
@@ -94,10 +97,11 @@ const SupabaseClient = {
                 // 设置超时（15 秒）
                 const timeout = setTimeout(() => {
                     console.warn('Supabase SDK 加载超时，将仅使用本地存储');
-                    script.onerror && script.onerror();
+                    script && script.onerror && script.onerror();
                 }, 15000);
 
-                loadScript(cdnSources[0]);
+                // 先尝试本地文件
+                loadScript(localSrc);
             });
         } else {
             this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
