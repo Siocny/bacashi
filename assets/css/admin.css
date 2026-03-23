@@ -1012,7 +1012,7 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 40px 60px 2fr 130px 150px 160px 100px;
+    grid-template-columns: 40px 50px 1.5fr 140px 160px 180px 100px;
     padding: 12px 16px;
     background: var(--bg-color);
     font-weight: 600;

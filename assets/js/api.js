@@ -779,17 +779,6 @@ const API = {
         saveConfig(config) {
             _saveCosConfigToLocal(config);
         },
-        // 生成 COS 签名（前端简单签名，仅用于临时上传）
-        generateSignature(key, method = 'put') {
-            const now = Math.floor(Date.now() / 1000);
-            const exp = now + 3600; // 1 小时过期
-            const plainText = `a=${COS_CONFIG.secretId}&k=${now}&e=${exp}&b=${COS_CONFIG.bucket}&f=${key}`;
-
-            // 使用 HMAC-SHA1 签名
-            const hmac = CryptoJS.HMAC(CryptoJS.SHA1, plainText, COS_CONFIG.secretKey);
-            const signature = CryptoJS.enc.Base64.stringify(hmac);
-            return signature;
-        },
         // 上传图片到 COS（使用 PUT 请求）
         async upload(file) {
             return new Promise((resolve, reject) => {
@@ -810,24 +799,19 @@ const API = {
                 console.log('开始上传到 COS:', url);
                 console.log('文件:', file.name, '大小:', file.size);
 
-                // 使用 XMLHttpRequest 上传
-                const xhr = new XMLHttpRequest();
-                xhr.open('PUT', url, true);
-
-                // 设置必要的请求头
-                xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-
-                // 添加 COS 签名（使用临时密钥方式）
+                // 生成 COS 签名
                 const now = Math.floor(Date.now() / 1000);
                 const exp = now + 3600;
                 const plainText = `a=${COS_CONFIG.secretId}&k=${now}&e=${exp}&b=${COS_CONFIG.bucket}&f=${filename}`;
 
-                // 使用 CryptoJS 或原生 crypto 进行签名
-                const signPromise = CryptoJS ?
-                    Promise.resolve(CryptoJS.HMAC(CryptoJS.SHA1, plainText, COS_CONFIG.secretKey).toString(CryptoJS.enc.Base64)) :
-                    generateHmacSignature(plainText, COS_CONFIG.secretKey);
+                // 使用原生 Web Crypto API 生成 HMAC-SHA1 签名
+                generateHmacSignature(plainText, COS_CONFIG.secretKey).then(signature => {
+                    // 使用 XMLHttpRequest 上传
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('PUT', url, true);
 
-                signPromise.then(signature => {
+                    // 设置必要的请求头
+                    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
                     xhr.setRequestHeader('Authorization', signature);
 
                     xhr.onload = function() {
