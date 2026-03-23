@@ -967,7 +967,7 @@ document.getElementById('product-form').addEventListener('submit', async functio
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
         productType: document.getElementById('product-type').value,
-        image: document.getElementById('product-image').value || 'https://img.alicdn.com/imgextra/i4/O1CN01Z7xOKx1MqQv3QZ8xZ_!!6000000001481-0-tps-400-300.jpg',
+        image: document.getElementById('product-image').value || 'https://img.uzdm.me/600x400?text=No+Image',
         sort: sortValue,
         description: document.getElementById('product-description').value,
         details: document.getElementById('product-manual-content').innerHTML,
