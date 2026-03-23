@@ -430,9 +430,8 @@ function loadProductsTable() {
         products = bacashiProducts;
     }
 
-    // 应用搜索和筛选
+    // 应用搜索
     const searchTerm = document.getElementById('product-search')?.value.toLowerCase() || '';
-    const category = document.getElementById('product-filter')?.value || 'all';
 
     if (searchTerm) {
         products = products.filter(p =>
@@ -441,13 +440,6 @@ function loadProductsTable() {
             p.description.toLowerCase().includes(searchTerm)
         );
     }
-
-    if (category !== 'all') {
-        products = products.filter(p => p.category === category);
-    }
-
-    // 更新分类筛选器
-    updateCategoryFilter(products);
 
     // 分页
     const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -526,20 +518,6 @@ function loadProductsTable() {
 
     // 更新表头筛选下拉框
     updateHeaderFilters();
-}
-
-function updateCategoryFilter() {
-    const filter = document.getElementById('product-filter');
-    if (!filter) return;
-
-    // 使用存储的类别数据
-    const categories = getStoredCategories();
-    const currentValue = filter.value;
-
-    filter.innerHTML = '<option value="all">全部类别</option>' +
-        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-
-    filter.value = currentValue;
 }
 
 function updatePagination(totalItems, totalPages) {
@@ -683,9 +661,6 @@ document.getElementById('batch-delete-btn').addEventListener('click', async func
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('product-search')) {
         document.getElementById('product-search').addEventListener('input', debounce(loadProductsTable, 300));
-    }
-    if (document.getElementById('product-filter')) {
-        document.getElementById('product-filter').addEventListener('change', () => { currentPage = 1; loadProductsTable(); });
     }
 });
 
@@ -1749,17 +1724,6 @@ function filterByBrandSelect(value) {
     const btn = document.querySelector(`.brand-filter-btn[data-brand="${value || 'all'}"]`);
     if (btn) {
         btn.click();
-    }
-}
-
-// 按类别筛选
-function filterByCategorySelect(value) {
-    const filter = document.getElementById('product-filter');
-    if (filter) {
-        filter.value = value || 'all';
-        filter.dispatchEvent(new Event('change'));
-        currentPage = 1;
-        loadProductsTable();
     }
 }
 
