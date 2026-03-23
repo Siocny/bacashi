@@ -833,6 +833,7 @@ const API = {
 // 动态加载 COS SDK（使用本地文件）
 function loadCosSdk() {
     return new Promise((resolve, reject) => {
+        // 检查是否已经加载
         if (typeof COS !== 'undefined') {
             resolve(COS);
             return;
@@ -851,11 +852,34 @@ function loadCosSdk() {
         script.src = apiJsPath + 'cos-js-sdk-v5.min.js';
         console.log('加载 COS SDK from:', script.src);
         script.onload = () => {
-            console.log('✅ COS SDK 已从本地加载');
-            resolve(COS);
+            console.log('COS SDK 加载完成，检查全局变量...');
+            console.log('typeof COS:', typeof COS);
+            console.log('window COS:', window.COS);
+            console.log('window 对象 keys:', Object.keys(window).filter(k => k.toLowerCase().includes('cos')));
+
+            // 检查各种可能的全局变量
+            if (typeof COS !== 'undefined') {
+                console.log('✅ COS SDK 已从本地加载');
+                resolve(COS);
+            } else if (window.COS) {
+                console.log('✅ window.COS 存在');
+                resolve(window.COS);
+            } else {
+                // 尝试查找可能的变量名
+                const possibleNames = ['CosJS', 'COSJS', 'Cos', 'TencentCOS', 'QCloudCOS'];
+                for (const name of possibleNames) {
+                    if (window[name]) {
+                        console.log('✅ 找到 SDK:', name);
+                        resolve(window[name]);
+                        return;
+                    }
+                }
+                console.error('❌ 未找到 COS 全局变量');
+                reject(new Error('COS SDK 加载成功但未找到全局变量'));
+            }
         };
-        script.onerror = () => {
-            console.error('❌ COS SDK 加载失败:', script.src);
+        script.onerror = (err) => {
+            console.error('❌ COS SDK 加载失败:', script.src, err);
             reject(new Error('COS SDK 加载失败，请检查文件是否存在'));
         };
         document.head.appendChild(script);
