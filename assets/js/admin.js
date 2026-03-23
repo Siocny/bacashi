@@ -967,7 +967,7 @@ document.getElementById('product-form').addEventListener('submit', async functio
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
         productType: document.getElementById('product-type').value,
-        image: document.getElementById('product-image').value || 'https://placehold.co/600x400/png?text=No+Image',
+        image: document.getElementById('product-image').value || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"%3E%3Crect fill="%23f0f0f0" width="600" height="400"/%3E%3Ctext fill="%23999" font-family="Arial" font-size="24" text-anchor="middle" x="300" y="200"%3E无图片%3C/text%3E%3C/svg%3E',
         sort: sortValue,
         description: document.getElementById('product-description').value,
         details: document.getElementById('product-manual-content').innerHTML,

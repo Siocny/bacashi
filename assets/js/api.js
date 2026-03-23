@@ -30,7 +30,10 @@ function _saveCosConfigToLocal(config) {
 
 // 转换图片路径为完整 URL
 function normalizeImagePath(imagePath) {
-    if (!imagePath) return 'https://placehold.co/600x400/png?text=No+Image';
+    if (!imagePath) {
+        // 使用本地 SVG 占位图（不依赖外部服务）
+        return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"%3E%3Crect fill="%23f0f0f0" width="600" height="400"/%3E%3Ctext fill="%23999" font-family="Arial" font-size="24" text-anchor="middle" x="300" y="200"%3E无图片%3C/text%3E%3C/svg%3E';
+    }
     // 如果已经是完整 URL 或 Base64 数据，直接返回
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('//') || imagePath.startsWith('data:')) {
         return imagePath;
