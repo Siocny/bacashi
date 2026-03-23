@@ -967,7 +967,7 @@ document.getElementById('product-form').addEventListener('submit', async functio
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
         productType: document.getElementById('product-type').value,
-        image: document.getElementById('product-image').value || 'https://img.uzdm.me/600x400?text=No+Image',
+        image: document.getElementById('product-image').value || 'https://placehold.co/600x400/png?text=No+Image',
         sort: sortValue,
         description: document.getElementById('product-description').value,
         details: document.getElementById('product-manual-content').innerHTML,

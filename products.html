@@ -224,7 +224,7 @@
             grid.innerHTML = products.map(product => `
                 <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}&brand=${currentBrand}'">
                     <div class="product-image-wrap">
-                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://img.uzdm.me/600x400?text=No+Image'">
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://placehold.co/600x400/png?text=No+Image'">
                     </div>
                     <div class="product-info">
                         <span class="product-category">${product.category}</span>
@@ -258,7 +258,7 @@
                 grid.innerHTML = filtered.sort((a, b) => a.sort - b.sort).map(product => `
                     <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}&brand=${currentBrand}'">
                         <div class="product-image-wrap">
-                            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://img.uzdm.me/600x400?text=No+Image'">
+                            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://placehold.co/600x400/png?text=No+Image'">
                         </div>
                         <div class="product-info">
                             <span class="product-category">${product.category}</span>

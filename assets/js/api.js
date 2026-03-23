@@ -30,7 +30,7 @@ function _saveCosConfigToLocal(config) {
 
 // 转换图片路径为完整 URL
 function normalizeImagePath(imagePath) {
-    if (!imagePath) return 'https://img.uzdm.me/600x400?text=No+Image';
+    if (!imagePath) return 'https://placehold.co/600x400/png?text=No+Image';
     // 如果已经是完整 URL 或 Base64 数据，直接返回
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('//') || imagePath.startsWith('data:')) {
         return imagePath;
