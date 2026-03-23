@@ -838,10 +838,32 @@ function loadCosSdk() {
             return;
         }
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@1.5.1/dist/cos-js-sdk-v5.min.js';
-        script.onload = () => resolve(COS);
-        script.onerror = () => reject(new Error('COS SDK 加载失败'));
-        document.head.appendChild(script);
+        // 使用国内 CDN 源
+        const cdnSources = [
+            'https://cdn.staticfile.org/cos-js-sdk-v5/1.5.1/cos-js-sdk-v5.min.js',
+            'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@1.5.1/dist/cos-js-sdk-v5.min.js'
+        ];
+
+        let currentIndex = 0;
+
+        const loadFromSource = (index) => {
+            if (index >= cdnSources.length) {
+                reject(new Error('所有 CDN 源均加载失败'));
+                return;
+            }
+            script.src = cdnSources[index];
+            script.onload = () => {
+                console.log('✅ COS SDK 已加载 from:', cdnSources[index]);
+                resolve(COS);
+            };
+            script.onerror = () => {
+                console.warn('COS CDN 失败:', cdnSources[index]);
+                loadFromSource(index + 1);
+            };
+            document.head.appendChild(script);
+        };
+
+        loadFromSource(currentIndex);
     });
 }
 
