@@ -10,10 +10,10 @@ const SUPABASE_CONFIG = {
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3d3hpdWNqb2pmdWp4cWZhZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTE0NDgsImV4cCI6MjA4OTQ2NzQ0OH0.AXYrS6BgvJqEkXBp-pN613FSXetm4iB_2O_SHSxTRFc'
 };
 
-// 腾讯云 COS 配置
+// 腾讯云 COS 配置（带默认值）
 const COS_CONFIG = {
-    bucket: localStorage.getItem('cos_bucket') || '',
-    region: localStorage.getItem('cos_region') || 'ap-guangzhou',
+    bucket: localStorage.getItem('cos_bucket') || 'bacashi-1300000000-1412313617',
+    region: localStorage.getItem('cos_region') || 'ap-shanghai',
     secretId: localStorage.getItem('cos_secret_id') || '',
     secretKey: localStorage.getItem('cos_secret_key') || ''
 };
