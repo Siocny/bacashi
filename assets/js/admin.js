@@ -1484,35 +1484,31 @@ async function syncFromCloud() {
     }
 
     try {
-        // 如果 Supabase 未就绪，先尝试重连
-        if (!API.supabaseReady) {
-            const reconnected = await API.retrySupabaseConnection();
-            if (!reconnected) {
-                showToast('Supabase 连接失败，数据将仅保存在本地', 'warning');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> 从云端同步';
-                }
-                return;
+        // 检查 COS 配置
+        const cosConfig = API.cos.getConfig();
+        if (!cosConfig.secretId || !cosConfig.secretKey) {
+            showToast('请先配置 COS 参数', 'warning');
+            showCosConfigModal();
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> 从云端同步';
             }
+            return;
         }
 
         const success = await API.syncFromCloud();
         if (success) {
             showToast('数据已从云端同步！', 'success');
             addActivity('从云端同步数据', 'success');
+            // 同步成功后刷新当前页面
+            setTimeout(() => location.reload(), 1000);
         } else {
-            showToast('同步失败：无法连接到云端数据库', 'error');
-            addActivity('云端同步失败', 'error');
+            showToast('云端无数据或同步失败', 'warning');
         }
     } catch (err) {
         console.error('同步错误:', err);
-        let errorMsg = err.message || '未知错误';
-        if (errorMsg.includes('table') || errorMsg.includes('relation')) {
-            errorMsg = '数据库表不存在，请先在 Supabase 后台创建表';
-        }
-        showToast('同步失败：' + errorMsg, 'error');
-        addActivity('同步失败：' + errorMsg, 'error');
+        showToast('同步失败：' + err.message, 'error');
+        addActivity('同步失败：' + err.message, 'error');
     } finally {
         if (btn) {
             btn.disabled = false;

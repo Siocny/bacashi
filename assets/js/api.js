@@ -18,6 +18,9 @@ const COS_CONFIG = {
     secretKey: localStorage.getItem('cos_secret_key') || ''
 };
 
+// 数据存储在 COS 中的路径
+const COS_DATA_KEY = 'website-data/backup.json';
+
 // 保存 COS 配置到 localStorage（内部函数，加下划线前缀避免命名冲突）
 function _saveCosConfigToLocal(config) {
     if (config.bucket) localStorage.setItem('cos_bucket', config.bucket);
@@ -432,26 +435,31 @@ const API = {
 
     // 强制同步所有数据到云端（用于保存后确保同步完成）
     async forceSyncData() {
-        if (!this.isOnline || !this.supabaseReady) {
-            console.warn('无法同步：网络离线或 Supabase 未就绪');
+        if (!this.isOnline) {
+            console.warn('无法同步：网络离线');
+            return false;
+        }
+
+        // 检查 COS 配置是否完整
+        if (!COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
+            console.warn('COS 配置不完整，无法同步');
             return false;
         }
 
         try {
-            // 同步品牌数据
-            const brandData = this.getData('brandData');
-            if (brandData) {
-                await SupabaseClient.saveData('brand_data', 'main', brandData);
-                console.log('✅ 品牌数据已同步到云端');
-            }
+            // 整合所有需要同步的数据
+            const allData = {
+                brandData: this.getData('brandData'),
+                bacashiData: this.getData('bacashiData'),
+                contactData: this.getData('contactData'),
+                timelineData: this.getData('timelineData'),
+                messageData: JSON.parse(localStorage.getItem('contactMessages') || '[]'),
+                syncTime: new Date().toISOString()
+            };
 
-            // 同步 bacashi 数据
-            const bacashiData = this.getData('bacashiData');
-            if (bacashiData) {
-                await SupabaseClient.saveData('bacashi_data', 'main', bacashiData);
-                console.log('✅ BACASHI 数据已同步到云端');
-            }
-
+            // 上传到 COS
+            await API.cos.uploadData(allData);
+            console.log('✅ 数据已同步到 COS');
             return true;
         } catch (err) {
             console.error('❌ 同步失败:', err);
@@ -467,26 +475,46 @@ const API = {
 
     // 从云端同步数据（手动刷新用）
     async syncFromCloud() {
-        if (!this.isOnline || !this.supabaseReady) {
-            console.warn('无法同步：网络离线或 Supabase 未就绪');
+        if (!this.isOnline) {
+            console.warn('无法同步：网络离线');
+            return false;
+        }
+
+        // 检查 COS 配置是否完整
+        if (!COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
+            console.warn('COS 配置不完整，无法同步');
             return false;
         }
 
         try {
-            const brandData = await SupabaseClient.getData('brand_data', 'main');
-            const bacashiData = await SupabaseClient.getData('bacashi_data', 'main');
+            // 从 COS 下载数据
+            const cloudData = await API.cos.downloadData();
 
-            if (brandData) {
-                localStorage.setItem('brandData', JSON.stringify(brandData));
-                console.log('已从云端同步 brandData');
+            if (cloudData) {
+                // 更新本地数据
+                if (cloudData.brandData) {
+                    localStorage.setItem('brandData', JSON.stringify(cloudData.brandData));
+                    console.log('已从 COS 同步 brandData');
+                }
+                if (cloudData.bacashiData) {
+                    localStorage.setItem('bacashiData', JSON.stringify(cloudData.bacashiData));
+                    console.log('已从 COS 同步 bacashiData');
+                }
+                if (cloudData.contactData) {
+                    localStorage.setItem('contactData', JSON.stringify(cloudData.contactData));
+                    console.log('已从 COS 同步 contactData');
+                }
+                if (cloudData.timelineData) {
+                    localStorage.setItem('timelineData', JSON.stringify(cloudData.timelineData));
+                    console.log('已从 COS 同步 timelineData');
+                }
+                if (cloudData.messageData) {
+                    localStorage.setItem('contactMessages', JSON.stringify(cloudData.messageData));
+                    console.log('已从 COS 同步 messageData');
+                }
+                return true;
             }
-            if (bacashiData) {
-                localStorage.setItem('bacashiData', JSON.stringify(bacashiData));
-                console.log('已从云端同步 bacashiData');
-            }
-
-            // 不再刷新页面，直接返回成功
-            return true;
+            return false;
         } catch (err) {
             console.error('同步失败:', err);
             return false;
@@ -882,6 +910,116 @@ const API = {
                             const imageUrl = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${filename}`;
                             console.log('上传成功:', imageUrl);
                             resolve(imageUrl);
+                        }
+                    });
+                }
+            });
+        },
+        // 上传数据到 COS
+        async uploadData(data) {
+            return new Promise((resolve, reject) => {
+                if (!COS_CONFIG.bucket || !COS_CONFIG.region || !COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
+                    reject(new Error('请先配置 COS 参数'));
+                    return;
+                }
+
+                console.log('=== COS 数据上传开始 ===');
+                console.log('Bucket:', COS_CONFIG.bucket);
+                console.log('Region:', COS_CONFIG.region);
+
+                // 动态加载 COS SDK
+                if (typeof COS === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@latest/dist/cos-js-sdk-v5.min.js';
+                    script.onload = () => initUpload();
+                    script.onerror = () => reject(new Error('COS SDK 加载失败，请检查网络连接'));
+                    document.head.appendChild(script);
+                    return;
+                }
+
+                initUpload();
+
+                function initUpload() {
+                    const cos = new COS({
+                        SecretId: COS_CONFIG.secretId,
+                        SecretKey: COS_CONFIG.secretKey
+                    });
+
+                    const jsonData = JSON.stringify(data);
+                    console.log('数据大小:', jsonData.length, 'bytes');
+
+                    cos.putObject({
+                        Bucket: COS_CONFIG.bucket,
+                        Region: COS_CONFIG.region,
+                        Key: COS_DATA_KEY,
+                        Body: jsonData,
+                        Headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    }, (err, data) => {
+                        if (err) {
+                            console.error('上传失败:', err);
+                            reject(new Error(err.message || '上传失败'));
+                        } else {
+                            const fileUrl = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${COS_DATA_KEY}`;
+                            console.log('上传成功:', fileUrl);
+                            resolve(fileUrl);
+                        }
+                    });
+                }
+            });
+        },
+        // 从 COS 下载数据
+        async downloadData() {
+            return new Promise((resolve, reject) => {
+                if (!COS_CONFIG.bucket || !COS_CONFIG.region || !COS_CONFIG.secretId || !COS_CONFIG.secretKey) {
+                    reject(new Error('请先配置 COS 参数'));
+                    return;
+                }
+
+                console.log('=== COS 数据下载开始 ===');
+
+                // 动态加载 COS SDK
+                if (typeof COS === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@latest/dist/cos-js-sdk-v5.min.js';
+                    script.onload = () => initDownload();
+                    script.onerror = () => reject(new Error('COS SDK 加载失败，请检查网络连接'));
+                    document.head.appendChild(script);
+                    return;
+                }
+
+                initDownload();
+
+                function initDownload() {
+                    const cos = new COS({
+                        SecretId: COS_CONFIG.secretId,
+                        SecretKey: COS_CONFIG.secretKey
+                    });
+
+                    cos.getObject({
+                        Bucket: COS_CONFIG.bucket,
+                        Region: COS_CONFIG.region,
+                        Key: COS_DATA_KEY
+                    }, (err, data) => {
+                        if (err) {
+                            if (err.statusCode === 404) {
+                                console.log('云端无数据');
+                                resolve(null);
+                            } else {
+                                console.error('下载失败:', err);
+                                reject(new Error(err.message || '下载失败'));
+                            }
+                        } else {
+                            try {
+                                const jsonData = JSON.parse(data.Body.toString());
+                                console.log('下载成功，数据大小:', data.Body.length, 'bytes');
+                                resolve(jsonData);
+                            } catch (e) {
+                                console.error('数据解析失败:', e);
+                                reject(new Error('数据格式错误'));
+                            }
                         }
                     });
                 }

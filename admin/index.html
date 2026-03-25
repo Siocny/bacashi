@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>后台管理 - CAFELE 卡斐乐</title>
-    <link rel="stylesheet" href="../assets/css/admin.css?v=20260323013">
+    <link rel="stylesheet" href="../assets/css/admin.css?v=20260323014">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 页面加载时隐藏内容，避免闪烁 */
@@ -416,7 +416,7 @@
                         <div class="setting-item">
                             <div class="setting-label">
                                 <span>从云端同步</span>
-                                <span class="setting-desc">从 Supabase 云端同步最新数据</span>
+                                <span class="setting-desc">从腾讯云 COS 云端同步最新数据</span>
                             </div>
                             <button class="btn btn-primary" id="sync-btn" onclick="syncFromCloud()">
                                 <i class="fas fa-cloud-download-alt"></i> 从云端同步
@@ -476,11 +476,11 @@
                     </div>
 
                     <div class="settings-section">
-                        <h4 class="settings-title"><i class="fas fa-cloud-upload-alt"></i> 腾讯云 COS 图片存储</h4>
+                        <h4 class="settings-title"><i class="fas fa-cloud-upload-alt"></i> 腾讯云 COS 数据存储</h4>
                         <div class="setting-item">
                             <div class="setting-label">
                                 <span>COS 配置</span>
-                                <span class="setting-desc">配置腾讯云 COS 用于产品图片存储</span>
+                                <span class="setting-desc">配置腾讯云 COS 用于数据存储和图片存储</span>
                             </div>
                             <button class="btn btn-primary" onclick="showCosConfigModal()">
                                 <i class="fas fa-cog"></i> 配置 COS
@@ -857,8 +857,8 @@
         }
     </style>
 
-    <script src="../assets/js/api.js?v=20260323010"></script>
+    <script src="../assets/js/api.js?v=20260323011"></script>
     <script src="../assets/js/storage.js?v=20260320005"></script>
-    <script src="../assets/js/admin.js?v=20260323010"></script>
+    <script src="../assets/js/admin.js?v=20260323011"></script>
 </body>
 </html>
