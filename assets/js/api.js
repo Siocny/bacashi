@@ -397,31 +397,22 @@ const API = {
     },
 
     // 保存数据到云端和本地
-    async saveData(key, data, table = 'brand_data', waitForSync = false) {
+    async saveData(key, data, table = 'brand_data', waitForSync = true) {
         // 总是先保存到本地
         localStorage.setItem(key, JSON.stringify(data));
         console.log(`数据已保存到本地：${key}`);
 
         // 如果在线且 Supabase 可用，同步到云端
         if (this.isOnline && this.supabaseReady) {
-            const syncPromise = (async () => {
-                try {
-                    const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
-                    if (success) {
-                        console.log(`✅ 数据已同步到云端：${key}`);
-                    } else {
-                        console.warn(`⚠️ 云端同步失败，数据仅保存在本地：${key}`);
-                    }
-                    return success;
-                } catch (err) {
-                    console.error(`❌ 云端同步错误：${key}`, err.message);
-                    return false;
+            try {
+                const success = await SupabaseClient.saveData(table, key === 'brandData' ? 'main' : 'bacashi', data);
+                if (success) {
+                    console.log(`✅ 数据已同步到云端：${key}`);
+                } else {
+                    console.warn(`⚠️ 云端同步失败，数据仅保存在本地：${key}`);
                 }
-            })();
-
-            // 如果需要等待同步，则等待完成
-            if (waitForSync) {
-                await syncPromise;
+            } catch (err) {
+                console.error(`❌ 云端同步错误：${key}`, err.message);
             }
         } else {
             if (!this.isOnline) {

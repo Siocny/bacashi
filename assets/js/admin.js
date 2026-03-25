@@ -970,8 +970,8 @@ document.getElementById('product-form').addEventListener('submit', async functio
             await API.products.update(parseInt(id), productData);
         }
 
-        // 尝试同步数据到云端（静默同步，不显示提示）
-        API.forceSyncData().catch(err => console.log('云端同步失败，数据已保存到本地'));
+        // Supabase 同步已在 saveData 中自动完成
+        console.log('产品已保存到 Supabase');
 
         showToast('产品已更新！', 'success');
         addActivity('更新产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
@@ -982,8 +982,9 @@ document.getElementById('product-form').addEventListener('submit', async functio
         } else {
             await API.products.add(productData);
         }
-        // 尝试同步数据到云端（静默同步，不显示提示）
-        API.forceSyncData().catch(err => console.log('云端同步失败，数据已保存到本地'));
+        // Supabase 同步已在 saveData 中自动完成
+        console.log('产品已保存到 Supabase');
+
         showToast('产品已添加！', 'success');
         addActivity('添加产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
     }
