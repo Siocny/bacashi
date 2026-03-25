@@ -53,6 +53,7 @@ function normalizeImagePath(imagePath) {
 const SupabaseClient = {
     retryCount: 0,
     maxRetries: 3,
+    client: null,  // 显式声明 client 属性
 
     async init() {
         // 动态加载 Supabase SDK
@@ -69,6 +70,7 @@ const SupabaseClient = {
 
                 let currentSource = -1;
                 let script = null;
+                const self = this;  // 保存 this 引用
 
                 function loadScript(src) {
                     script = document.createElement('script');
@@ -80,8 +82,8 @@ const SupabaseClient = {
                         console.log('supabase 对象:', typeof supabase);
                         console.log('createClient:', typeof supabase.createClient);
                         if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
-                            this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-                            console.log('✅ Supabase SDK 已加载，client:', this.client ? 'ok' : 'undefined');
+                            self.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                            console.log('✅ Supabase SDK 已加载，client:', self.client ? 'ok' : 'undefined');
                             resolve();
                         } else {
                             console.error('❌ supabase.createClient 不存在');
