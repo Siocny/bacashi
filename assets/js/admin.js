@@ -970,9 +970,8 @@ document.getElementById('product-form').addEventListener('submit', async functio
             await API.products.update(parseInt(id), productData);
         }
 
-        // 强制同步数据到云端，确保其他设备能看到
-        showToast('正在同步到云端...', 'info');
-        await API.forceSyncData();
+        // 尝试同步数据到云端（静默同步，不显示提示）
+        API.forceSyncData().catch(err => console.log('云端同步失败，数据已保存到本地'));
 
         showToast('产品已更新！', 'success');
         addActivity('更新产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
@@ -983,9 +982,8 @@ document.getElementById('product-form').addEventListener('submit', async functio
         } else {
             await API.products.add(productData);
         }
-        // 强制同步数据到云端，确保其他设备能看到
-        showToast('正在同步到云端...', 'info');
-        await API.forceSyncData();
+        // 尝试同步数据到云端（静默同步，不显示提示）
+        API.forceSyncData().catch(err => console.log('云端同步失败，数据已保存到本地'));
         showToast('产品已添加！', 'success');
         addActivity('添加产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
     }
@@ -1488,10 +1486,14 @@ async function syncFromCloud() {
     try {
         // 如果 Supabase 未就绪，先尝试重连
         if (!API.supabaseReady) {
-            showToast('正在连接 Supabase...', 'info');
             const reconnected = await API.retrySupabaseConnection();
             if (!reconnected) {
-                throw new Error('Supabase 连接失败，请检查网络连接或稍后重试');
+                showToast('Supabase 连接失败，数据将仅保存在本地', 'warning');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> 从云端同步';
+                }
+                return;
             }
         }
 
