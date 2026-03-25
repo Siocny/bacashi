@@ -278,6 +278,10 @@ const API = {
 
     // 强制从云端同步数据（用于页面加载时确保数据最新）
     async forceSync() {
+        console.log('=== API.forceSync 开始 ===');
+        console.log('isOnline:', this.isOnline);
+        console.log('supabaseReady:', this.supabaseReady);
+
         if (!this.isOnline || !this.supabaseReady) {
             console.warn('无法强制同步：网络离线或 Supabase 未就绪');
             // 即使无法同步，也确保有本地数据
@@ -288,6 +292,15 @@ const API = {
         try {
             const brandData = await SupabaseClient.getData('brand_data', 'main');
             const bacashiData = await SupabaseClient.getData('bacashi_data', 'main');
+
+            console.log('Supabase brandData:', brandData ? '有数据' : '无数据');
+            console.log('Supabase bacashiData:', bacashiData ? '有数据' : '无数据');
+            if (brandData) {
+                console.log('brandData 产品数量:', brandData.products?.length || 0);
+            }
+            if (bacashiData) {
+                console.log('bacashiData 产品数量:', bacashiData.products?.length || 0);
+            }
 
             if (brandData) {
                 localStorage.setItem('brandData', JSON.stringify(brandData));

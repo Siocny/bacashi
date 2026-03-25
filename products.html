@@ -116,7 +116,7 @@
         </div>
     </footer>
 
-    <script src="assets/js/api.js?v=20260325003"></script>
+    <script src="assets/js/api.js?v=20260325004"></script>
     <script src="assets/js/main.js?v=20260323001"></script>
     <script>
         let currentBrand = 'cafele';
@@ -197,6 +197,14 @@
                 products = API.products.getAllWithImageUrls();
             } else {
                 products = API.bacashi.products.getAllWithImageUrls();
+            }
+
+            // 调试日志
+            console.log('=== loadProducts ===');
+            console.log('currentBrand:', currentBrand);
+            console.log('产品数量:', products.length);
+            if (products.length > 0) {
+                console.log('产品列表:', products);
             }
 
             // 应用分类筛选
