@@ -973,6 +973,9 @@ document.getElementById('product-form').addEventListener('submit', async functio
         // Supabase 同步已在 saveData 中自动完成
         console.log('产品已保存到 Supabase');
 
+        // 同时备份到腾讯云 COS（双云端存储）
+        API.forceSyncData().catch(err => console.log('COS 备份失败，数据已保存到 Supabase'));
+
         showToast('产品已更新！', 'success');
         addActivity('更新产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
     } else {
@@ -984,6 +987,9 @@ document.getElementById('product-form').addEventListener('submit', async functio
         }
         // Supabase 同步已在 saveData 中自动完成
         console.log('产品已保存到 Supabase');
+
+        // 同时备份到腾讯云 COS（双云端存储）
+        API.forceSyncData().catch(err => console.log('COS 备份失败，数据已保存到 Supabase'));
 
         showToast('产品已添加！', 'success');
         addActivity('添加产品：' + productData.name + ' (' + (brand === 'bacashi' ? 'BACASHI' : 'CAFELE') + ')', 'success');
