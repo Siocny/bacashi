@@ -116,7 +116,7 @@
         </div>
     </footer>
 
-    <script src="assets/js/api.js?v=20260325002"></script>
+    <script src="assets/js/api.js?v=20260325003"></script>
     <script src="assets/js/main.js?v=20260323001"></script>
     <script>
         let currentBrand = 'cafele';
@@ -143,12 +143,8 @@
         async function initApp() {
             if (!apiInitialized) {
                 await API.init();
-                // 只在 localStorage 为空时从云端同步，避免每次都请求
-                const cafeleProducts = API.products.getAll();
-                const bacashiProducts = API.bacashi.products.getAll();
-                if (cafeleProducts.length === 0 && bacashiProducts.length === 0) {
-                    await API.forceSync();
-                }
+                // 每次都尝试从 Supabase 强制同步，确保数据最新
+                await API.forceSync();
                 apiInitialized = true;
             }
             loadProducts();
