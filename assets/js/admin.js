@@ -15,17 +15,48 @@ function getProductTypeName(productType) {
 function getStoredCategories() {
     const categories = localStorage.getItem('productCategories');
     if (categories) {
-        return JSON.parse(categories);
+        const parsed = JSON.parse(categories);
+        // 兼容旧数据格式
+        return Array.isArray(parsed) ? parsed : parsed.items || [];
     }
     return ['车用电子', '车用内饰', '车用清洗', '手持风扇', '桌面风扇'];
 }
 
-function getStoredProductTypes() {
-    const types = localStorage.getItem('productTypes');
-    if (types) {
-        return JSON.parse(types);
+// 获取所有产品类型（带类别关联）
+function getStoredProductTypesMap() {
+    const typesMap = localStorage.getItem('productTypesMap');
+    if (typesMap) {
+        return JSON.parse(typesMap);
     }
-    return ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源', '手持风扇', '其他'];
+    // 默认数据结构：每个类别对应一组类型
+    return {
+        '车用电子': ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源'],
+        '车用内饰': ['车用坐垫', '挂腰风扇', '桌面风扇'],
+        '车用清洗': ['车用玻璃水', '清洁产品', '洗车水枪'],
+        '手持风扇': ['手持风扇'],
+        '桌面风扇': ['桌面风扇']
+    };
+}
+
+// 保存产品类型映射
+function saveProductTypesMap(typesMap) {
+    localStorage.setItem('productTypesMap', JSON.stringify(typesMap));
+}
+
+// 获取指定类别的产品类型
+function getProductTypesByCategory(category) {
+    const typesMap = getStoredProductTypesMap();
+    return typesMap[category] || [];
+}
+
+// 获取所有唯一的类型名称（用于兼容旧代码）
+function getStoredProductTypes() {
+    const typesMap = getStoredProductTypesMap();
+    const allTypes = new Set();
+    Object.values(typesMap).forEach(types => {
+        types.forEach(type => allTypes.add(type));
+    });
+    return Array.from(allTypes);
 }
 
 function saveCategories(categories) {
@@ -36,7 +67,7 @@ function saveProductTypes(types) {
     localStorage.setItem('productTypes', JSON.stringify(types));
 }
 
-// 更新产品类别下拉框
+// 更新产品类别下拉框（支持级联）
 function updateProductCategorySelect() {
     const categorySelect = document.getElementById('product-category');
     if (!categorySelect) return;
@@ -50,38 +81,40 @@ function updateProductCategorySelect() {
     if (currentValue && categories.includes(currentValue)) {
         categorySelect.value = currentValue;
     }
+
+    // 触发产品类型的联动更新
+    updateProductTypeSelectByCategory();
 }
 
-// 更新产品类型下拉框
-function updateProductTypeSelect() {
+// 根据类别更新产品类型下拉框（级联）
+function updateProductTypeSelectByCategory() {
+    const categorySelect = document.getElementById('product-category');
     const typeSelect = document.getElementById('product-type');
-    if (!typeSelect) return;
+    if (!categorySelect || !typeSelect) return;
 
-    const types = getStoredProductTypes();
+    const selectedCategory = categorySelect.value;
+    const types = getProductTypesByCategory(selectedCategory);
     const currentValue = typeSelect.value;
 
     typeSelect.innerHTML = '<option value="">请选择产品类型</option>' +
         types.map(type => `<option value="${type}">${type}</option>`).join('');
 
+    // 如果当前值不在新的类型列表中，清空
     if (currentValue && types.includes(currentValue)) {
         typeSelect.value = currentValue;
+    } else {
+        typeSelect.value = '';
     }
+}
+
+// 更新产品类型下拉框（兼容旧代码）
+function updateProductTypeSelect() {
+    updateProductTypeSelectByCategory();
 }
 
 // 添加产品类别
 window.addCategoryOption = function() {
-    const name = prompt('请输入新产品类别名称：');
-    if (!name || !name.trim()) return;
-
-    const categories = getStoredCategories();
-    if (categories.includes(name.trim())) {
-        alert('该类别已存在！');
-        return;
-    }
-
-    categories.push(name.trim());
-    saveCategories(categories);
-    updateProductCategorySelect();
+    openCategoryManager('category');
 };
 
 // 删除产品类别
@@ -105,18 +138,7 @@ window.deleteCategoryOption = function() {
 
 // 添加产品类型
 window.addProductTypeOption = function() {
-    const name = prompt('请输入新产品类型名称：');
-    if (!name || !name.trim()) return;
-
-    const types = getStoredProductTypes();
-    if (types.includes(name.trim())) {
-        alert('该类型已存在！');
-        return;
-    }
-
-    types.push(name.trim());
-    saveProductTypes(types);
-    updateProductTypeSelect();
+    openCategoryManager('type');
 };
 
 // 删除产品类型
@@ -135,6 +157,361 @@ window.deleteProductTypeOption = function() {
             saveProductTypes(types);
             updateProductTypeSelect();
         }
+    }
+};
+
+// 打开类别/类型管理模态框
+function openCategoryManager(type) {
+    const modal = document.getElementById('category-manager-modal');
+    const title = document.getElementById('category-manager-title');
+    const list = document.getElementById('category-manager-list');
+    const actions = document.querySelector('.category-manager-actions');
+    const addBtn = document.querySelector('.category-manager-actions button');
+    const hint = document.querySelector('.category-manager-hint');
+
+    if (type === 'category') {
+        title.innerHTML = '<i class="fas fa-th-list"></i> 产品类别管理';
+        window.currentCategoryManagerType = 'category';
+        window.currentCategoryManagerCategory = null;
+        // 类别管理模式下，显示添加按钮
+        if (actions) actions.style.display = 'block';
+        if (addBtn) addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加新类别';
+        if (hint) {
+            hint.style.display = 'block';
+            hint.innerHTML = '<i class="fas fa-info-circle"></i> 提示：拖拽 <i class="fas fa-grip-vertical"></i> 图标可调整顺序';
+        }
+    } else {
+        title.innerHTML = '<i class="fas fa-tags"></i> 产品类型管理';
+        window.currentCategoryManagerType = 'type';
+        window.currentCategoryManagerCategory = null;
+        // 类型管理模式下，先选择类别
+        if (actions) actions.style.display = 'none';
+        if (hint) hint.style.display = 'none';
+        showCategorySelectorForTypes();
+        return;
+    }
+
+    renderCategoryManagerList();
+    modal.classList.add('show');
+}
+
+// 显示类别选择器（用于选择要管理哪个类别的类型）
+function showCategorySelectorForTypes() {
+    const list = document.getElementById('category-manager-list');
+    const categories = getStoredCategories();
+
+    list.innerHTML = `
+        <div class="category-selector-hint">
+            <p><i class="fas fa-info-circle"></i> 产品类型需要关联到具体的类别，请先选择要管理的类别：</p>
+        </div>
+        <div class="category-select-list">
+            ${categories.map(cat => `
+                <div class="category-select-item" onclick="selectCategoryForTypes('${cat}')">
+                    <span>${cat}</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    const modal = document.getElementById('category-manager-modal');
+    modal.classList.add('show');
+}
+
+// 选择类别后管理对应的产品类型
+window.selectCategoryForTypes = function(category) {
+    window.currentCategoryManagerCategory = category;
+    renderCategoryManagerList();
+
+    // 显示添加按钮和提示
+    const actions = document.querySelector('.category-manager-actions');
+    const hint = document.querySelector('.category-manager-hint');
+    const addBtn = document.querySelector('.category-manager-actions button');
+
+    if (actions) actions.style.display = 'block';
+    if (hint) {
+        hint.style.display = 'block';
+        hint.innerHTML = '<i class="fas fa-info-circle"></i> 提示：拖拽 <i class="fas fa-grip-vertical"></i> 图标可调整顺序';
+    }
+    if (addBtn) addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加新类型';
+};
+
+// 渲染类别管理列表
+function renderCategoryManagerList() {
+    const list = document.getElementById('category-manager-list');
+    const type = window.currentCategoryManagerType;
+
+    if (type === 'category') {
+        // 类别管理列表
+        const categories = getStoredCategories();
+        if (categories.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无数据，请添加</p></div>';
+            return;
+        }
+
+        list.innerHTML = categories.map((item, index) => `
+            <div class="category-manager-item" draggable="true" data-index="${index}" data-value="${item}">
+                <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+                <span class="item-name">${item}</span>
+                <button class="btn-delete-sm" onclick="deleteCategoryItem(${index})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+
+        // 绑定拖拽事件
+        setupDragAndDrop();
+    } else {
+        // 产品类型管理列表
+        const category = window.currentCategoryManagerCategory;
+        if (!category) {
+            showCategorySelectorForTypes();
+            return;
+        }
+
+        const typesMap = getStoredProductTypesMap();
+        let types = typesMap[category] || [];
+
+        if (types.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state"><i class="fas fa-inbox"></i><p>"${category}" 类别下暂无产品类型，请添加</p></div>
+            `;
+        } else {
+            list.innerHTML = types.map((item, index) => `
+                <div class="category-manager-item" draggable="true" data-index="${index}" data-value="${item}">
+                    <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+                    <span class="item-name">${item}</span>
+                    <button class="btn-delete-sm" onclick="deleteTypeItem(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            // 绑定拖拽事件
+            setupDragAndDropForTypes();
+        }
+    }
+
+    // 更新添加按钮文字
+    const addBtn = document.querySelector('.category-manager-actions button');
+    if (addBtn) {
+        if (type === 'category') {
+            addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加新类别';
+        } else {
+            addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加新类型';
+        }
+    }
+}
+
+// 设置拖拽功能（类别管理）
+function setupDragAndDrop() {
+    const items = document.querySelectorAll('.category-manager-item');
+    let draggedItem = null;
+
+    items.forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            draggedItem = this;
+            setTimeout(() => this.style.opacity = '0.5', 0);
+        });
+
+        item.addEventListener('dragend', function(e) {
+            setTimeout(() => {
+                this.style.opacity = '1';
+                draggedItem = null;
+            }, 0);
+        });
+
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if (draggedItem !== this) {
+                const rect = this.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (e.clientY < midY) {
+                    this.insertBefore(draggedItem, this);
+                } else {
+                    this.parentNode.insertBefore(draggedItem, this.nextSibling);
+                }
+            }
+        });
+
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedItem && draggedItem !== this) {
+                const rect = this.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (e.clientY < midY) {
+                    this.insertBefore(draggedItem, this);
+                } else {
+                    this.parentNode.insertBefore(draggedItem, this.nextSibling);
+                }
+                // 保存新顺序
+                saveNewOrder();
+            }
+        });
+    });
+}
+
+// 设置拖拽功能（产品类型管理）
+function setupDragAndDropForTypes() {
+    const items = document.querySelectorAll('.category-manager-item');
+    let draggedItem = null;
+
+    items.forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            draggedItem = this;
+            setTimeout(() => this.style.opacity = '0.5', 0);
+        });
+
+        item.addEventListener('dragend', function(e) {
+            setTimeout(() => {
+                this.style.opacity = '1';
+                draggedItem = null;
+            }, 0);
+        });
+
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if (draggedItem !== this) {
+                const rect = this.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (e.clientY < midY) {
+                    this.insertBefore(draggedItem, this);
+                } else {
+                    this.parentNode.insertBefore(draggedItem, this.nextSibling);
+                }
+            }
+        });
+
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedItem && draggedItem !== this) {
+                const rect = this.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (e.clientY < midY) {
+                    this.insertBefore(draggedItem, this);
+                } else {
+                    this.parentNode.insertBefore(draggedItem, this.nextSibling);
+                }
+                // 保存新顺序
+                saveNewOrderForTypes();
+            }
+        });
+    });
+}
+
+// 保存新顺序（类别管理）
+function saveNewOrder() {
+    const items = document.querySelectorAll('.category-manager-item');
+    const newOrder = Array.from(items).map(item => item.dataset.value);
+    const type = window.currentCategoryManagerType;
+
+    if (type === 'category') {
+        saveCategories(newOrder);
+    }
+
+    // 同时更新产品编辑模态框中的下拉框
+    if (type === 'category') {
+        updateProductCategorySelect();
+    }
+}
+
+// 保存新顺序（产品类型管理）
+function saveNewOrderForTypes() {
+    const items = document.querySelectorAll('.category-manager-item');
+    const newOrder = Array.from(items).map(item => item.dataset.value);
+    const category = window.currentCategoryManagerCategory;
+
+    const typesMap = getStoredProductTypesMap();
+    typesMap[category] = newOrder;
+    saveProductTypesMap(typesMap);
+
+    // 同时更新产品编辑模态框中的下拉框
+    updateProductTypeSelectByCategory();
+}
+
+// 删除类别项
+window.deleteCategoryItem = function(index) {
+    const type = window.currentCategoryManagerType;
+    if (type === 'category') {
+        const categories = getStoredCategories();
+        if (confirm('确定要删除 "' + categories[index] + '" 吗？')) {
+            categories.splice(index, 1);
+            saveCategories(categories);
+            renderCategoryManagerList();
+            updateProductCategorySelect();
+        }
+    }
+};
+
+// 删除类型项
+window.deleteTypeItem = function(index) {
+    const category = window.currentCategoryManagerCategory;
+    if (!category) return;
+
+    const typesMap = getStoredProductTypesMap();
+    const types = typesMap[category] || [];
+
+    if (confirm('确定要删除 "' + types[index] + '" 吗？')) {
+        types.splice(index, 1);
+        typesMap[category] = types;
+        saveProductTypesMap(typesMap);
+        renderCategoryManagerList();
+        updateProductTypeSelectByCategory();
+    }
+};
+
+// 添加新类别项
+window.addNewCategoryItem = function() {
+    const type = window.currentCategoryManagerType;
+
+    if (type === 'category') {
+        // 添加新类别
+        const name = prompt('请输入新类别名称：');
+        if (!name || !name.trim()) return;
+
+        const categories = getStoredCategories();
+        if (categories.includes(name.trim())) {
+            showToast('该类别已存在！', 'warning');
+            return;
+        }
+
+        categories.push(name.trim());
+        saveCategories(categories);
+
+        // 为新类别初始化空的产品类型数组
+        const typesMap = getStoredProductTypesMap();
+        if (!typesMap[name.trim()]) {
+            typesMap[name.trim()] = [];
+            saveProductTypesMap(typesMap);
+        }
+
+        renderCategoryManagerList();
+        updateProductCategorySelect();
+    } else {
+        // 添加新产品类型
+        const category = window.currentCategoryManagerCategory;
+        if (!category) {
+            showToast('请先选择类别', 'warning');
+            return;
+        }
+
+        const name = prompt('请输入新类型名称：');
+        if (!name || !name.trim()) return;
+
+        const typesMap = getStoredProductTypesMap();
+        const types = typesMap[category] || [];
+
+        if (types.includes(name.trim())) {
+            showToast('该类型已存在！', 'warning');
+            return;
+        }
+
+        types.push(name.trim());
+        typesMap[category] = types;
+        saveProductTypesMap(typesMap);
+
+        renderCategoryManagerList();
+        updateProductTypeSelectByCategory();
     }
 };
 
@@ -525,14 +902,25 @@ function updatePagination(totalItems, totalPages) {
     const startIndex = (currentPage - 1) * itemsPerPage + 1;
     const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
 
+    // 计算页码显示范围（最多显示 5 个页码按钮）
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    // 如果 endPage 到达最后一页，重新计算 startPage 以保持最多 5 个按钮
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    let pageNumbers = '';
+    for (let i = startPage; i <= endPage; i++) {
+        pageNumbers += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+
     pagination.innerHTML = `
         <span class="table-info">显示 ${startIndex}-${endIndex} 条，共 ${totalItems} 条</span>
         <div class="pagination">
             ${currentPage > 1 ? `<button onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>` : ''}
-            ${Array.from({length: Math.min(5, totalPages)}, (_, i) => {
-                const pageNum = i + 1;
-                return `<button class="${pageNum === currentPage ? 'active' : ''}" onclick="changePage(${pageNum})">${pageNum}</button>`;
-            }).join('')}
+            ${pageNumbers}
             ${currentPage < totalPages ? `<button onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>` : ''}
         </div>
     `;
@@ -683,7 +1071,6 @@ function openProductModal(product = null) {
 
     // 先更新下拉框选项
     updateProductCategorySelect();
-    updateProductTypeSelect();
 
     if (product) {
         currentEditId = product.id;
@@ -696,9 +1083,12 @@ function openProductModal(product = null) {
         document.getElementById('product-description').value = product.description;
         document.getElementById('product-manual-content').innerHTML = product.details || '';
         document.getElementById('product-video').value = product.video || '';
-        // 在更新选项后设置值
+        // 先设置类别值，然后联动更新产品类型
         document.getElementById('product-category').value = product.category;
-        document.getElementById('product-type').value = product.productType || '';
+        updateProductTypeSelectByCategory(); // 先根据类别更新类型选项
+        setTimeout(() => {
+            document.getElementById('product-type').value = product.productType || '';
+        }, 0);
         updateImagePreview(product.image);
         updateProductVideoPreview(product.video || '');
     } else {
@@ -1628,6 +2018,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     checkAuth();
     initRememberMe();
 
+    // 为产品类别下拉框添加 change 事件，实现级联选择产品类型
+    const categorySelect = document.getElementById('product-category');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            updateProductTypeSelectByCategory();
+        });
+    }
+
     // 全局键盘快捷键
     document.addEventListener('keydown', function(e) {
         // ESC 关闭模态框
@@ -1670,6 +2068,7 @@ window.addCategoryOption = addCategoryOption;
 window.deleteCategoryOption = deleteCategoryOption;
 window.addProductTypeOption = addProductTypeOption;
 window.deleteProductTypeOption = deleteProductTypeOption;
+window.addNewCategoryItem = addNewCategoryItem;
 window.loadMessages = loadMessages;
 window.deleteMessage = deleteMessage;
 window.toggleMessageSelection = toggleMessageSelection;

@@ -741,6 +741,35 @@
     <!-- 消息提示 -->
     <div class="toast-container" id="toast-container"></div>
 
+    <!-- 类别管理器模态框 -->
+    <div class="modal" id="category-manager-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="category-manager-title"><i class="fas fa-th-list"></i> 产品类别管理</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="category-manager-content">
+                    <div class="category-manager-actions">
+                        <button class="btn btn-primary btn-sm" onclick="addNewCategoryItem()">
+                            <i class="fas fa-plus"></i> 添加新类别
+                        </button>
+                    </div>
+                    <div class="category-manager-list" id="category-manager-list">
+                        <!-- 列表由 JS 生成 -->
+                    </div>
+                    <div class="category-manager-hint">
+                        <i class="fas fa-info-circle"></i> 提示：拖拽 <i class="fas fa-grip-vertical"></i> 图标可调整顺序
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-cancel">完成</button>
+            </div>
+        </div>
+    </div>
+
     <!-- COS 配置弹窗 -->
     <div id="cos-config-modal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
@@ -854,6 +883,149 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* 类别管理器样式 */
+        .category-manager-content {
+            min-height: 300px;
+        }
+
+        .category-manager-actions {
+            margin-bottom: 16px;
+        }
+
+        .category-manager-list {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f9fafb;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .category-manager-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: move;
+            transition: all 0.2s;
+        }
+
+        .category-manager-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-manager-item:hover {
+            background: #f3f4f6;
+        }
+
+        .category-manager-item.dragging {
+            opacity: 0.5;
+            background: #e5e7eb;
+        }
+
+        .drag-handle {
+            color: #9ca3af;
+            cursor: grab;
+            padding: 4px;
+            font-size: 16px;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .item-name {
+            flex: 1;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .btn-delete-sm {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete-sm:hover {
+            background: #fee2e2;
+        }
+
+        .category-manager-hint {
+            margin-top: 12px;
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: 6px;
+            color: #1e40af;
+            font-size: 13px;
+        }
+
+        .category-manager-hint i {
+            margin-right: 4px;
+        }
+
+        /* 类别选择器样式 */
+        .category-selector-hint {
+            padding: 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .category-selector-hint p {
+            margin: 0;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .category-selector-hint i {
+            color: #3b82f6;
+            margin-right: 6px;
+        }
+
+        .category-select-list {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .category-select-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-select-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-select-item:hover {
+            background: #f9fafb;
+        }
+
+        .category-select-item span {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .category-select-item i {
+            color: #9ca3af;
+        }
+
+        .category-select-item:hover i {
+            color: #3b82f6;
         }
     </style>
 
