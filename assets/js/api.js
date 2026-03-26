@@ -320,9 +320,28 @@ const API = {
     async loadData() {
         console.log('=== API.loadData 开始加载数据 ===');
 
-        // 尝试从 Supabase 加载品牌数据
+        // 优先从 COS 加载数据
+        let cosData = null;
+        if (this.isOnline) {
+            try {
+                cosData = await this.cos.downloadData();
+                if (cosData) {
+                    console.log('✅ 从 COS 加载数据成功');
+                    if (cosData.brandData) {
+                        localStorage.setItem('brandData', JSON.stringify(cosData.brandData));
+                    }
+                    if (cosData.bacashiData) {
+                        localStorage.setItem('bacashiData', JSON.stringify(cosData.bacashiData));
+                    }
+                }
+            } catch (err) {
+                console.warn('从 COS 加载数据失败:', err);
+            }
+        }
+
+        // 如果 COS 没有数据，尝试从 Supabase 加载品牌数据
         let brandDataFromSupabase = null;
-        if (this.isOnline && this.supabaseReady) {
+        if (!cosData && this.isOnline && this.supabaseReady) {
             try {
                 brandDataFromSupabase = await SupabaseClient.getData('brand_data', 'main');
                 if (brandDataFromSupabase) {
@@ -336,12 +355,14 @@ const API = {
 
         // 如果云端没有数据，从 localStorage 加载
         let brandData = null;
-        if (!brandDataFromSupabase) {
+        if (!brandDataFromSupabase && !cosData) {
             const localData = localStorage.getItem('brandData');
             if (localData) {
                 brandData = JSON.parse(localData);
                 console.log('从 localStorage 加载 brandData');
             }
+        } else if (cosData && cosData.brandData) {
+            brandData = cosData.brandData;
         } else {
             brandData = brandDataFromSupabase;
         }
@@ -364,9 +385,9 @@ const API = {
 
         localStorage.setItem('brandData', JSON.stringify(brandData));
 
-        // 尝试从 Supabase 加载 bacashi 数据
+        // 如果 COS 没有数据，尝试从 Supabase 加载 bacashi 数据
         let bacashiDataFromSupabase = null;
-        if (this.isOnline && this.supabaseReady) {
+        if (!cosData && this.isOnline && this.supabaseReady) {
             try {
                 bacashiDataFromSupabase = await SupabaseClient.getData('bacashi_data', 'main');
                 if (bacashiDataFromSupabase) {
@@ -380,12 +401,14 @@ const API = {
 
         // 如果云端没有数据，从 localStorage 加载
         let bacashiData = null;
-        if (!bacashiDataFromSupabase) {
+        if (!bacashiDataFromSupabase && !cosData) {
             const localData = localStorage.getItem('bacashiData');
             if (localData) {
                 bacashiData = JSON.parse(localData);
                 console.log('从 localStorage 加载 bacashiData');
             }
+        } else if (cosData && cosData.bacashiData) {
+            bacashiData = cosData.bacashiData;
         } else {
             bacashiData = bacashiDataFromSupabase;
         }
@@ -983,7 +1006,7 @@ const API = {
                 // 动态加载 COS SDK
                 if (typeof COS === 'undefined') {
                     const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@latest/dist/cos-js-sdk-v5.min.js';
+                    script.src = 'https://cdn.bootcdn.net/ajax/libs/qcloud-cos/0.5.0/cos-js-sdk-v5.min.js';
                     script.onload = () => initDownload();
                     script.onerror = () => reject(new Error('COS SDK 加载失败，请检查网络连接'));
                     document.head.appendChild(script);
