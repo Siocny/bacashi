@@ -26,14 +26,29 @@ function getStoredCategories() {
 function getStoredProductTypesMap() {
     const typesMap = localStorage.getItem('productTypesMap');
     if (typesMap) {
-        return JSON.parse(typesMap);
+        const parsed = JSON.parse(typesMap);
+        // 兼容旧数据格式 - 如果存在旧的车用内饰数据，进行迁移
+        if (parsed['车用内饰'] && parsed['车用内饰'].includes('挂腰风扇')) {
+            // 移除车用内饰中的风扇类型
+            parsed['车用内饰'] = parsed['车用内饰'].filter(t => t !== '挂腰风扇' && t !== '桌面风扇');
+            // 确保手持风扇类别存在
+            if (!parsed['手持风扇']) parsed['手持风扇'] = [];
+            if (!parsed['手持风扇'].includes('手持风扇')) parsed['手持风扇'].push('手持风扇');
+            if (!parsed['手持风扇'].includes('挂腰风扇')) parsed['手持风扇'].push('挂腰风扇');
+            // 确保桌面风扇类别存在
+            if (!parsed['桌面风扇']) parsed['桌面风扇'] = [];
+            if (!parsed['桌面风扇'].includes('桌面风扇')) parsed['桌面风扇'].push('桌面风扇');
+            // 保存修正后的数据
+            saveProductTypesMap(parsed);
+        }
+        return parsed;
     }
     // 默认数据结构：每个类别对应一组类型
     return {
         '车用电子': ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源'],
-        '车用内饰': ['车用坐垫', '挂腰风扇', '桌面风扇'],
-        '车用清洗': ['车用玻璃水', '清洁产品', '洗车水枪'],
-        '手持风扇': ['手持风扇'],
+        '车用内饰': ['车用坐垫', '车用收纳', '车用靠垫'],
+        '车用清洗': ['车用玻璃水', '清洁产品', '洗车水枪', '除雪铲'],
+        '手持风扇': ['手持风扇', '挂腰风扇'],
         '桌面风扇': ['桌面风扇']
     };
 }
