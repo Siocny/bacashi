@@ -70,13 +70,9 @@
             </div>
 
             <!-- 分类筛选 -->
-            <div class="category-filter">
+            <div class="category-filter" id="category-filter">
                 <button class="category-btn active" data-category="all" onclick="filterCategory('all')">全部</button>
-                <button class="category-btn" data-category="车用电子" onclick="filterCategory('车用电子')">车用电子</button>
-                <button class="category-btn" data-category="车用内饰" onclick="filterCategory('车用内饰')">车用内饰</button>
-                <button class="category-btn" data-category="车用清洗" onclick="filterCategory('车用清洗')">车用清洗</button>
-                <button class="category-btn" data-category="手持风扇" onclick="filterCategory('手持风扇')">手持风扇</button>
-                <button class="category-btn" data-category="桌面风扇" onclick="filterCategory('桌面风扇')">桌面风扇</button>
+                <!-- 分类按钮由 JS 动态生成 -->
             </div>
 
             <!-- 子分类筛选（仅当选择车用电子时显示） -->
@@ -278,7 +274,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             initApp();
             loadFooterContact();
+            loadCategoryFilter(); // 加载动态分类筛选
         });
+
+        // 加载分类筛选按钮
+        function loadCategoryFilter() {
+            const categoryFilter = document.getElementById('category-filter');
+            if (!categoryFilter) return;
+
+            // 获取当前配置的类目列表
+            const categories = API.categories.getAll();
+            if (!categories || categories.length === 0) return;
+
+            // 为每个类目创建筛选按钮
+            categories.forEach(category => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.setAttribute('data-category', category.name);
+                btn.setAttribute('onclick', `filterCategory('${category.name}')`);
+                btn.textContent = category.name;
+                categoryFilter.appendChild(btn);
+            });
+        }
     </script>
 </body>
 </html>
