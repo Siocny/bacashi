@@ -10,8 +10,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout from Gitee
         uses: actions/checkout@v4
+        with:
+          repository: bacashi/bacashi
+          token: ${{ secrets.GITEE_TOKEN }}
+          ref: master
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
