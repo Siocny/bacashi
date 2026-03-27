@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>品牌产品 - CAFELE & BACASHI</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=20260323002">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260327001">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -75,13 +75,10 @@
                 <!-- 分类按钮由 JS 动态生成 -->
             </div>
 
-            <!-- 子分类筛选（仅当选择车用电子时显示） -->
+            <!-- 子分类筛选（仅当选择有子分类的类目时显示） -->
             <div id="subcategory-filter" class="subcategory-filter" style="display: none;">
                 <span class="subcategory-label"><i class="fas fa-filter"></i> 细分类型：</span>
-                <button class="subcategory-btn active" data-subcategory="车载充气泵" onclick="filterSubCategory('车载充气泵')">车载充气泵</button>
-                <button class="subcategory-btn" data-subcategory="车载吸尘器" onclick="filterSubCategory('车载吸尘器')">车载吸尘器</button>
-                <button class="subcategory-btn" data-subcategory="一体机电源" onclick="filterSubCategory('一体机电源')">一体机电源</button>
-                <button class="subcategory-btn" data-subcategory="纯应急电源" onclick="filterSubCategory('纯应急电源')">纯应急电源</button>
+                <!-- 子分类按钮由 JS 动态生成 -->
             </div>
 
             <!-- 产品网格 -->
@@ -146,6 +143,60 @@
             loadProducts();
         }
 
+        // 加载子分类筛选按钮
+        function loadSubCategoryFilter(category) {
+            const subcategoryFilter = document.getElementById('subcategory-filter');
+            if (!subcategoryFilter) return;
+
+            // 从 localStorage 获取产品类型映射
+            const typesMapData = localStorage.getItem('productTypesMap');
+            let typesMap = {};
+            if (typesMapData) {
+                typesMap = JSON.parse(typesMapData);
+            } else {
+                // 默认数据结构
+                typesMap = {
+                    '车用电子': ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源'],
+                    '车用内饰': ['车用坐垫', '遮阳挡'],
+                    '车用清洗': ['车用玻璃水', '清洁产品', '洗车水枪'],
+                    '车用外饰': ['除雪铲', '车用雪挡'],
+                    '风扇系列': ['手持风扇', '桌面风扇', '挂腰风扇']
+                };
+            }
+
+            const subTypes = typesMap[category] || [];
+
+            if (subTypes.length === 0) {
+                subcategoryFilter.style.display = 'none';
+                return;
+            }
+
+            // 清空子分类按钮（保留标签）
+            const label = subcategoryFilter.querySelector('.subcategory-label');
+            subcategoryFilter.innerHTML = '';
+            if (label) subcategoryFilter.appendChild(label);
+
+            // 为每个子类型创建筛选按钮
+            subTypes.forEach((type, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'subcategory-btn' + (index === 0 ? ' active' : '');
+                btn.setAttribute('data-subcategory', type);
+                btn.setAttribute('onclick', `filterSubCategory('${type}')`);
+                btn.textContent = type;
+                subcategoryFilter.appendChild(btn);
+            });
+
+            subcategoryFilter.style.display = 'flex';
+        }
+
+        // 子分类筛选
+        function filterSubCategory(subCategory) {
+            currentSubCategory = subCategory;
+            document.querySelectorAll('.subcategory-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.subcategory-btn[data-subcategory="${subCategory}"]`).classList.add('active');
+            loadProducts();
+        }
+
         // 切换品牌
         function switchBrand(brand) {
             currentBrand = brand;
@@ -160,27 +211,33 @@
             document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.category-btn[data-category="${category}"]`).classList.add('active');
 
-            // 如果选择的是"车用电子"，显示子分类筛选
-            const subcategoryFilter = document.getElementById('subcategory-filter');
-            if (category === '车用电子') {
-                subcategoryFilter.style.display = 'flex';
-                // 默认选中第一个子分类（车载充气泵）
-                currentSubCategory = '车载充气泵';
-                document.querySelectorAll('.subcategory-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector('.subcategory-btn[data-subcategory="车载充气泵"]').classList.add('active');
+            // 如果选择的类目有子分类，显示子分类筛选
+            const typesMapData = localStorage.getItem('productTypesMap');
+            let typesMap = {};
+            if (typesMapData) {
+                typesMap = JSON.parse(typesMapData);
             } else {
-                subcategoryFilter.style.display = 'none';
-                currentSubCategory = null;
+                typesMap = {
+                    '车用电子': ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源'],
+                    '车用内饰': ['车用坐垫', '遮阳挡'],
+                    '车用清洗': ['车用玻璃水', '清洁产品', '洗车水枪'],
+                    '车用外饰': ['除雪铲', '车用雪挡'],
+                    '风扇系列': ['手持风扇', '桌面风扇', '挂腰风扇']
+                };
             }
 
-            loadProducts();
-        }
+            const subTypes = typesMap[category] || [];
 
-        // 子分类筛选
-        function filterSubCategory(subCategory) {
-            currentSubCategory = subCategory;
-            document.querySelectorAll('.subcategory-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.subcategory-btn[data-subcategory="${subCategory}"]`).classList.add('active');
+            if (subTypes.length > 0) {
+                // 加载子分类筛选
+                loadSubCategoryFilter(category);
+                // 默认选中第一个子分类
+                currentSubCategory = subTypes[0];
+            } else {
+                currentSubCategory = null;
+                document.getElementById('subcategory-filter').style.display = 'none';
+            }
+
             loadProducts();
         }
 
