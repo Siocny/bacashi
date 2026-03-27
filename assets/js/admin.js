@@ -2131,6 +2131,22 @@ function filterByBrandSelect(value) {
     }
 }
 
+// 按类别筛选
+function filterByCategorySelect(value) {
+    if (!value) {
+        // 清空筛选
+        window.currentCategoryFilter = null;
+        document.getElementById('product-search').value = '';
+        currentPage = 1;
+        loadProductsTable();
+        return;
+    }
+
+    // 设置全局类别筛选变量
+    window.currentCategoryFilter = value;
+    loadProductsTable();
+}
+
 // 按产品类型筛选
 function filterByProductTypeSelect(value) {
     if (!value) {
