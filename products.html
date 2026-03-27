@@ -112,8 +112,8 @@
         </div>
     </footer>
 
-    <script src="assets/js/api.js?v=20260327001"></script>
-    <script src="assets/js/main.js?v=20260327001"></script>
+    <script src="assets/js/api.js?v=20260327002"></script>
+    <script src="assets/js/main.js?v=20260327002"></script>
     <script>
         let currentBrand = 'cafele';
         let currentCategory = 'all';
@@ -283,8 +283,8 @@
             if (!categoryFilter) return;
 
             // 从 localStorage 获取当前配置的类目列表
-            const categoriesData = localStorage.getItem('productCategories');
             let categories = [];
+            const categoriesData = localStorage.getItem('productCategories');
             if (categoriesData) {
                 categories = JSON.parse(categoriesData);
             }
@@ -294,11 +294,15 @@
                 categories = [
                     { name: '车用电子' },
                     { name: '车用内饰' },
-                    { name: '车用清洗' },
                     { name: '车用外饰' },
+                    { name: '车用清洗' },
                     { name: '风扇系列' }
                 ];
             }
+
+            // 清空"全部"之后的按钮（保留第一个按钮）
+            const buttons = categoryFilter.querySelectorAll('.category-btn:not(:first-child)');
+            buttons.forEach(btn => btn.remove());
 
             // 为每个类目创建筛选按钮
             categories.forEach(category => {
