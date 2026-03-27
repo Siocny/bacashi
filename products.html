@@ -282,17 +282,32 @@
             const categoryFilter = document.getElementById('category-filter');
             if (!categoryFilter) return;
 
-            // 获取当前配置的类目列表
-            const categories = API.categories.getAll();
-            if (!categories || categories.length === 0) return;
+            // 从 localStorage 获取当前配置的类目列表
+            const categoriesData = localStorage.getItem('productCategories');
+            let categories = [];
+            if (categoriesData) {
+                categories = JSON.parse(categoriesData);
+            }
+
+            // 如果没有配置，使用默认类目
+            if (categories.length === 0) {
+                categories = [
+                    { name: '车用电子' },
+                    { name: '车用内饰' },
+                    { name: '车用清洗' },
+                    { name: '车用外饰' },
+                    { name: '风扇系列' }
+                ];
+            }
 
             // 为每个类目创建筛选按钮
             categories.forEach(category => {
+                const catName = typeof category === 'string' ? category : category.name;
                 const btn = document.createElement('button');
                 btn.className = 'category-btn';
-                btn.setAttribute('data-category', category.name);
-                btn.setAttribute('onclick', `filterCategory('${category.name}')`);
-                btn.textContent = category.name;
+                btn.setAttribute('data-category', catName);
+                btn.setAttribute('onclick', `filterCategory('${catName}')`);
+                btn.textContent = catName;
                 categoryFilter.appendChild(btn);
             });
         }

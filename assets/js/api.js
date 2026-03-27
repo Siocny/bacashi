@@ -109,8 +109,12 @@ const SupabaseClient = {
                 // 先尝试本地文件
                 loadScript(localSrc);
             });
-        } else {
-            this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        } else if (typeof supabase !== 'undefined' && typeof SUPABASE_CONFIG !== 'undefined') {
+            try {
+                this.client = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+            } catch (e) {
+                console.warn('Supabase 初始化失败:', e.message);
+            }
             return Promise.resolve();
         }
     },
