@@ -109,8 +109,8 @@
         </div>
     </footer>
 
-    <script src="assets/js/api.js?v=20260327003"></script>
-    <script src="assets/js/main.js?v=20260327003"></script>
+    <script src="assets/js/api.js?v=20260327004"></script>
+    <script src="assets/js/main.js?v=20260327004"></script>
     <script>
         let currentBrand = 'cafele';
         let currentCategory = 'all';
@@ -264,8 +264,8 @@
             if (currentCategory !== 'all') {
                 products = products.filter(p => p.category === currentCategory);
 
-                // 如果是车用电子且选择了子分类，应用子分类筛选
-                if (currentCategory === '车用电子' && currentSubCategory) {
+                // 如果选择了子分类，应用子分类筛选
+                if (currentSubCategory) {
                     products = products.filter(p => p.productType === currentSubCategory);
                 }
             }
