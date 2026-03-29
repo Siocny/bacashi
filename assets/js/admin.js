@@ -807,6 +807,16 @@ function loadProductsTable() {
         products = bacashiProducts;
     }
 
+    // 应用类别筛选
+    if (window.currentCategoryFilter) {
+        products = products.filter(p => p.category === window.currentCategoryFilter);
+    }
+
+    // 应用产品类型筛选
+    if (window.currentProductTypeFilter) {
+        products = products.filter(p => p.productType === window.currentProductTypeFilter);
+    }
+
     // 应用搜索
     const searchTerm = document.getElementById('product-search')?.value.toLowerCase() || '';
 
@@ -851,13 +861,13 @@ function loadProductsTable() {
             </span>
             <span class="header-category">
                 类别
-                <select id="header-filter-category" class="header-filter" onchange="filterByCategorySelect(this.value)">
+                <select id="header-filter-category" class="header-filter" onchange="window.handleCategoryFilterChange(this.value)">
                     <option value="">全部</option>
                 </select>
             </span>
             <span class="header-type">
                 产品类型
-                <select id="header-filter-type" class="header-filter" onchange="filterByProductTypeSelect(this.value)">
+                <select id="header-filter-type" class="header-filter" onchange="window.handleProductTypeFilterChange(this.value)">
                     <option value="">全部</option>
                 </select>
             </span>
@@ -2080,6 +2090,8 @@ window.filterByBrandSelect = filterByBrandSelect;
 window.filterByCategorySelect = filterByCategorySelect;
 window.filterByProductTypeSelect = filterByProductTypeSelect;
 window.updateHeaderFilters = updateHeaderFilters;
+window.handleCategoryFilterChange = handleCategoryFilterChange;
+window.handleProductTypeFilterChange = handleProductTypeFilterChange;
 
 // ==================== 表头筛选功能 ====================
 
@@ -2092,24 +2104,31 @@ function updateHeaderFilters() {
     const nameSelect = document.getElementById('header-filter-name');
     if (nameSelect) {
         const names = [...new Set(allProducts.map(p => p.name))].sort();
+        const currentNameValue = nameSelect.value;
         nameSelect.innerHTML = '<option value="">全部</option>' +
             names.map(n => `<option value="${encodeURIComponent(n)}">${n}</option>`).join('');
+        if (currentNameValue) nameSelect.value = currentNameValue;
     }
 
     // 更新类别下拉框
     const categorySelect = document.getElementById('header-filter-category');
     if (categorySelect) {
         const categories = getStoredCategories();
+        const currentCategoryValue = categorySelect.value;
         categorySelect.innerHTML = '<option value="">全部</option>' +
             categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (currentCategoryValue) categorySelect.value = currentCategoryValue;
     }
 
-    // 更新产品类型下拉框
+    // 更新产品类型下拉框（根据当前选中的类别）
     const typeSelect = document.getElementById('header-filter-type');
     if (typeSelect) {
-        const types = getStoredProductTypes();
+        const currentTypeValue = typeSelect.value;
+        const selectedCategory = window.currentCategoryFilter || '';
+        const types = getProductTypesByCategory(selectedCategory);
         typeSelect.innerHTML = '<option value="">全部</option>' +
             types.map(t => `<option value="${t}">${t}</option>`).join('');
+        if (currentTypeValue) typeSelect.value = currentTypeValue;
     }
 }
 
@@ -2133,10 +2152,22 @@ function filterByBrandSelect(value) {
 
 // 按类别筛选
 function filterByCategorySelect(value) {
+    // 先更新下拉框选中值
+    const categorySelect = document.getElementById('header-filter-category');
+    if (categorySelect) {
+        categorySelect.value = value;
+    }
+
     if (!value) {
         // 清空筛选
         window.currentCategoryFilter = null;
-        document.getElementById('product-search').value = '';
+        window.currentProductTypeFilter = null;
+        // 重置产品类型下拉框
+        const typeSelect = document.getElementById('header-filter-type');
+        if (typeSelect) {
+            typeSelect.value = '';
+            updateProductTypeOptionsByCategory('');
+        }
         currentPage = 1;
         loadProductsTable();
         return;
@@ -2144,17 +2175,38 @@ function filterByCategorySelect(value) {
 
     // 设置全局类别筛选变量
     window.currentCategoryFilter = value;
+    window.currentProductTypeFilter = null;
+    // 重置并更新产品类型下拉框选项
+    const typeSelect = document.getElementById('header-filter-type');
+    if (typeSelect) {
+        typeSelect.value = '';
+        updateProductTypeOptionsByCategory(value);
+    }
+    currentPage = 1;
     loadProductsTable();
+}
+
+// 根据类别更新产品类型下拉框选项（表头筛选用）
+function updateProductTypeOptionsByCategory(category) {
+    const typeSelect = document.getElementById('header-filter-type');
+    if (!typeSelect) return;
+
+    const types = getProductTypesByCategory(category);
+    typeSelect.innerHTML = '<option value="">全部</option>' +
+        types.map(t => `<option value="${t}">${t}</option>`).join('');
 }
 
 // 按产品类型筛选
 function filterByProductTypeSelect(value) {
+    // 先更新下拉框选中值
+    const typeSelect = document.getElementById('header-filter-type');
+    if (typeSelect) {
+        typeSelect.value = value;
+    }
+
     if (!value) {
         // 清空筛选
         window.currentProductTypeFilter = null;
-        const allCategoryBtn = document.querySelector('.category-btn[data-category="all"]');
-        if (allCategoryBtn) allCategoryBtn.click();
-        document.getElementById('product-search').value = '';
         currentPage = 1;
         loadProductsTable();
         return;
@@ -2162,99 +2214,19 @@ function filterByProductTypeSelect(value) {
 
     // 设置全局产品类型筛选变量
     window.currentProductTypeFilter = value;
-
-    // 直接按产品类型过滤产品
-    let cafeleProducts = API.products.getAll().map(p => ({ ...p, brand: 'cafele' }));
-    let bacashiProducts = API.bacashi.products.getAll().map(p => ({ ...p, brand: 'bacashi' }));
-    let allProducts = [...cafeleProducts, ...bacashiProducts];
-
-    const filtered = allProducts.filter(p => p.productType === value);
-
-    // 显示筛选结果
-    displayFilteredProducts(filtered);
+    currentPage = 1;
+    loadProductsTable();
 }
 
-// 显示筛选后的产品
-function displayFilteredProducts(products) {
-    const container = document.getElementById('products-table');
-    const pagination = document.getElementById('products-pagination');
+// 处理类别筛选变化（包装函数，确保值正确）
+window.handleCategoryFilterChange = function(value) {
+    filterByCategorySelect(value);
+};
 
-    if (!products || products.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无产品数据</p></div>';
-        if (pagination) pagination.innerHTML = '';
-        return;
-    }
-
-    // 分页
-    const totalPages = Math.ceil(products.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
-
-    container.innerHTML = `
-        <div class="table-header">
-            <span class="checkbox-cell"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></span>
-            <span>ID</span>
-            <span class="header-name">
-                产品名称
-                <select id="header-filter-name" class="header-filter" onchange="filterByNameSelect(this.value)">
-                    <option value="">全部</option>
-                </select>
-            </span>
-            <span class="header-brand">
-                品牌
-                <select id="header-filter-brand" class="header-filter" onchange="filterByBrandSelect(this.value)">
-                    <option value="">全部</option>
-                    <option value="cafele">CAFELE</option>
-                    <option value="bacashi">BACASHI</option>
-                </select>
-            </span>
-            <span class="header-category">
-                类别
-                <select id="header-filter-category" class="header-filter" onchange="filterByCategorySelect(this.value)">
-                    <option value="">全部</option>
-                </select>
-            </span>
-            <span class="header-type">
-                产品类型
-                <select id="header-filter-type" class="header-filter" onchange="filterByProductTypeSelect(this.value)">
-                    <option value="">全部</option>
-                </select>
-            </span>
-            <span class="table-actions-header">操作</span>
-        </div>
-    ` + paginatedProducts.sort((a, b) => a.sort - b.sort).map(product => `
-        <div class="table-row ${selectedProducts.includes(product.id) ? 'selected' : ''}" data-id="${product.id}">
-            <span class="checkbox-cell"><input type="checkbox" class="product-checkbox" value="${product.id}" onchange="toggleProductSelection(${product.id})"></span>
-            <span>${product.id}</span>
-            <span>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    ${product.image ? `<img src="${product.image}" class="table-image" alt="${product.name}">` : ''}
-                    <span>${product.name}</span>
-                </div>
-            </span>
-            <span><span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: ${product.brand === 'bacashi' ? '#fef3c7' : '#dbeafe'}; color: ${product.brand === 'bacashi' ? '#92400e' : '#1e3a8a'};">${product.brand === 'bacashi' ? 'BACASHI' : 'CAFELE'}</span></span>
-            <span>${product.category}</span>
-            <span class="product-type">${getProductTypeName(product.productType)}</span>
-            <span class="table-actions">
-                <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </span>
-        </div>
-    `).join('');
-
-    // 更新分页
-    updatePagination(products.length, totalPages);
-
-    // 更新批量删除按钮状态
-    updateBatchDeleteButton();
-
-    // 更新表头筛选下拉框
-    updateHeaderFilters();
-}
+// 处理产品类型筛选变化（包装函数，确保值正确）
+window.handleProductTypeFilterChange = function(value) {
+    filterByProductTypeSelect(value);
+};
 
 // ==================== 留言管理功能 ====================
 
