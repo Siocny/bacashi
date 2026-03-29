@@ -416,10 +416,19 @@
                         <h4 class="settings-title"><i class="fas fa-database"></i> 数据管理</h4>
                         <div class="setting-item">
                             <div class="setting-label">
+                                <span>上传数据到云端</span>
+                                <span class="setting-desc">将当前数据上传到腾讯云 COS，其他设备可见</span>
+                            </div>
+                            <button class="btn btn-primary" onclick="uploadToCloud()">
+                                <i class="fas fa-cloud-upload-alt"></i> 上传到云端
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-label">
                                 <span>从云端同步</span>
                                 <span class="setting-desc">从腾讯云 COS 云端同步最新数据</span>
                             </div>
-                            <button class="btn btn-primary" id="sync-btn" onclick="syncFromCloud()">
+                            <button class="btn btn-secondary" id="sync-btn" onclick="syncFromCloud()">
                                 <i class="fas fa-cloud-download-alt"></i> 从云端同步
                             </button>
                         </div>

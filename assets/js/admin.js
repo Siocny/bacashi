@@ -1924,6 +1924,28 @@ async function syncFromCloud() {
     }
 }
 
+// 上传数据到云端
+async function uploadToCloud() {
+    if (!navigator.onLine) {
+        showToast('当前离线，无法上传', 'warning');
+        return;
+    }
+
+    try {
+        const success = await API.forceSyncData();
+        if (success) {
+            showToast('数据已上传到云端！其他设备可以访问了', 'success');
+            addActivity('上传数据到云端', 'success');
+        } else {
+            showToast('上传失败，请检查 COS 配置', 'warning');
+        }
+    } catch (err) {
+        console.error('上传错误:', err);
+        showToast('上传失败：' + err.message, 'error');
+        addActivity('上传失败：' + err.message, 'error');
+    }
+}
+
 // 修改密码
 function changePassword() {
     const oldPassword = prompt('请输入当前密码：');
@@ -2092,6 +2114,8 @@ window.filterByProductTypeSelect = filterByProductTypeSelect;
 window.updateHeaderFilters = updateHeaderFilters;
 window.handleCategoryFilterChange = handleCategoryFilterChange;
 window.handleProductTypeFilterChange = handleProductTypeFilterChange;
+window.syncFromCloud = syncFromCloud;
+window.uploadToCloud = uploadToCloud;
 
 // ==================== 表头筛选功能 ====================
 
