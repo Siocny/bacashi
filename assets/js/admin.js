@@ -1783,7 +1783,7 @@ function importFullData(input) {
         try {
             const data = JSON.parse(event.target.result);
 
-            if (!data.brand || !data.products) {
+            if (!data.brand || !data.products || !Array.isArray(data.products)) {
                 showToast('导入失败：文件格式不正确，缺少必要数据', 'error');
                 input.value = '';
                 return;
@@ -1795,24 +1795,27 @@ function importFullData(input) {
             }
 
             // 依次导入各项数据
-            if (data.brand) API.brand.save(data.brand);
-            if (data.contact) API.contact.save(data.contact);
-            if (data.timeline) API.timeline.save(data.timeline);
-            if (data.products) await API.products.save(data.products);
+            if (data.brand) await API.brand.save(data.brand);
+            if (data.contact) await API.contact.save(data.contact);
+            if (data.timeline && Array.isArray(data.timeline)) await API.timeline.save(data.timeline);
+            if (data.products && Array.isArray(data.products)) await API.products.save(data.products);
 
             showToast('完整数据导入成功！', 'success');
             addActivity('导入完整数据', 'success');
 
-            // 如果在产品管理页面，刷新表格；否则切换到产品页面
-            const currentPage = document.getElementById('page-title').textContent;
-            if (currentPage === '产品管理') {
-                loadProductsTable();
-            } else {
-                switchTab('products');
-            }
+            // 等待数据保存完成后再刷新页面
+            setTimeout(() => {
+                location.reload();
+            }, 500);
         } catch (err) {
             console.error('导入错误:', err);
             showToast('导入失败：文件格式不正确', 'error');
+            input.value = '';
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
+}
             input.value = '';
         }
     };
