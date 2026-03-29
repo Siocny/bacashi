@@ -791,8 +791,8 @@ window.filterByBrand = function(brand) {
 
 function loadProductsTable() {
     // 根据品牌筛选加载产品
-    let cafeleProducts = API.products.getAll();
-    let bacashiProducts = API.bacashi.products.getAll();
+    let cafeleProducts = API.products.getAll() || [];
+    let bacashiProducts = API.bacashi.products.getAll() || [];
 
     // 给每个产品添加 brand 标记
     cafeleProducts = cafeleProducts.map(p => ({ ...p, brand: 'cafele' }));
