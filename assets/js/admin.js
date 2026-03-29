@@ -1331,7 +1331,7 @@ document.getElementById('product-form').addEventListener('submit', async functio
     // 如果是新增产品，自动设置排序值为最大排序 +1
     let sortValue = parseInt(document.getElementById('product-sort').value) || 1;
     if (!id) {
-        const products = brand === 'bacashi' ? API.bacashi.products.getAll() : API.products.getAll();
+        const products = brand === 'bacashi' ? (API.bacashi.products.getAll() || []) : (API.products.getAll() || []);
         const maxSort = products.length > 0 ? Math.max(...products.map(p => p.sort)) : 0;
         sortValue = maxSort + 1;
     }
