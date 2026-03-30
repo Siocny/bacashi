@@ -572,7 +572,7 @@ const API = {
     brand: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.brand : defaultData.brand;
+            return (data && data.brand) ? data.brand : defaultData.brand;
         },
         async save(brandData) {
             const data = API.getData('brandData') || { ...defaultData };
@@ -585,7 +585,7 @@ const API = {
     contact: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.contact : defaultData.contact;
+            return (data && data.contact) ? data.contact : defaultData.contact;
         },
         async save(contactData) {
             const data = API.getData('brandData') || { ...defaultData };
@@ -598,7 +598,7 @@ const API = {
     timeline: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.timeline : defaultData.timeline;
+            return (data && Array.isArray(data.timeline)) ? data.timeline : defaultData.timeline;
         },
         getAll() {
             return this.get();
@@ -633,7 +633,7 @@ const API = {
     products: {
         get() {
             const data = API.getData('brandData');
-            return data ? data.products : defaultData.products;
+            return (data && data.products) ? data.products : defaultData.products;
         },
         getAll() {
             return this.get();
@@ -647,8 +647,9 @@ const API = {
             }));
         },
         getCategories() {
-            const products = this.get();
-            const categories = [...new Set(products.map(p => p.category))];
+            const products = this.get() || [];
+            if (!Array.isArray(products)) return [];
+            const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
             return categories;
         },
         async save(list) {
@@ -744,7 +745,7 @@ const API = {
         brand: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.brand : defaultDataBacashi.brand;
+                return (data && data.brand) ? data.brand : defaultDataBacashi.brand;
             },
             async save(brandData) {
                 const data = API.getData('bacashiData') || { ...defaultDataBacashi };
@@ -755,7 +756,7 @@ const API = {
         contact: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.contact : defaultDataBacashi.contact;
+                return (data && data.contact) ? data.contact : defaultDataBacashi.contact;
             },
             async save(contactData) {
                 const data = API.getData('bacashiData') || { ...defaultDataBacashi };
@@ -766,7 +767,7 @@ const API = {
         timeline: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.timeline : defaultDataBacashi.timeline;
+                return (data && Array.isArray(data.timeline)) ? data.timeline : defaultDataBacashi.timeline;
             },
             async save(list) {
                 const data = API.getData('bacashiData') || { ...defaultDataBacashi };
@@ -796,7 +797,7 @@ const API = {
         products: {
             get() {
                 const data = API.getData('bacashiData');
-                return data ? data.products : defaultDataBacashi.products;
+                return (data && data.products) ? data.products : defaultDataBacashi.products;
             },
             getAll() {
                 return this.get();
@@ -810,8 +811,9 @@ const API = {
                 }));
             },
             getCategories() {
-                const products = this.get();
-                const categories = [...new Set(products.map(p => p.category))];
+                const products = this.get() || [];
+                if (!Array.isArray(products)) return [];
+                const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
                 return categories;
             },
             async save(list) {
@@ -900,11 +902,58 @@ const API = {
 
                 // 动态加载 COS SDK
                 if (typeof COS === 'undefined') {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@latest/dist/cos-js-sdk-v5.min.js';
-                    script.onload = () => initUpload();
-                    script.onerror = () => reject(new Error('COS SDK 加载失败，请检查网络连接'));
-                    document.head.appendChild(script);
+                    // CDN 源列表（按优先级）
+                    const cdnSources = [
+                        'https://cdn.staticfile.org/cos-js-sdk-v5/5.2.10/cos-js-sdk-v5.min.js',
+                        'https://cdn.bootcdn.net/ajax/libs/cos-js-sdk-v5/5.2.10/cos-js-sdk-v5.min.js',
+                        'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@5.2.10/dist/cos-js-sdk-v5.min.js'
+                    ];
+
+                    let currentSource = -1;
+                    let script = null;
+
+                    function loadScript(src) {
+                        script = document.createElement('script');
+                        script.src = src;
+                        console.log(`尝试加载 COS SDK: ${src}`);
+
+                        script.onload = () => {
+                            clearTimeout(timeout);
+                            if (typeof COS !== 'undefined') {
+                                console.log('✅ COS SDK 已加载');
+                                initUpload();
+                            } else {
+                                console.error('❌ COS 对象不存在');
+                                tryNextSource();
+                            }
+                        };
+
+                        script.onerror = () => {
+                            console.warn(`CDN 失败：${src}`);
+                            tryNextSource();
+                        };
+
+                        document.head.appendChild(script);
+                    }
+
+                    function tryNextSource() {
+                        currentSource++;
+                        if (currentSource < cdnSources.length) {
+                            loadScript(cdnSources[currentSource]);
+                        } else {
+                            clearTimeout(timeout);
+                            reject(new Error('COS SDK 加载失败，请检查网络连接'));
+                        }
+                    }
+
+                    // 设置超时（30 秒）
+                    const timeout = setTimeout(() => {
+                        console.warn('COS SDK 加载超时');
+                        script && script.onerror && script.onerror();
+                    }, 30000);
+
+                    // 开始加载
+                    loadScript(cdnSources[0]);
                     return;
                 }
 
@@ -956,11 +1005,58 @@ const API = {
 
                 // 动态加载 COS SDK
                 if (typeof COS === 'undefined') {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@latest/dist/cos-js-sdk-v5.min.js';
-                    script.onload = () => initUpload();
-                    script.onerror = () => reject(new Error('COS SDK 加载失败，请检查网络连接'));
-                    document.head.appendChild(script);
+                    // CDN 源列表（按优先级）
+                    const cdnSources = [
+                        'https://cdn.staticfile.org/cos-js-sdk-v5/5.2.10/cos-js-sdk-v5.min.js',
+                        'https://cdn.bootcdn.net/ajax/libs/cos-js-sdk-v5/5.2.10/cos-js-sdk-v5.min.js',
+                        'https://cdn.jsdelivr.net/npm/cos-js-sdk-v5@5.2.10/dist/cos-js-sdk-v5.min.js'
+                    ];
+
+                    let currentSource = -1;
+                    let script = null;
+
+                    function loadScript(src) {
+                        script = document.createElement('script');
+                        script.src = src;
+                        console.log(`尝试加载 COS SDK: ${src}`);
+
+                        script.onload = () => {
+                            clearTimeout(timeout);
+                            if (typeof COS !== 'undefined') {
+                                console.log('✅ COS SDK 已加载');
+                                initUpload();
+                            } else {
+                                console.error('❌ COS 对象不存在');
+                                tryNextSource();
+                            }
+                        };
+
+                        script.onerror = () => {
+                            console.warn(`CDN 失败：${src}`);
+                            tryNextSource();
+                        };
+
+                        document.head.appendChild(script);
+                    }
+
+                    function tryNextSource() {
+                        currentSource++;
+                        if (currentSource < cdnSources.length) {
+                            loadScript(cdnSources[currentSource]);
+                        } else {
+                            clearTimeout(timeout);
+                            reject(new Error('COS SDK 加载失败，请检查网络连接'));
+                        }
+                    }
+
+                    // 设置超时（30 秒）
+                    const timeout = setTimeout(() => {
+                        console.warn('COS SDK 加载超时');
+                        script && script.onerror && script.onerror();
+                    }, 30000);
+
+                    // 开始加载
+                    loadScript(cdnSources[0]);
                     return;
                 }
 

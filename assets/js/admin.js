@@ -688,16 +688,16 @@ document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
 // ==================== 控制台功能 ====================
 
 function loadDashboard() {
-    const products = API.products.getAll();
-    const categories = API.products.getCategories();
-    const timeline = API.timeline.getAll();
-    const brand = API.brand.get();
+    const products = API.products.getAll() || [];
+    const categories = API.products.getCategories() || [];
+    const timeline = API.timeline.getAll() || [];
+    const brand = API.brand.get() || {};
 
     // 动画数字增长
     animateNumber('dash-product-count', products.length);
     animateNumber('dash-category-count', categories.length);
     animateNumber('dash-timeline-count', timeline.length);
-    animateNumber('dash-customers-count', brand.stats.customers);
+    animateNumber('dash-customers-count', brand.stats?.customers || 0);
 }
 
 function animateNumber(elementId, target) {
@@ -721,11 +721,11 @@ function animateNumber(elementId, target) {
 // ==================== 品牌管理 ====================
 
 function loadBrand() {
-    const brand = API.brand.get();
-    document.getElementById('brand-description').value = brand.description;
-    document.getElementById('stat-years').value = brand.stats.years;
-    document.getElementById('stat-products').value = brand.stats.products;
-    document.getElementById('stat-customers').value = brand.stats.customers;
+    const brand = API.brand.get() || {};
+    document.getElementById('brand-description').value = brand.description || '';
+    document.getElementById('stat-years').value = brand.stats?.years || 0;
+    document.getElementById('stat-products').value = brand.stats?.products || 0;
+    document.getElementById('stat-customers').value = brand.stats?.customers || 0;
 }
 
 document.getElementById('brand-form').addEventListener('submit', async function(e) {
@@ -1803,19 +1803,12 @@ function importFullData(input) {
             showToast('完整数据导入成功！', 'success');
             addActivity('导入完整数据', 'success');
 
-            // 等待数据保存完成后再刷新页面
-            setTimeout(() => {
-                location.reload();
-            }, 500);
+            // 重新加载页面数据
+            loadDashboard();
+            loadProductsTable();
         } catch (err) {
             console.error('导入错误:', err);
-            showToast('导入失败：文件格式不正确', 'error');
-            input.value = '';
-        }
-    };
-    reader.readAsText(file);
-    input.value = '';
-}
+            showToast('导入失败：' + (err.message || '文件格式不正确'), 'error');
             input.value = '';
         }
     };

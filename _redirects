@@ -1,0 +1,5 @@
+# Admin routes
+/admin/* /admin/index.html 200
+
+# Main site routes
+/* /index.html 200
