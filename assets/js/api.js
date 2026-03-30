@@ -1096,15 +1096,21 @@ const API = {
         // 从 COS 下载数据
         async downloadData() {
             return new Promise((resolve, reject) => {
-                if (!COS_CONFIG.bucket || !COS_CONFIG.region) {
-                    reject(new Error('请先配置 COS 参数'));
+                // 使用默认的 bucket 和 region（如果 localStorage 中没有配置）
+                const bucket = COS_CONFIG.bucket || 'bacashi-1300000000-1412313617';
+                const region = COS_CONFIG.region || 'ap-shanghai';
+
+                if (!bucket || !region) {
+                    reject(new Error('COS 配置不完整'));
                     return;
                 }
 
                 console.log('=== COS 数据下载开始 ===');
+                console.log('Bucket:', bucket);
+                console.log('Region:', region);
 
                 // 直接使用 fetch 从 COS 公开链接下载（不需要 SDK）
-                const fileUrl = `https://${COS_CONFIG.bucket}.cos.${COS_CONFIG.region}.myqcloud.com/${COS_DATA_KEY}?t=${Date.now()}`;
+                const fileUrl = `https://${bucket}.cos.${region}.myqcloud.com/${COS_DATA_KEY}?t=${Date.now()}`;
                 console.log('下载 URL:', fileUrl);
 
                 fetch(fileUrl)
