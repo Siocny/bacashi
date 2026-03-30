@@ -1197,12 +1197,14 @@ async function deleteProduct(id) {
     if (confirm('确定要删除这个产品吗？')) {
         // 尝试从两个品牌中删除
         let deleted = false;
+        let brand = '';
 
         // 先尝试从 CAFELE 删除
         let products = API.products.getAll();
         if (products.find(p => p.id === id)) {
             await API.products.delete(id);
             deleted = true;
+            brand = 'cafele';
             await renumberProducts('cafele');
         }
 
@@ -1212,11 +1214,14 @@ async function deleteProduct(id) {
             if (products.find(p => p.id === id)) {
                 await API.bacashi.products.delete(id);
                 deleted = true;
+                brand = 'bacashi';
                 await renumberProducts('bacashi');
             }
         }
 
         if (deleted) {
+            // 删除成功后同步到云端
+            await API.forceSyncData();
             showToast('产品已删除', 'success');
             addActivity('删除产品 ID:' + id, 'warning');
         } else {
