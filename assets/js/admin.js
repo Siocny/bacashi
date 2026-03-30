@@ -2113,8 +2113,13 @@ window.filterByBrandSelect = filterByBrandSelect;
 window.filterByCategorySelect = filterByCategorySelect;
 window.filterByProductTypeSelect = filterByProductTypeSelect;
 window.updateHeaderFilters = updateHeaderFilters;
-window.handleCategoryFilterChange = handleCategoryFilterChange;
-window.handleProductTypeFilterChange = handleProductTypeFilterChange;
+window.updateProductTypeOptionsByCategory = updateProductTypeOptionsByCategory;
+window.handleCategoryFilterChange = function(value) {
+    filterByCategorySelect(value);
+};
+window.handleProductTypeFilterChange = function(value) {
+    filterByProductTypeSelect(value);
+};
 window.syncFromCloud = syncFromCloud;
 window.uploadToCloud = uploadToCloud;
 
@@ -2242,16 +2247,6 @@ function filterByProductTypeSelect(value) {
     currentPage = 1;
     loadProductsTable();
 }
-
-// 处理类别筛选变化（包装函数，确保值正确）
-window.handleCategoryFilterChange = function(value) {
-    filterByCategorySelect(value);
-};
-
-// 处理产品类型筛选变化（包装函数，确保值正确）
-window.handleProductTypeFilterChange = function(value) {
-    filterByProductTypeSelect(value);
-};
 
 // ==================== 留言管理功能 ====================
 
