@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python pic_to_video_simple.py)",
+      "Bash(python:*)"
+    ]
+  }
+}
