@@ -293,13 +293,16 @@
             `).join('');
         }
 
-        // 搜索产品
+        // 搜索产品（跨品牌搜索）
         function searchProducts() {
             const keyword = document.getElementById('search-input').value.trim().toLowerCase();
             if (!keyword) return;
 
-            let products = currentBrand === 'cafele' ? API.products.getAll() : API.bacashi.products.getAll();
-            const filtered = products.filter(p =>
+            // 搜索所有品牌的产品
+            const cafeleProducts = API.products.getAll();
+            const bacashiProducts = API.bacashi.products.getAll();
+            const allProducts = [...cafeleProducts, ...bacashiProducts];
+            const filtered = allProducts.filter(p =>
                 p.name.toLowerCase().includes(keyword) ||
                 p.description.toLowerCase().includes(keyword) ||
                 p.category.toLowerCase().includes(keyword)
@@ -307,14 +310,19 @@
 
             if (filtered.length === 0) {
                 document.getElementById('products-grid').innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>未找到相关产品</p></div>';
+                // 隐藏子分类筛选
+                document.getElementById('subcategory-filter').style.display = 'none';
             } else {
                 currentCategory = 'all';
+                currentSubCategory = null;
                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
                 document.querySelector('.category-btn[data-category="all"]').classList.add('active');
+                // 隐藏子分类筛选
+                document.getElementById('subcategory-filter').style.display = 'none';
 
                 const grid = document.getElementById('products-grid');
                 grid.innerHTML = filtered.sort((a, b) => a.sort - b.sort).map(product => `
-                    <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}&brand=${currentBrand}'">
+                    <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}&brand=${product.brand || currentBrand}'">
                         <div class="product-image-wrap">
                             <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;600&quot; height=&quot;400&quot; viewBox=&quot;0 0 600 400&quot;%3E%3Crect fill=&quot;%23f0f0f0&quot; width=&quot;600&quot; height=&quot;400&quot;/%3E%3Ctext fill=&quot;%23999&quot; font-family=&quot;Arial&quot; font-size=&quot;24&quot; text-anchor=&quot;middle&quot; x=&quot;300&quot; y=&quot;200&quot;%3E无图片%3C/text%3E%3C/svg%3E'">
                         </div>
@@ -333,6 +341,18 @@
             initApp();
             loadFooterContact();
             loadCategoryFilter(); // 加载动态分类筛选
+
+            // 读取 URL 中的 ?search= 参数，自动触发搜索
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchKeyword = urlParams.get('search');
+            if (searchKeyword) {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.value = searchKeyword;
+                }
+                // 延迟执行，等产品数据加载完后再搜索
+                setTimeout(() => searchProducts(), 600);
+            }
         });
 
         // 加载分类筛选按钮

@@ -211,23 +211,11 @@
             }
         }
 
-        // 搜索产品
+        // 搜索产品 - 跳转到产品页面并传递关键词
         function searchProducts() {
             const keyword = document.getElementById('search-input').value.trim().toLowerCase();
             if (!keyword) return;
-
-            const products = API.products.getAll();
-            const filtered = products.filter(p =>
-                p.name.toLowerCase().includes(keyword) ||
-                p.description.toLowerCase().includes(keyword) ||
-                p.category.toLowerCase().includes(keyword)
-            );
-
-            if (filtered.length === 0) {
-                alert('未找到相关产品');
-            } else {
-                window.location.href = 'products.html';
-            }
+            window.location.href = `products.html?search=${encodeURIComponent(keyword)}`;
         }
 
         // 加载时间轴
