@@ -1,0 +1,26 @@
+# CAFELE CMS
+# 开启 URL 重写（Apache mod_rewrite）
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 非 HTTPS 重定向（启用时取消注释）
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # 静态资源缓存
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresByType image/jpg "access plus 1 year"
+        ExpiresByType image/jpeg "access plus 1 year"
+        ExpiresByType image/png "access plus 1 year"
+        ExpiresByType image/gif "access plus 1 year"
+        ExpiresByType image/webp "access plus 1 year"
+        ExpiresByType image/svg+xml "access plus 1 year"
+        ExpiresByType text/css "access plus 1 month"
+        ExpiresByType application/javascript "access plus 1 month"
+    </IfModule>
+</IfModule>
+
+# 目录列表禁用
+Options -Indexes

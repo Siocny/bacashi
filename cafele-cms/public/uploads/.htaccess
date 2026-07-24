@@ -1,0 +1,10 @@
+# CAFELE CMS - 安全限制
+# 禁止直接访问 PHP 文件
+<FilesMatch "\.php$">
+    Deny from all
+</FilesMatch>
+
+# 允许图片文件
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|svg)$">
+    Allow from all
+</FilesMatch>
