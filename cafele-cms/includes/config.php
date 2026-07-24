@@ -18,10 +18,13 @@ if (file_exists($localConfig)) {
     define('DB_CHARSET', 'utf8mb4');
 }
 
-// 站点 URL（自动检测）
-$scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
-if (in_array($scriptDir, ['.', ''])) $scriptDir = '';
-define('SITE_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $scriptDir);
+// 站点 URL（自动检测 - 基于 DOCUMENT_ROOT 计算）
+$docRoot = str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']);
+$incPath = str_replace('\\', '/', __DIR__);
+$relPath = str_replace($docRoot, '', dirname($incPath));
+$relPath = rtrim($relPath, '/\\');
+if (in_array($relPath, ['.', ''])) $relPath = '';
+define('SITE_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $relPath);
 define('ADMIN_URL', SITE_URL . '/admin');
 define('UPLOADS_PATH', __DIR__ . '/../public/uploads');
 define('UPLOADS_URL', SITE_URL . '/public/uploads');

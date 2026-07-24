@@ -68,7 +68,7 @@ require __DIR__ . '/header.php';
         <select name="cat" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;">
             <option value="">所有分类</option>
             <?php foreach ($categories as $cat): ?>
-                <option value="<?= $cat['id'] ?>" <?= $cat_filter == $cat['id'] ? 'selected' : ?>><?= h($cat['name']) ?></option>
+                <option value="<?= $cat['id'] ?>" <?= $cat_filter == $cat['id'] ? 'selected' : '' ?>><?= h($cat['name']) ?></option>
             <?php endforeach; ?>
         </select>
         <input type="text" name="q" value="<?= h($search) ?>" placeholder="搜索产品..." style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;min-width:200px;">

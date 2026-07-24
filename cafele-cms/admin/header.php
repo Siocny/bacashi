@@ -6,12 +6,17 @@
 
 $current_page = basename($_SERVER['SCRIPT_NAME']);
 $nav_items = [
-    'index.php' => ['label' => '控制台', 'icon' => '📊'],
-    'products.php' => ['label' => '产品管理', 'icon' => '📦'],
-    'categories.php' => ['label' => '分类管理', 'icon' => '📁'],
-    'pages.php' => ['label' => '页面管理', 'icon' => '📄'],
-    'messages.php' => ['label' => '留言管理', 'icon' => '💬'],
-    'settings.php' => ['label' => '系统设置', 'icon' => '⚙️'],
+    'index.php' => ['label' => '控制台', 'icon' => '◫'],
+    'products.php' => ['label' => '产品管理', 'icon' => '▣'],
+    'categories.php' => ['label' => '产品分类', 'icon' => '▦'],
+    'slides.php' => ['label' => '轮播图', 'icon' => '▤'],
+    'sections.php' => ['label' => '首页模块', 'icon' => '▥'],
+    'pages.php' => ['label' => '内容页面', 'icon' => '▧'],
+    'menus.php' => ['label' => '导航菜单', 'icon' => '☰'],
+    'messages.php' => ['label' => '咨询留言', 'icon' => '✉'],
+    'media.php' => ['label' => '媒体库', 'icon' => '▩'],
+    'settings.php' => ['label' => '网站设置', 'icon' => '⚙'],
+    'password.php' => ['label' => '修改密码', 'icon' => '⌁'],
 ];
 ?>
 <!DOCTYPE html>
@@ -21,6 +26,7 @@ $nav_items = [
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>管理后台 - CAFELE CMS</title>
     <link rel="icon" href="<?= SITE_URL ?>/public/uploads/seed/logo.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?= SITE_URL ?>/public/assets/css/admin.css">
     <style>
         .admin-logo-placeholder { width:50px;height:50px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px; }
