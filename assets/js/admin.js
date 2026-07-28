@@ -1133,17 +1133,13 @@ function updateImagePreview(url) {
     }
 }
 
-// 图片上传到 COS
+// 图片上传到 COS（支持 Cloudflare API 作为备用）
 document.getElementById('product-image-upload')?.addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (file) {
         // 检查 COS 配置
         const cosConfig = API.cos.getConfig();
-        if (!cosConfig.bucket || !cosConfig.secretId || !cosConfig.secretKey) {
-            showToast('请先配置腾讯云 COS 参数', 'warning');
-            showCosConfigModal();
-            return;
-        }
+        const hasCosConfig = cosConfig.bucket && cosConfig.secretId && cosConfig.secretKey;
 
         // 显示上传中状态
         const uploadBtn = document.getElementById('product-image-upload');
@@ -1152,12 +1148,33 @@ document.getElementById('product-image-upload')?.addEventListener('change', asyn
         uploadBtn.disabled = true;
 
         try {
-            const imageUrl = await API.cos.upload(file);
+            let imageUrl;
+            if (hasCosConfig) {
+                // 优先使用 COS 上传
+                imageUrl = await API.cos.upload(file);
+            } else {
+                // 备用：使用 Cloudflare API 代理上传
+                showToast('正在通过 Cloudflare 上传...', 'info');
+                imageUrl = await API.cloud.uploadImage(file);
+            }
             document.getElementById('product-image').value = imageUrl;
             updateImagePreview(imageUrl);
             showToast('图片上传成功', 'success');
         } catch (err) {
-            showToast('上传失败：' + err.message, 'error');
+            if (hasCosConfig) {
+                // COS 上传失败，尝试 Cloudflare API
+                try {
+                    showToast('COS 上传失败，尝试 Cloudflare...', 'warning');
+                    const imageUrl = await API.cloud.uploadImage(file);
+                    document.getElementById('product-image').value = imageUrl;
+                    updateImagePreview(imageUrl);
+                    showToast('图片上传成功（Cloudflare）', 'success');
+                } catch (cfErr) {
+                    showToast('上传失败：' + cfErr.message, 'error');
+                }
+            } else {
+                showToast('上传失败：' + err.message, 'error');
+            }
         } finally {
             uploadBtn.textContent = originalText;
             uploadBtn.disabled = false;

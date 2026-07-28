@@ -236,6 +236,7 @@ const API = {
     // 同步状态
     isOnline: navigator.onLine,
     supabaseReady: false,
+    cloudReady: false,
 
     // 初始化
     async init() {
@@ -251,9 +252,11 @@ const API = {
             console.log('✅ Supabase 已初始化');
         } catch (err) {
             console.warn('⚠️ Supabase 初始化失败:', err.message);
-            console.warn('将使用本地存储，云端同步功能不可用');
             this.supabaseReady = false;
         }
+
+        // 检测 Cloudflare Pages Function API
+        this.cloudReady = true; // 标记可用，实际连接在使用时检测
 
         // 从云端或本地加载数据
         await this.loadData();
@@ -324,9 +327,28 @@ const API = {
     async loadData() {
         console.log('=== API.loadData 开始加载数据 ===');
 
-        // 优先从 COS 加载数据
-        let cosData = null;
+        // 优先从 Cloudflare API 加载（跨设备同步）
+        let cloudData = null;
         if (this.isOnline) {
+            try {
+                cloudData = await this.cloud.fetch();
+                if (cloudData) {
+                    console.log('✅ 从 Cloudflare API 加载数据成功');
+                    if (cloudData.brandData) {
+                        localStorage.setItem('brandData', JSON.stringify(cloudData.brandData));
+                    }
+                    if (cloudData.bacashiData) {
+                        localStorage.setItem('bacashiData', JSON.stringify(cloudData.bacashiData));
+                    }
+                }
+            } catch (err) {
+                console.warn('从 Cloudflare API 加载失败:', err.message);
+            }
+        }
+
+        // 如果 Cloudflare API 没有数据，从 COS 加载
+        let cosData = null;
+        if (!cloudData && this.isOnline) {
             try {
                 cosData = await this.cos.downloadData();
                 if (cosData) {
@@ -343,9 +365,9 @@ const API = {
             }
         }
 
-        // 如果 COS 没有数据，尝试从 Supabase 加载品牌数据
+        // 如果云端没有数据，从 Supabase 加载品牌数据
         let brandDataFromSupabase = null;
-        if (!cosData && this.isOnline && this.supabaseReady) {
+        if (!cloudData && !cosData && this.isOnline && this.supabaseReady) {
             try {
                 brandDataFromSupabase = await SupabaseClient.getData('brand_data', 'main');
                 if (brandDataFromSupabase) {
@@ -437,6 +459,15 @@ const API = {
         // 总是先保存到本地
         localStorage.setItem(key, JSON.stringify(data));
         console.log(`数据已保存到本地：${key}`);
+
+        // 自动同步到 Cloudflare API（跨设备）
+        if (this.isOnline) {
+            if (key === 'brandData') {
+                await this.cloud.save(data, null);
+            } else if (key === 'bacashiData') {
+                await this.cloud.save(null, data);
+            }
+        }
 
         // 如果在线且 Supabase 可用，同步到云端
         if (this.isOnline && this.supabaseReady) {
@@ -870,6 +901,88 @@ const API = {
                 const list = this.get();
                 const filtered = list.filter(m => m.id != id);
                 await this.save(filtered);
+            }
+        }
+    },
+
+    // Cloudflare Pages Function API（跨设备数据同步）
+    cloud: {
+        get baseUrl() {
+            // 自动检测 API 地址（与网站同域名）
+            return window.location.origin + '/api/data';
+        },
+
+        // 从云端读取数据
+        async fetch() {
+            if (!API.isOnline) return null;
+            try {
+                const resp = await fetch(this.baseUrl + '?t=' + Date.now(), {
+                    method: 'GET',
+                    headers: { 'Cache-Control': 'no-cache' },
+                    signal: AbortSignal.timeout(8000),
+                });
+                if (!resp.ok) return null;
+                const data = await resp.json();
+                if (data && (data.brandData || data.bacashiData)) {
+                    console.log('✅ 从 Cloudflare API 读取数据成功');
+                    return data;
+                }
+                return null;
+            } catch (err) {
+                console.warn('Cloudflare API 读取失败:', err.message);
+                return null;
+            }
+        },
+
+        // 保存数据到云端
+        async save(brandData, bacashiData) {
+            if (!API.isOnline) return false;
+            try {
+                const payload = {};
+                if (brandData) payload.brandData = brandData;
+                if (bacashiData) payload.bacashiData = bacashiData;
+
+                const resp = await fetch(this.baseUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: AbortSignal.timeout(15000),
+                });
+                if (!resp.ok) {
+                    const text = await resp.text();
+                    console.warn('Cloudflare API 保存失败:', resp.status, text);
+                    return false;
+                }
+                const result = await resp.json();
+                console.log('✅ 数据已同步到 Cloudflare API');
+                return true;
+            } catch (err) {
+                console.warn('Cloudflare API 保存失败:', err.message);
+                return false;
+            }
+        },
+
+        // 上传图片到云端（通过 Worker 代理）
+        async uploadImage(file) {
+            if (!API.isOnline) throw new Error('网络离线');
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const resp = await fetch(window.location.origin + '/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                    signal: AbortSignal.timeout(60000),
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.error || '上传失败');
+                }
+                const result = await resp.json();
+                return result.url;
+            } catch (err) {
+                console.error('Cloudflare 图片上传失败:', err);
+                throw err;
             }
         }
     },
