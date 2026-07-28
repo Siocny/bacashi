@@ -1,8 +1,0 @@
-{
-<<<<<<< HEAD
-  "account_id": "a20ea67e754e6a02ec381328d2870e9b",
-  "project_name": "production"
-=======
-  "account_id": "a20ea67e754e6a02ec381328d2870e9b"
->>>>>>> a6bada4 (修复导入数据时 getCategories 报错问题)
-}
