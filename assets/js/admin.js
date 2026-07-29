@@ -17,8 +17,24 @@ function getStoredCategories() {
     if (categories) {
         const parsed = JSON.parse(categories);
         // 兼容旧数据格式
-        return Array.isArray(parsed) ? parsed : parsed.items || [];
+        const list = Array.isArray(parsed) ? parsed : parsed.items || [];
+        if (list.length > 0) return list;
     }
+
+    // 从实际产品数据中提取分类
+    try {
+        const cafeleProducts = (typeof API !== 'undefined' && API.products) ? API.products.getAll() : [];
+        const bacashiProducts = (typeof API !== 'undefined' && API.bacashi) ? API.bacashi.products.getAll() : [];
+        const allProducts = [...cafeleProducts, ...bacashiProducts];
+        if (allProducts.length > 0) {
+            const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+            if (cats.length > 0) {
+                localStorage.setItem('productCategories', JSON.stringify(cats));
+                return cats;
+            }
+        }
+    } catch (e) {}
+
     return ['车用电子', '车用内饰', '车用清洗', '车用外饰', '风扇系列'];
 }
 
@@ -26,8 +42,38 @@ function getStoredCategories() {
 function getStoredProductTypesMap() {
     const typesMap = localStorage.getItem('productTypesMap');
     if (typesMap) {
-        return JSON.parse(typesMap);
+        try {
+            const parsed = JSON.parse(typesMap);
+            // 确保不为空且有内容
+            if (Object.keys(parsed).length > 0) return parsed;
+        } catch (e) {}
     }
+
+    // 从实际产品数据中提取 分类→类型 映射
+    const cafeleProducts = (typeof API !== 'undefined' && API.products) ? API.products.getAll() : [];
+    const bacashiProducts = (typeof API !== 'undefined' && API.bacashi) ? API.bacashi.products.getAll() : [];
+    const allProducts = [...cafeleProducts, ...bacashiProducts];
+
+    if (allProducts.length > 0) {
+        const typeMap = {};
+        allProducts.forEach(p => {
+            if (p.category) {
+                if (!typeMap[p.category]) typeMap[p.category] = new Set();
+                if (p.productType) typeMap[p.category].add(p.productType);
+            }
+        });
+        // 转成数组并排序
+        const result = {};
+        Object.keys(typeMap).sort().forEach(cat => {
+            result[cat] = [...typeMap[cat]].sort();
+        });
+        if (Object.keys(result).length > 0) {
+            // 保存到 localStorage 以供后续使用
+            saveProductTypesMap(result);
+            return result;
+        }
+    }
+
     // 默认数据结构：每个类别对应一组类型
     return {
         '车用电子': ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源'],
