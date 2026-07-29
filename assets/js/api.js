@@ -327,6 +327,10 @@ const API = {
     async loadData() {
         console.log('=== API.loadData 开始加载数据 ===');
 
+        // 先检查本地是否有数据（有则优先保留本地，避免云端旧数据覆盖）
+        const localBrandData = localStorage.getItem('brandData');
+        const localBacashiData = localStorage.getItem('bacashiData');
+
         // 优先从 Cloudflare API 加载（跨设备同步）
         let cloudData = null;
         if (this.isOnline) {
@@ -334,11 +338,17 @@ const API = {
                 cloudData = await this.cloud.fetch();
                 if (cloudData) {
                     console.log('✅ 从 Cloudflare API 加载数据成功');
-                    if (cloudData.brandData) {
+                    // 仅当本地没有数据，或云端数据有更新时才覆盖
+                    if (cloudData.brandData && !localBrandData) {
                         localStorage.setItem('brandData', JSON.stringify(cloudData.brandData));
+                    } else if (cloudData.brandData && localBrandData) {
+                        // 保留本地数据（本地修改优先）
+                        console.log('保留本地 brandData（本地修改优先）');
                     }
-                    if (cloudData.bacashiData) {
+                    if (cloudData.bacashiData && !localBacashiData) {
                         localStorage.setItem('bacashiData', JSON.stringify(cloudData.bacashiData));
+                    } else if (cloudData.bacashiData && localBacashiData) {
+                        console.log('保留本地 bacashiData（本地修改优先）');
                     }
                 }
             } catch (err) {
@@ -346,18 +356,25 @@ const API = {
             }
         }
 
-        // 如果 Cloudflare API 没有数据，从 COS 加载
+        // 如果 Cloudflare API 没有数据，从 COS 加载（仅当本地无数据时）
         let cosData = null;
         if (!cloudData && this.isOnline) {
             try {
                 cosData = await this.cos.downloadData();
                 if (cosData) {
                     console.log('✅ 从 COS 加载数据成功');
-                    if (cosData.brandData) {
+                    // 仅当本地没有数据时才覆盖，否则保留本地修改
+                    if (cosData.brandData && !localBrandData) {
                         localStorage.setItem('brandData', JSON.stringify(cosData.brandData));
+                        console.log('本地无 brandData，从 COS 写入');
+                    } else if (cosData.brandData && localBrandData) {
+                        console.log('已有本地 brandData，保留本地修改');
                     }
-                    if (cosData.bacashiData) {
+                    if (cosData.bacashiData && !localBacashiData) {
                         localStorage.setItem('bacashiData', JSON.stringify(cosData.bacashiData));
+                        console.log('本地无 bacashiData，从 COS 写入');
+                    } else if (cosData.bacashiData && localBacashiData) {
+                        console.log('已有本地 bacashiData，保留本地修改');
                     }
                 }
             } catch (err) {
