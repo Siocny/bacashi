@@ -2669,3 +2669,5 @@ document.addEventListener('click', function(event) {
     }
 });
 
+
+// v2 - 视频上传功能已添加
