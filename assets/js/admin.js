@@ -18,6 +18,23 @@ function getStoredCategories() {
         const parsed = JSON.parse(categories);
         // 兼容旧数据格式
         const list = Array.isArray(parsed) ? parsed : parsed.items || [];
+
+        // 过滤掉已经没有产品的分类（让删除产品后分类自动消失）
+        try {
+            const cafeleProducts = (typeof API !== 'undefined' && API.products) ? API.products.getAll() : [];
+            const bacashiProducts = (typeof API !== 'undefined' && API.bacashi) ? API.bacashi.products.getAll() : [];
+            const allProducts = [...cafeleProducts, ...bacashiProducts];
+            const activeCategories = new Set(allProducts.map(p => p.category).filter(Boolean));
+            const filtered = list.filter(cat => activeCategories.has(cat));
+            if (filtered.length > 0) {
+                // 如果过滤后有变化，保存更新后的列表
+                if (filtered.length !== list.length) {
+                    localStorage.setItem('productCategories', JSON.stringify(filtered));
+                }
+                return filtered;
+            }
+        } catch (e) {}
+
         if (list.length > 0) return list;
     }
 
