@@ -1045,6 +1045,49 @@
 
     <script src="../assets/js/api.js?v=20260330004"></script>
     <script src="../assets/js/storage.js?v=20260330004"></script>
+    <script>
+    // 产品视频本地上传（内嵌版本，确保上传按钮可用）
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadBtn = document.getElementById('product-video-upload');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 50 * 1024 * 1024) {
+                    showToast('视频文件不能超过 50MB', 'warning');
+                    this.value = '';
+                    return;
+                }
+                this.disabled = true;
+                try {
+                    let videoUrl;
+                    const cosConfig = typeof API !== 'undefined' ? API.cos.getConfig() : {};
+                    if (cosConfig.bucket && cosConfig.secretId && cosConfig.secretKey) {
+                        videoUrl = await API.cos.upload(file);
+                    } else if (typeof API !== 'undefined' && API.cloud) {
+                        videoUrl = await API.cloud.uploadImage(file);
+                    } else {
+                        throw new Error('无可用上传通道，请先配置 COS');
+                    }
+                    document.getElementById('product-video').value = videoUrl;
+                    if (typeof updateProductVideoPreview === 'function') {
+                        updateProductVideoPreview(videoUrl);
+                    }
+                    if (typeof showToast === 'function') showToast('视频上传成功', 'success');
+                } catch (err) {
+                    if (typeof showToast === 'function') {
+                        showToast('上传失败：' + err.message, 'error');
+                    } else {
+                        alert('上传失败：' + err.message);
+                    }
+                } finally {
+                    this.disabled = false;
+                    this.value = '';
+                }
+            });
+        }
+    });
+    </script>
     <script src="../assets/js/admin.js?v=20260330004"></script>
 </body>
 </html>
