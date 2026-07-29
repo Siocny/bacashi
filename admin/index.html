@@ -530,7 +530,7 @@
                         <div class="form-group">
                             <label>产品类别 *</label>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <select id="product-category" required style="flex: 1;">
+                                <select id="product-category" required style="flex: 1;" onchange="updateProductTypeSelectByCategory()">
                                     <option value="">请选择产品类别</option>
                                 </select>
                                 <button type="button" class="btn btn-sm btn-primary" onclick="addCategoryOption()" title="添加类别">

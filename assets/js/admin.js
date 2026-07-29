@@ -139,13 +139,57 @@ function updateProductTypeSelectByCategory() {
     if (!categorySelect || !typeSelect) return;
 
     const selectedCategory = categorySelect.value;
-    const types = getProductTypesByCategory(selectedCategory);
-    const currentValue = typeSelect.value;
+    let types = [];
 
+    // 方法1: 从 productTypesMap 获取
+    const typesMap = getStoredProductTypesMap();
+    if (selectedCategory && typesMap[selectedCategory]) {
+        types = typesMap[selectedCategory];
+    }
+
+    // 方法2: 如果 typesMap 没有，直接从产品数据中提取
+    if (types.length === 0 && selectedCategory) {
+        try {
+            const cafeleProducts = (typeof API !== 'undefined' && API.products) ? API.products.getAll() : [];
+            const bacashiProducts = (typeof API !== 'undefined' && API.bacashi) ? API.bacashi.products.getAll() : [];
+            const allProducts = [...cafeleProducts, ...bacashiProducts];
+            types = [...new Set(
+                allProducts.filter(p => p.category === selectedCategory && p.productType)
+                    .map(p => p.productType)
+            )].sort();
+
+            // 保存到 localStorage 加速下次访问
+            if (types.length > 0) {
+                const map = getStoredProductTypesMap();
+                map[selectedCategory] = types;
+                saveProductTypesMap(map);
+            }
+        } catch (e) {
+            console.warn('从产品数据提取类型失败:', e);
+        }
+    }
+
+    // 方法3: 如果还没有类型，提供一些常用类型作为兜底
+    if (types.length === 0 && selectedCategory) {
+        const fallbackTypes = {
+            '车用电子': ['车载充气泵', '车载吸尘器', '一体机电源', '纯应急电源', '车载充电器'],
+            '车用内饰': ['车用坐垫', '遮阳挡', '脚垫', '方向盘套'],
+            '车用清洗': ['车用玻璃水', '清洁产品', '洗车水枪', '洗车液'],
+            '车用外饰': ['除雪铲', '车用雪挡', '车贴', '防撞条'],
+            '风扇系列': ['手持风扇', '桌面风扇', '挂腰风扇', 'USB风扇'],
+            '手持风扇': ['手持风扇', '迷你风扇', '便携风扇'],
+            '桌面风扇': ['桌面风扇', 'USB风扇', '台式风扇'],
+            '搭电宝': ['搭电宝', '应急电源', '启动电源'],
+            '充气泵': ['充气泵', '车载充气泵', '电动充气泵'],
+            '车载吸尘器': ['车载吸尘器', '迷你吸尘器', '便携吸尘器'],
+        };
+        types = fallbackTypes[selectedCategory] || [];
+    }
+
+    const currentValue = typeSelect.value;
     typeSelect.innerHTML = '<option value="">请选择产品类型</option>' +
         types.map(type => `<option value="${type}">${type}</option>`).join('');
 
-    // 如果当前值不在新的类型列表中，清空
     if (currentValue && types.includes(currentValue)) {
         typeSelect.value = currentValue;
     } else {
@@ -1160,7 +1204,8 @@ function openProductModal(product = null) {
         updateProductVideoPreview('');
         // 重新设置下拉框值（因为 reset() 会清空）
         document.getElementById('product-category').value = '';
-        document.getElementById('product-type').value = '';
+        // 清空产品类型（当用户选择分类时自动触发 onchange 更新）
+        document.getElementById('product-type').innerHTML = '<option value="">请选择产品类型</option>';
     }
 
     modal.classList.add('show');
