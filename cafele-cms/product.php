@@ -28,6 +28,20 @@ if ($product) {
 }
 
 $specs = $product ? (json_decode($product['specs'] ?? '[]', true) ?: []) : [];
+
+// 视频嵌入辅助函数
+function getVideoEmbed(string $url): string {
+    // YouTube
+    if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/', $url, $m)) {
+        return '<iframe src="https://www.youtube.com/embed/' . $m[1] . '" frameborder="0" allowfullscreen style="width:100%;max-width:800px;height:450px;border-radius:12px;"></iframe>';
+    }
+    // Bilibili
+    if (preg_match('/bilibili\.com\/video\/(?:av(\d+)|BV(\w+))/', $url, $m)) {
+        $bvid = !empty($m[2]) ? 'BV' . $m[2] : 'av' . $m[1];
+        return '<iframe src="//player.bilibili.com/player.html?bvid=' . $bvid . '&page=1" scrolling="no" border="0" frameborder="no" allowfullscreen style="width:100%;max-width:800px;height:450px;border-radius:12px;"></iframe>';
+    }
+    return '<p>视频链接：<a href="' . h($url) . '" target="_blank">' . h($url) . '</a></p>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -113,6 +127,17 @@ $specs = $product ? (json_decode($product['specs'] ?? '[]', true) ?: []) : [];
             </div>
         </aside>
     </div>
+
+    <?php if ($product['video']): ?>
+    <div style="margin-top:30px;">
+        <h2>产品视频</h2>
+        <?php if (preg_match('/\.(mp4|webm|ogg|mov)(\?.*)?$/i', $product['video'])): ?>
+            <video src="<?= image_url($product['video']) ?>" controls style="width:100%;max-width:800px;border-radius:12px;margin-top:12px;"></video>
+        <?php else: ?>
+            <div style="margin-top:12px;"><?= getVideoEmbed($product['video']) ?></div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <?php if ($product['content']): ?>
     <article class="product-content">

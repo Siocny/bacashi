@@ -130,7 +130,8 @@ function handle_upload(array $file, string $subdir = 'images'): string|false {
         return false;
     }
 
-    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+    $is_video = in_array($file['type'], ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']);
     if (!in_array($file['type'], $allowed)) {
         return false;
     }
@@ -140,7 +141,11 @@ function handle_upload(array $file, string $subdir = 'images'): string|false {
         'image/png' => 'png',
         'image/gif' => 'gif',
         'image/webp' => 'webp',
-        default => 'jpg',
+        'video/mp4' => 'mp4',
+        'video/webm' => 'webm',
+        'video/ogg' => 'ogv',
+        'video/quicktime' => 'mov',
+        default => $is_video ? 'mp4' : 'jpg',
     };
 
     $upload_dir = UPLOADS_PATH . '/' . $subdir;

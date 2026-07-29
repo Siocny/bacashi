@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $specs_json = trim($_POST['specs_json'] ?? '');
         $content = $_POST['content'] ?? '';
         $image = trim($_POST['image'] ?? '');
+        $video = trim($_POST['video'] ?? '');
         $status = isset($_POST['status']) ? 1 : 0;
         $featured = isset($_POST['featured']) ? 1 : 0;
 
@@ -66,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'specs' => json_encode($specs, JSON_UNESCAPED_UNICODE),
                     'content' => $content,
                     'image' => $image,
+                    'video' => $video,
                     'status' => $status,
                     'featured' => $featured,
                 ];
@@ -224,6 +226,23 @@ require __DIR__ . '/header.php';
             </div>
 
             <div class="field full">
+                <label>产品视频</label>
+                <div style="display:flex;gap:12px;align-items:start;">
+                    <input class="input" name="video" id="productVideo" value="<?= h($product['video'] ?? '') ?>" placeholder="视频 URL 或上传本地视频">
+                    <button type="button" class="btn" onclick="document.getElementById('videoUpload').click()">📁 上传视频</button>
+                    <input type="file" id="videoUpload" accept="video/mp4,video/webm,video/ogg" style="display:none" onchange="uploadVideo(this)">
+                </div>
+                <?php if (!empty($product['video'])): ?>
+                    <?php if (preg_match('/\.(mp4|webm|ogg|mov)(\?.*)?$/i', $product['video'])): ?>
+                        <video src="<?= image_url($product['video']) ?>" controls style="max-width:400px;max-height:250px;margin-top:8px;border-radius:8px;"></video>
+                    <?php else: ?>
+                        <p style="color:var(--muted);font-size:13px;margin-top:8px;">🔗 视频链接已输入</p>
+                    <?php endif; ?>
+                <?php endif; ?>
+                <small style="color:var(--muted);">支持 MP4/WebM 文件上传（最大 50MB），或粘贴视频链接</small>
+            </div>
+
+            <div class="field full">
                 <label>产品详情（支持 HTML）</label>
                 <div class="editor-wrap">
                     <div class="editor-toolbar">
@@ -363,7 +382,39 @@ function uploadImage(input, targetId) {
     xhr.send(formData);
 }
 
-// 初始化
+// 视频上传
+function uploadVideo(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+        showToast('视频文件不能超过 50MB', 'warning');
+        input.value = '';
+        return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'upload.php', true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (res.url) {
+                    document.getElementById('productVideo').value = res.url;
+                    showToast('视频上传成功', 'success');
+                } else {
+                    showToast(res.error || '上传失败', 'error');
+                }
+            } catch(e) {
+                showToast('上传失败', 'error');
+            }
+        } else {
+            showToast('上传失败', 'error');
+        }
+        input.value = '';
+    };
+    xhr.send(formData);
+}
 renderSpecs();
 // 在 form 提交前，将编辑器内容同步到 textarea
 document.querySelector('form').addEventListener('submit', function() {
