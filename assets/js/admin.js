@@ -1572,6 +1572,48 @@ document.getElementById('product-video')?.addEventListener('input', function() {
     updateProductVideoPreview(this.value);
 });
 
+// 产品视频本地上传
+document.getElementById('product-video-upload')?.addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 检查文件大小（限制 50MB）
+    if (file.size > 50 * 1024 * 1024) {
+        showToast('视频文件不能超过 50MB', 'warning');
+        this.value = '';
+        return;
+    }
+
+    const uploadBtn = this;
+    const originalText = '上传视频';
+    uploadBtn.disabled = true;
+
+    try {
+        let videoUrl;
+
+        // 先检查 COS 配置
+        const cosConfig = API.cos.getConfig();
+        if (cosConfig.bucket && cosConfig.secretId && cosConfig.secretKey) {
+            // 通过 COS SDK 上传
+            showToast('正在上传视频到 COS...', 'info');
+            videoUrl = await API.cos.upload(file);
+        } else {
+            // 备用：通过 Cloudflare API 上传
+            showToast('正在上传视频到 Cloudflare...', 'info');
+            videoUrl = await API.cloud.uploadImage(file);
+        }
+
+        document.getElementById('product-video').value = videoUrl;
+        updateProductVideoPreview(videoUrl);
+        showToast('视频上传成功', 'success');
+    } catch (err) {
+        showToast('视频上传失败：' + err.message, 'error');
+    } finally {
+        uploadBtn.disabled = false;
+        this.value = '';
+    }
+});
+
 // ==================== 时间轴管理 ====================
 // 格式化说明书文本（产品编辑模态框中）
 function formatManualText(command, value = null) {
